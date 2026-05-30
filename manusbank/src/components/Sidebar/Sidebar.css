@@ -1,0 +1,144 @@
+.sidebar {
+  width: 270px;
+  min-height: 100vh;
+  background: #071122; /* Mesma cor dos cards para uniformidade */
+  border-right: 1px solid #132033;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  /* Transição suave para o efeito de encolher */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarTop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 20px;
+  border-bottom: 1px solid #132033;
+  height: 85px; /* Altura fixa para alinhar horizontalmente com o topo */
+}
+
+.menuButton {
+  width: 36px;
+  height: 36px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #94a3b8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menuButton:hover {
+  background: #132033;
+  color: white;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: opacity 0.2s ease;
+}
+
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8); /* Azul combinando com o Login */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.logo h2 {
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.sidebarMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 12px;
+  flex: 1;
+}
+
+.sidebarMenu a {
+  height: 48px; /* Ligeiramente menor para um visual mais elegante */
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #94a3b8;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebarMenu a span {
+  transition: opacity 0.2s ease;
+}
+
+.sidebarMenu a:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: white;
+}
+
+/* Item Ativo com indicador neon sutil */
+.sidebarMenu a.active {
+  background: rgba(37, 99, 235, 0.15);
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.sidebarMenu a svg {
+  min-width: 19px;
+}
+
+/* ========================================================
+   ESTADO RECOLHIDO (Gerenciado pela classe pai .collapsed)
+======================================================== */
+
+.mainLayout.collapsed .sidebar {
+  width: 80px; /* Largura compacta perfeita */
+}
+
+/* Esconde os textos suavemente quando recolhido */
+.mainLayout.collapsed .logo h2,
+.mainLayout.collapsed .sidebarMenu a span {
+  display: none;
+}
+
+/* Centraliza os ícones no modo recolhido */
+.mainLayout.collapsed .sidebarMenu a {
+  justify-content: center;
+  padding: 0;
+}
+
+/* Responsividade para Tablets e Celulares (Fecha automático ou vira barra inferior) */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 80px;
+  }
+  .logo h2,
+  .sidebarMenu a span {
+    display: none;
+  }
+  .sidebarMenu a {
+    justify-content: center;
+    padding: 0;
+  }
+}
