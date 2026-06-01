@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Relatorios.css";
-import { BarChart3, ArrowUpCircle, ArrowDownCircle, Wallet } from "lucide-react";
+import { BarChart2, PieChart as PieIcon } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -9,124 +10,242 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
   Legend,
 } from "recharts";
 
+const CORES_DESPESAS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#a855f7"];
+
 function Relatorios() {
-  // Valores iniciais zerados
-  const [resumo] = useState({
-    totalReceitas: 0,
-    totalDespesas: 0,
-    saldo: 0,
-  });
+  const [dados, setDados] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
 
-  // Dados de exemplo simples (você depois pode conectar com o backend/estado global)
-  const dadosMensais = [
-    { mes: "Jan", receitas: 0, despesas: 0 },
-    { mes: "Fev", receitas: 0, despesas: 0 },
-    { mes: "Mar", receitas: 0, despesas: 0 },
+  useEffect(() => {
+    async function carregarRelatorios() {
+      try {
+        setCarregando(true);
+        setErro("");
+
+        const resp = await fetch("http://localhost:3000/api/relatorios");
+
+        if (!resp.ok) {
+          throw new Error("Erro ao buscar relatórios");
+        }
+
+        const json = await resp.json();
+        setDados(json);
+      } catch (e) {
+        console.error("Erro ao carregar relatórios:", e);
+        setErro("Não foi possível carregar os relatórios.");
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarRelatorios();
+  }, []);
+
+  const saldoAtual = dados?.saldoAtual || 0;
+  const totalReceitas = dados?.totalReceitas || 0;
+  const totalDespesas = dados?.totalDespesas || 0;
+
+  const graficoReceitasDespesasMes = [
+    {
+      nome: "Receitas",
+      valor: dados?.receitasDespesasMes?.receitas || 0,
+    },
+    {
+      nome: "Despesas",
+      valor: dados?.receitasDespesasMes?.despesas || 0,
+    },
   ];
 
-  const dadosCategorias = [
-    { categoria: "Moradia", valor: 0 },
-    { categoria: "Alimentação", valor: 0 },
-    { categoria: "Transporte", valor: 0 },
-  ];
+  const despesasPorCategoria = dados?.despesasPorCategoria || [];
 
   return (
-    <main className="rl-container">
-      <div className="rl-card">
-        <header className="rl-header">
-          <h1>
-            <BarChart3 size={32} />
-            Relatórios
-          </h1>
-          <p className="subtitle">Visão geral das suas finanças</p>
-        </header>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar />
 
-        <section className="rl-resumo">
-          <div className="rl-resumo-item receitas">
-            <ArrowUpCircle size={26} />
-            <div>
-              <p className="rl-resumo-label">Total de Receitas</p>
-              <p className="rl-resumo-valor">
-                R$ {resumo.totalReceitas.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+      <main style={{ flex: 1, padding: "20px" }}>
+        <div className="rel-container">
+          <div className="rel-card">
+            <header className="rel-header">
+              <h1>
+                <BarChart2 size={32} />
+                Relatórios Financeiros
+              </h1>
+              <p className="subtitle">
+                Veja um resumo das suas receitas, despesas e saldo
               </p>
-            </div>
-          </div>
+            </header>
 
-          <div className="rl-resumo-item despesas">
-            <ArrowDownCircle size={26} />
-            <div>
-              <p className="rl-resumo-label">Total de Despesas</p>
-              <p className="rl-resumo-valor">
-                R$ {resumo.totalDespesas.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            {erro && (
+              <p style={{ color: "#f97316", marginBottom: "10px" }}>
+                {erro}
               </p>
-            </div>
-          </div>
+            )}
 
-          <div className="rl-resumo-item saldo">
-            <Wallet size={26} />
-            <div>
-              <p className="rl-resumo-label">Saldo</p>
-              <p className="rl-resumo-valor">
-                R$ {resumo.saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-          </div>
-        </section>
+            {/* Cards de resumo */}
+            <section className="rel-resumo">
+              <div className="rel-resumo-card saldo">
+                <p className="rel-resumo-label">Saldo atual</p>
+                <p className="rel-resumo-valor">
+                  R{"$ "}
+                  {saldoAtual.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
+                </p>
+              </div>
 
-        <section className="rl-graficos-grid">
-          <div className="rl-grafico-box">
-            <h2>Receitas x Despesas por Mês</h2>
-            <div className="rl-grafico-container">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={dadosMensais}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="mes" stroke="#94a3b8" />
-                  <YAxis stroke="#94a3b8" />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#1e293b",
-                      border: "1px solid #334155",
-                      borderRadius: "8px",
-                    }}
-                    labelStyle={{ color: "#f8fafc" }}
-                    formatter={(value) => ["R$ " + value.toLocaleString("pt-BR"), "Valor"]}
-                  />
-                  <Legend />
-                  <Bar dataKey="receitas" name="Receitas" fill="#22c55e" radius={[8, 8, 0, 0]} />
-                  <Bar dataKey="despesas" name="Despesas" fill="#ef4444" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+              <div className="rel-resumo-card receita">
+                <p className="rel-resumo-label">Total de receitas</p>
+                <p className="rel-resumo-valor">
+                  R{"$ "}
+                  {totalReceitas.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
+                </p>
+              </div>
 
-          <div className="rl-grafico-box">
-            <h2>Despesas por Categoria</h2>
-            <div className="rl-grafico-container">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={dadosCategorias}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="categoria" stroke="#94a3b8" />
-                  <YAxis stroke="#94a3b8" />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#1e293b",
-                      border: "1px solid #334155",
-                      borderRadius: "8px",
-                    }}
-                    labelStyle={{ color: "#f8fafc" }}
-                    formatter={(value) => ["R$ " + value.toLocaleString("pt-BR"), "Valor"]}
-                  />
-                  <Bar dataKey="valor" name="Valor" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+              <div className="rel-resumo-card despesa">
+                <p className="rel-resumo-label">Total de despesas</p>
+                <p className="rel-resumo-valor">
+                  R{"$ "}
+                  {totalDespesas.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
+                </p>
+              </div>
+            </section>
+
+            {/* Gráfico Receitas x Despesas do mês */}
+            <section className="rel-grafico-section">
+              <h2>Receitas x Despesas do mês</h2>
+              <div className="rel-grafico-container">
+                {carregando ? (
+                  <p className="rel-grafico-vazio">
+                    Carregando dados...
+                  </p>
+                ) : (
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={graficoReceitasDespesasMes}>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="#334155"
+                      />
+                      <XAxis dataKey="nome" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip
+                        contentStyle={{
+                          background: "#020617",
+                          border: "1px solid #334155",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{ color: "#e5e7eb" }}
+                        formatter={(value) => [
+                          "R$ " +
+                            Number(value).toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                            }),
+                          "Valor",
+                        ]}
+                      />
+                      <Bar
+                        dataKey="valor"
+                        radius={[8, 8, 0, 0]}
+                      >
+                        {graficoReceitasDespesasMes.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              entry.nome === "Receitas"
+                                ? "#22c55e"
+                                : "#ef4444"
+                            }
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </section>
+
+            {/* Gráfico Despesas por Categoria */}
+            <section className="rel-grafico-section">
+              <h2>
+                <PieIcon size={20} style={{ marginRight: 8 }} />
+                Despesas por categoria
+              </h2>
+              <div className="rel-grafico-container">
+                {carregando ? (
+                  <p className="rel-grafico-vazio">
+                    Carregando dados...
+                  </p>
+                ) : despesasPorCategoria.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={260}>
+                    <PieChart>
+                      <Pie
+                        data={despesasPorCategoria}
+                        dataKey="valor"
+                        nameKey="nome"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        label={(entry) =>
+                          `${entry.nome} (${(
+                            (entry.valor /
+                              despesasPorCategoria.reduce(
+                                (acc, d) => acc + d.valor,
+                                0
+                              )) *
+                            100
+                          ).toFixed(0)}%)`
+                        }
+                      >
+                        {despesasPorCategoria.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              CORES_DESPESAS[
+                                index % CORES_DESPESAS.length
+                              ]
+                            }
+                          />
+                        ))}
+                      </Pie>
+                      <Legend />
+                      <Tooltip
+                        contentStyle={{
+                          background: "#020617",
+                          border: "1px solid #334155",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{ color: "#e5e7eb" }}
+                        formatter={(value, name) => [
+                          "R$ " +
+                            Number(value).toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                            }),
+                          "Despesa",
+                        ]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="rel-grafico-vazio">
+                    Ainda não há despesas registradas neste mês.
+                  </p>
+                )}
+              </div>
+            </section>
           </div>
-        </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   );
 }
 

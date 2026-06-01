@@ -1,0 +1,45 @@
+[
+  {
+    "id": 1780188774553,
+    "nome": "pedro",
+    "email": "pedro@exemplo.com",
+    "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
+    "saldo": 6800,
+    "transacoes": [
+      {
+        "id": 1780336870353,
+        "tipo": "deposito",
+        "valor": 10000,
+        "descricao": "Salário",
+        "data": "2026-06-01",
+        "categoria": "Salário"
+      },
+      {
+        "id": 1780336906507,
+        "tipo": "saque",
+        "valor": 3000,
+        "descricao": "Aluguel",
+        "data": "2026-07-01",
+        "categoria": "Aluguel"
+      },
+      {
+        "id": 1780336926419,
+        "tipo": "saque",
+        "valor": 200,
+        "descricao": "luz",
+        "data": "2026-06-10",
+        "categoria": "luz"
+      }
+    ],
+    "criadoEm": "2026-05-31T00:52:54.553Z"
+  },
+  {
+    "id": 1780190333060,
+    "nome": "samuel",
+    "email": "samuel@exemplo.com",
+    "senha": "3d34630dd6bbb687560bb54b1392911f25e2a2a3547dda9386f863386bd6396f",
+    "saldo": 0,
+    "transacoes": [],
+    "criadoEm": "2026-05-31T01:18:53.060Z"
+  }
+]

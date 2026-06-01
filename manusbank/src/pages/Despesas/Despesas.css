@@ -1,33 +1,25 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #0f172a;
-  height: 100vh;
-}
+/* Layout geral */
 
 .despesas-container {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
+  background: var(--bg-main);
+  color: var(--text-primary);
 }
 
 .despesas-card {
   width: 100%;
   max-width: 900px;
   max-height: 90vh;
-  padding: 40px;
+  padding: 32px 32px 36px;
   border-radius: 24px;
-  background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
   overflow-y: auto;
 }
 
@@ -35,7 +27,7 @@ body {
 
 .despesas-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .despesas-header h1 {
@@ -43,34 +35,35 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  font-size: 32px;
-  font-weight: bold;
-  color: #60a5fa;
-  margin-bottom: 10px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #f97316;
+  margin-bottom: 8px;
 }
 
 .subtitle {
-  color: #94a3b8;
-  font-size: 15px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 /* RESUMO */
 
 .resumo-card {
-  background: #1e293b;
+  background: var(--bg-card);
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px 24px;
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 16px;
+  border: 1px solid var(--border-soft);
 }
 
 .resumo-item {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .resumo-item svg {
@@ -78,71 +71,75 @@ body {
 }
 
 .resumo-label {
-  color: #94a3b8;
-  font-size: 14px;
-  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 2px;
 }
 
 .resumo-valor {
-  color: #f8fafc;
-  font-size: 24px;
-  font-weight: bold;
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 700;
 }
 
 .resumo-item-secundario {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: #f97316;
 }
 
 .resumo-secundario-label {
-  color: #94a3b8;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
 }
 
 /* BOTÃO NOVA DESPESA */
 
 .btn-nova-despesa {
   width: 100%;
-  padding: 16px;
+  padding: 14px;
   border: none;
   border-radius: 12px;
   background: #ef4444;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .btn-nova-despesa:hover {
   background: #f87171;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(248, 113, 113, 0.32);
 }
 
 /* GRÁFICO */
 
 .grafico-section {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .grafico-section h2 {
-  color: #f8fafc;
-  font-size: 20px;
-  margin-bottom: 16px;
+  color: var(--text-primary);
+  font-size: 18px;
+  margin-bottom: 12px;
 }
 
 .grafico-container {
-  background: #1e293b;
+  background: var(--bg-card);
   border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 20px;
+  border: 1px solid var(--border-soft);
   min-height: 250px;
   display: flex;
   justify-content: center;
@@ -150,81 +147,81 @@ body {
 }
 
 .grafico-vazio {
-  color: #94a3b8;
-  font-size: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 /* LISTA */
 
 .lista-despesas h2 {
-  color: #f8fafc;
-  font-size: 20px;
-  margin-bottom: 16px;
+  color: var(--text-primary);
+  font-size: 18px;
+  margin-bottom: 12px;
 }
 
 .lista-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   max-height: 300px;
   overflow-y: auto;
 }
 
 .lista-vazia {
-  background: #1e293b;
+  background: var(--bg-card);
   border-radius: 12px;
-  padding: 32px;
+  padding: 24px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-soft);
 }
 
 .lista-vazia p {
-  color: #94a3b8;
-  font-size: 15px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .despesa-item {
-  background: #1e293b;
+  background: var(--bg-card);
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: 0.2s ease;
+  border: 1px solid var(--border-soft);
+  transition:
+    border-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
 }
 
 .despesa-item:hover {
   border-color: #ef4444;
-  transform: translateX(4px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
 }
 
 .despesa-info h3 {
-  color: #f8fafc;
-  font-size: 16px;
-  margin-bottom: 4px;
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 2px;
 }
 
 .despesa-data {
-  color: #94a3b8;
-  font-size: 13px;
+  color: var(--text-secondary);
+  font-size: 12px;
 }
 
 .despesa-valor {
   color: #f97316;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 700;
 }
 
-/* MODAL (mesmo padrão da página de receitas) */
+/* MODAL */
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -233,68 +230,73 @@ body {
 }
 
 .modal-conteudo {
-  background: #111827;
-  border-radius: 24px;
-  padding: 32px;
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 24px 24px 28px;
   width: 100%;
-  max-width: 450px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  max-width: 440px;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.9);
   position: relative;
 }
 
 .modal-fechar {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: 0.2s ease;
-  padding: 8px;
-  border-radius: 8px;
+  transition: color 0.2s ease, background 0.2s ease;
+  padding: 6px;
+  border-radius: 999px;
 }
 
 .modal-fechar:hover {
-  color: #f8fafc;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  background: rgba(148, 163, 184, 0.25);
 }
 
 .modal-conteudo h2 {
-  color: #f8fafc;
-  font-size: 24px;
-  margin-bottom: 24px;
+  color: var(--text-primary);
+  font-size: 20px;
+  margin-bottom: 20px;
   text-align: center;
 }
+
+/* Formulário */
 
 .forma-despesa {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .form-group label {
-  color: #94a3b8;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
   font-weight: 500;
 }
 
 .form-group input {
-  padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  background: #1e293b;
-  color: white;
-  font-size: 15px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-size: 14px;
   outline: none;
-  transition: 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .form-group input::placeholder {
@@ -303,23 +305,84 @@ body {
 
 .form-group input:focus {
   border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25);
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.35);
 }
 
+/* Botão salvar */
+
 .btn-salvar {
-  margin-top: 8px;
-  padding: 16px;
+  margin-top: 4px;
+  padding: 14px;
   border: none;
   border-radius: 12px;
   background: #ef4444;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-salvar:hover {
   background: #f87171;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(248, 113, 113, 0.32);
+}
+.despesa-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Botão remover despesa */
+.btn-remover-despesa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  background: rgba(248, 113, 113, 0.08);
+  color: #f87171;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+.btn-remover-despesa:hover {
+  background: rgba(248, 113, 113, 0.16);
+  border-color: rgba(248, 113, 113, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.35);
+}
+
+.btn-remover-despesa svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsivo */
+
+@media (max-width: 768px) {
+  .despesas-card {
+    padding: 20px 16px 24px;
+  }
+
+  .resumo-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .despesa-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 }

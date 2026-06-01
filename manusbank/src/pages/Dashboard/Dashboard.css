@@ -2,13 +2,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* Mantendo a consistência de fonte de todo o ecossistema */
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
 }
 
 body {
-  background: #020617;
-  color: white;
+  background: var(--bg-main);
+  color: var(--text-primary);
 }
 
 /* Layout Principal (Sidebar + Dashboard) */
@@ -19,140 +18,165 @@ body {
 
 .dashboard {
   flex: 1;
-  padding: 32px;
-  background: #020617;
+  padding: 24px 28px;
+  background: var(--bg-main);
 }
 
 /* Topo do Dashboard */
 .top h1 {
-  font-size: 36px; /* Ajustado para um tamanho mais harmônico */
-  font-weight: 700;
+  font-size: 1.9rem;
+  font-weight: 600;
   letter-spacing: -0.75px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .top p {
-  color: #64748b; /* Tom cinza ligeiramente mais suave */
-  font-size: 16px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
 /* Grid de Cards */
 .cards {
-  margin-top: 32px;
+  margin-top: 24px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 18px;
 }
 
 /* Card Base */
 .card {
-  background: #071122;
-  border-radius: 16px; /* Cantos arredondados mais elegantes para dados */
-  padding: 24px;
-  border: 1px solid #132033;
-  min-height: 180px;
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-soft);
+  min-height: 150px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    border-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
 }
 
-/* Efeito de elevação sutil ao passar o mouse nos cards */
+/* Hover */
 .card:hover {
-  transform: translateY(-4px);
-  border-color: #1e293b;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  transform: translateY(-3px);
+  border-color: #f97316;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
 }
 
 /* Bordas coloridas superiores dos Cards (Indicadores) */
-.green { border-top: 3px solid #00E5A8; }
-.red { border-top: 3px solid #FF4D4D; }
-.blue { border-top: 3px solid #4D6BFF; }
-.yellow { border-top: 3px solid #FFC94D; }
+.green {
+  border-top: 3px solid #22c55e;
+}
+.red {
+  border-top: 3px solid #ef4444;
+}
+.blue {
+  border-top: 3px solid #38bdf8;
+}
+.yellow {
+  border-top: 3px solid #eab308;
+}
 
-/* Envoltório dos Ícones */
+/* Ícones */
 .iconBox {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-weight: 600;
 }
 
-/* Fundos dos Ícones com Opacidade (Glow interno) */
-.greenBg { background: rgba(0, 229, 168, 0.1); color: #00E5A8; }
-.redBg { background: rgba(255, 77, 77, 0.1); color: #FF4D4D; }
-.blueBg { background: rgba(77, 107, 255, 0.1); color: #4D6BFF; }
-.yellowBg { background: rgba(255, 201, 77, 0.1); color: #FFC94D; }
+/* Fundos dos Ícones com opacidade */
+.greenBg {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+.redBg {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+.blueBg {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+}
+.yellowBg {
+  background: rgba(234, 179, 8, 0.12);
+  color: #eab308;
+}
 
 /* Tipografia interna do Card */
 .card span {
   display: block;
-  font-size: 14px;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: #94a3b8; /* Títulos dos cards ligeiramente mais discretos */
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-}
-
-.card h2 {
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: #f8fafc;
+  letter-spacing: 0.06em;
   margin-bottom: 4px;
 }
 
+.card h2 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
 .card p {
-  color: #64748b;
-  font-size: 13px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
 }
 
 /* Seção de Gráficos */
 .charts {
-  margin-top: 32px;
+  margin-top: 24px;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 24px;
+  gap: 18px;
 }
 
 .chartCard {
-  background: #071122;
+  background: var(--bg-card);
   border-radius: 16px;
-  border: 1px solid #132033;
-  padding: 24px;
+  border: 1px solid var(--border-soft);
+  padding: 18px 20px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 }
 
 .chartHeader h3 {
-  font-size: 20px;
+  font-size: 1.05rem;
   font-weight: 600;
-  letter-spacing: -0.3px;
-  margin-bottom: 4px;
+  letter-spacing: -0.03em;
+  margin-bottom: 2px;
+  color: var(--text-primary);
 }
 
 .chartHeader p {
-  color: #64748b;
-  font-size: 14px;
-  margin-bottom: 24px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
 }
 
 /* Legendas dos Gráficos */
 .legend {
   display: flex;
-  gap: 24px;
-  margin-top: 16px;
+  gap: 16px;
+  margin-top: 12px;
 }
 
 .legend div {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #94a3b8;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
 .dot {
@@ -161,32 +185,36 @@ body {
   border-radius: 50%;
 }
 
-.greenDot { background: #00E5A8; }
-.redDot { background: #FF4D4D; }
+.greenDot {
+  background: #22c55e;
+}
+.redDot {
+  background: #ef4444;
+}
 
 /* Área do Gráfico de Pizza (Donut) */
 .pieWrapper {
   width: 100%;
-  height: 240px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .pieLegend {
-  margin-top: 16px;
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .legendItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 0.8rem;
   padding: 6px 0;
-  border-bottom: 1px solid rgba(19, 32, 51, 0.5); /* Linha divisória sutil */
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .legendItem:last-child {
@@ -197,16 +225,18 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
-.purple { background: #6C63FF; }
+.purple {
+  background: #6d28d9;
+}
 
-/* Responsividade Avançada */
+/* Responsividade */
 @media (max-width: 1300px) {
   .cards {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 16px;
   }
 }
 
@@ -218,19 +248,19 @@ body {
 
 @media (max-width: 600px) {
   .dashboard {
-    padding: 20px;
+    padding: 16px;
   }
 
   .cards {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 14px;
   }
 
   .top h1 {
-    font-size: 28px;
+    font-size: 1.6rem;
   }
 
   .card h2 {
-    font-size: 28px;
+    font-size: 1.5rem;
   }
 }

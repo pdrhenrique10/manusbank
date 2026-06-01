@@ -1,0 +1,192 @@
+/* ==========================================================================
+   Configurações Gerais e Container
+   ========================================================================== */
+
+.config-main {
+  flex: 1;
+  padding: 32px 24px; /* Aumentado para dar mais respiro à tela */
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin-top: 70px;
+}
+
+.config-container {
+  max-width: 800px; /* Reduzido levemente de 960px para focar a leitura */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px; /* Mais espaçamento entre os blocos de conteúdo */
+}
+
+/* Header */
+
+.config-header h1 {
+  font-size: 2rem; /* Um pouco mais imponente */
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.config-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Seções e Cards
+   ========================================================================== */
+
+.config-section {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 24px; /* Padding interno mais simétrico */
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Sombra mais sutil e moderna */
+  transition: box-shadow 0.3s ease;
+}
+
+.config-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+/* Linhas dentro da seção */
+
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* Remove a borda superior da primeira linha para não duplicar com o título */
+.config-section h2 + .config-row {
+  border-top: none;
+  padding-top: 0;
+}
+
+.config-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1; /* Garante que o texto ocupe o espaço restante e empurre o botão */
+}
+
+.config-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.config-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   Botões e Interações
+   ========================================================================== */
+
+/* Base comum para os botões manterem consistência de tamanho */
+.config-btn-danger,
+.config-btn-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px; /* Padding ligeiramente maior para melhor área de clique (UX) */
+  border-radius: 8px; /* Mudado de 999px para 8px (estilo moderno e corporativo) */
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap; /* Impede que o texto do botão quebre em duas linhas */
+  user-select: none;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.1s ease;
+}
+
+/* Feedback visual de clique para ambos os botões */
+.config-btn-danger:active,
+.config-btn-toggle:active {
+  transform: scale(0.98);
+}
+
+/* Botão de perigo */
+.config-btn-danger {
+  border: 1px solid transparent;
+  background: #dc2626; /* Ajustado para o padrão do Tailwind (red-600) */
+  color: #ffffff;
+}
+
+.config-btn-danger:hover {
+  background: #b91c1c; /* red-700 */
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.config-btn-danger:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* Botão de Alternância (Toggle / Neutro) */
+.config-btn-toggle {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.config-btn-toggle:hover {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.config-btn-toggle:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Responsividade (Mobile)
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .config-main {
+    padding: 20px 16px;
+  }
+
+  .config-container {
+    gap: 24px;
+  }
+
+  .config-section {
+    padding: 20px;
+  }
+
+  .config-row {
+    flex-direction: column;
+    align-items: stretch; /* Faz os botões ocuparem a largura total no mobile, melhor para o polegar */
+    gap: 16px;
+  }
+  
+  .config-btn-danger,
+  .config-btn-toggle {
+    width: 100%; /* Botões fill-width no mobile ficam mais fáceis de tocar */
+  }
+}

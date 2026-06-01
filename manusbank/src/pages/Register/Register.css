@@ -193,3 +193,17 @@ body {
         width: 100%;
     }
 }
+
+/* ...seu CSS que já existe... */
+
+.error-msg {
+  color: #ff4d4d;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.success-msg {
+  color: #00b894;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
