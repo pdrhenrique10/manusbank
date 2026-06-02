@@ -1,45 +1,91 @@
 [
   {
-    "id": 1780188774553,
-    "nome": "pedro",
-    "email": "pedro@exemplo.com",
+    "id": 1780422015077,
+    "nome": "Pedro",
+    "email": "pedro@email.com",
     "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
-    "saldo": 6800,
+    "saldo": 4750,
     "transacoes": [
       {
-        "id": 1780336870353,
+        "id": 1780422078814,
         "tipo": "deposito",
-        "valor": 10000,
-        "descricao": "Salário",
+        "valor": 7000,
+        "descricao": "salario",
         "data": "2026-06-01",
-        "categoria": "Salário"
+        "categoria": "salario"
       },
       {
-        "id": 1780336906507,
+        "id": 1780422091283,
         "tipo": "saque",
-        "valor": 3000,
+        "valor": 1000,
         "descricao": "Aluguel",
-        "data": "2026-07-01",
+        "data": "2026-06-02",
         "categoria": "Aluguel"
       },
       {
-        "id": 1780336926419,
+        "id": 1780422099958,
         "tipo": "saque",
-        "valor": 200,
-        "descricao": "luz",
-        "data": "2026-06-10",
-        "categoria": "luz"
+        "valor": 500,
+        "descricao": "mercado",
+        "data": "2026-06-02",
+        "categoria": "mercado"
+      },
+      {
+        "id": 1780422116077,
+        "tipo": "saque",
+        "valor": 100,
+        "descricao": "Luz",
+        "data": "2026-06-02",
+        "categoria": "Luz"
+      },
+      {
+        "id": 1780422131067,
+        "tipo": "saque",
+        "valor": 650,
+        "descricao": "RX 580 pc novo",
+        "data": "2026-06-02",
+        "categoria": "RX 580 pc novo"
       }
     ],
-    "criadoEm": "2026-05-31T00:52:54.553Z"
-  },
-  {
-    "id": 1780190333060,
-    "nome": "samuel",
-    "email": "samuel@exemplo.com",
-    "senha": "3d34630dd6bbb687560bb54b1392911f25e2a2a3547dda9386f863386bd6396f",
-    "saldo": 0,
-    "transacoes": [],
-    "criadoEm": "2026-05-31T01:18:53.060Z"
+    "contasReceber": [
+      {
+        "id": 1,
+        "cliente": "Comprador do meu PS5",
+        "valor": 3000,
+        "vencimento": "2026-06-04",
+        "descricao": "",
+        "status": "pendente",
+        "dataRecebimento": null,
+        "dataUltimaCobranca": null
+      }
+    ],
+    "nextContaReceberId": 2,
+    "contasPagar": [
+      {
+        "id": 1,
+        "titulo": "pix meu irmao",
+        "tipo": "Pix - pagar",
+        "valor": 300,
+        "vencimento": "2026-06-05",
+        "descricao": "",
+        "status": "pendente",
+        "dataPagamento": null,
+        "dataCriacao": "2026-06-02"
+      }
+    ],
+    "nextContaPagarId": 2,
+    "metas": [
+      {
+        "id": 1,
+        "titulo": "Hilux",
+        "valorAlvo": 80000,
+        "valorAtual": 0,
+        "dataMeta": "2026-08-13",
+        "descricao": "meu primeiro carro ",
+        "dataCriacao": "2026-06-02"
+      }
+    ],
+    "nextMetaId": 2,
+    "criadoEm": "2026-06-02T17:40:15.077Z"
   }
 ]

@@ -1,192 +1,211 @@
-/* ==========================================================================
-   Configurações Gerais e Container
-   ========================================================================== */
-
 .config-main {
   flex: 1;
-  padding: 32px 24px; /* Aumentado para dar mais respiro à tela */
-  background: var(--bg-main);
-  color: var(--text-primary);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  margin-top: 70px;
+  padding: 32px 24px;
+  background: var(--bg-main, #0f172a);
+  color: var(--text-primary, #f8fafc);
+  overflow-y: auto;
 }
 
 .config-container {
-  max-width: 800px; /* Reduzido levemente de 960px para focar a leitura */
+  max-width: 800px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 32px; /* Mais espaçamento entre os blocos de conteúdo */
 }
 
-/* Header */
+.config-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
 
 .config-header h1 {
-  font-size: 2rem; /* Um pouco mais imponente */
+  font-size: 2rem;
   font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-  text-align: center;
+  color: var(--text-primary, #f8fafc);
 }
 
 .config-subtitle {
+  color: var(--text-secondary, #94a3b8);
   font-size: 0.95rem;
-  color: var(--text-secondary);
-  margin-top: 6px;
-  line-height: 1.5;
-  text-align: center;
 }
 
-/* ==========================================================================
-   Seções e Cards
-   ========================================================================== */
-
 .config-section {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 24px; /* Padding interno mais simétrico */
-  border: 1px solid var(--border-soft);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Sombra mais sutil e moderna */
-  transition: box-shadow 0.3s ease;
+  background: var(--bg-card, #1e293b);
+  border-radius: 24px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid #334155;
 }
 
 .config-section h2 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
-  margin-bottom: 4px;
+  margin-bottom: 20px;
+  color: var(--text-primary, #f8fafc);
 }
 
-/* Linhas dentro da seção */
+/* Avatar */
+.config-avatar-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 
+.config-avatar-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #3b82f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.config-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: bold;
+  color: white;
+  border: 3px solid #3b82f6;
+}
+
+/* Botões de upload */
+.config-upload-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.config-btn-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.config-btn-upload:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.config-btn-upload.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.config-btn-remove-photo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: #ef4444;
+  color: white;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.config-btn-remove-photo:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+/* Linhas de informação */
 .config-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-soft);
+  padding: 12px 0;
+  border-bottom: 1px solid #334155;
 }
 
-/* Remove a borda superior da primeira linha para não duplicar com o título */
-.config-section h2 + .config-row {
-  border-top: none;
-  padding-top: 0;
+.config-row:last-child {
+  border-bottom: none;
 }
 
 .config-text {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1; /* Garante que o texto ocupe o espaço restante e empurre o botão */
-}
-
-.config-label {
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary, #94a3b8);
   font-size: 0.95rem;
+}
+
+.config-icon {
+  color: #3b82f6;
+}
+
+.config-value {
+  color: var(--text-primary, #f8fafc);
   font-weight: 500;
-  color: var(--text-primary);
-  line-height: 1.4;
 }
 
-.config-description {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-/* ==========================================================================
-   Botões e Interações
-   ========================================================================== */
-
-/* Base comum para os botões manterem consistência de tamanho */
-.config-btn-danger,
-.config-btn-toggle {
+/* Botões de ação */
+.config-btn-danger {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 10px 18px; /* Padding ligeiramente maior para melhor área de clique (UX) */
-  border-radius: 8px; /* Mudado de 999px para 8px (estilo moderno e corporativo) */
-  font-size: 0.875rem;
+  padding: 8px 20px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 40px;
   font-weight: 500;
   cursor: pointer;
-  white-space: nowrap; /* Impede que o texto do botão quebre em duas linhas */
-  user-select: none;
-  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.1s ease;
-}
-
-/* Feedback visual de clique para ambos os botões */
-.config-btn-danger:active,
-.config-btn-toggle:active {
-  transform: scale(0.98);
-}
-
-/* Botão de perigo */
-.config-btn-danger {
-  border: 1px solid transparent;
-  background: #dc2626; /* Ajustado para o padrão do Tailwind (red-600) */
-  color: #ffffff;
+  transition: all 0.2s;
 }
 
 .config-btn-danger:hover {
-  background: #b91c1c; /* red-700 */
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+  background: #dc2626;
+  transform: translateY(-2px);
 }
 
-.config-btn-danger:focus-visible {
-  outline: 2px solid #dc2626;
-  outline-offset: 2px;
-}
-
-/* Botão de Alternância (Toggle / Neutro) */
 .config-btn-toggle {
-  border: 1px solid var(--border-soft);
-  background: var(--bg-card);
-  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: #334155;
+  color: white;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .config-btn-toggle:hover {
-  background: rgba(148, 163, 184, 0.12);
-  border-color: rgba(148, 163, 184, 0.4);
+  background: #475569;
+  transform: translateY(-2px);
 }
 
-.config-btn-toggle:focus-visible {
-  outline: 2px solid var(--text-primary);
-  outline-offset: 2px;
-}
-
-/* ==========================================================================
-   Responsividade (Mobile)
-   ========================================================================== */
-
+/* Responsividade */
 @media (max-width: 640px) {
   .config-main {
     padding: 20px 16px;
   }
-
-  .config-container {
-    gap: 24px;
-  }
-
-  .config-section {
-    padding: 20px;
-  }
-
   .config-row {
     flex-direction: column;
-    align-items: stretch; /* Faz os botões ocuparem a largura total no mobile, melhor para o polegar */
-    gap: 16px;
+    align-items: flex-start;
+    gap: 8px;
   }
-  
   .config-btn-danger,
   .config-btn-toggle {
-    width: 100%; /* Botões fill-width no mobile ficam mais fáceis de tocar */
+    width: 100%;
+    justify-content: center;
   }
 }

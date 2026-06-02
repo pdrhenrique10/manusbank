@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 let usuarioLogado = null;
 
-function carregarUsuarios() {
+export function carregarUsuarios() {
   try {
     if (fs.existsSync(USUARIOS_FILE)) {
       const dados = fs.readFileSync(USUARIOS_FILE, "utf8");
@@ -22,7 +22,7 @@ function carregarUsuarios() {
   return [];
 }
 
-function salvarUsuarios(usuarios) {
+export function salvarUsuarios(usuarios) {
   fs.writeFileSync(USUARIOS_FILE, JSON.stringify(usuarios, null, 2));
 }
 
@@ -130,6 +130,16 @@ export function fazerLogin(email, senha) {
   };
 }
 
+export function definirUsuarioPorEmail(email) {
+  const usuarios = carregarUsuarios();
+  const usuario = usuarios.find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (usuario) {
+    usuarioLogado = usuario;
+    return true;
+  }
+  return false;
+}
+
 export function estaLogado() {
   return usuarioLogado !== null;
 }
@@ -152,11 +162,7 @@ export function obterTransacoes() {
   return usuarioLogado.transacoes || [];
 }
 
-// FUNÇÃO CORRIGIDA - Agora aceita e processa a data explicitamente
 export function adicionarTransacao(tipo, valor, descricao = "", dataTransacao = null, categoria = null) {
-  console.log("=== ADICIONAR TRANSACAO ===");
-  console.log("Parâmetros recebidos:", { tipo, valor, descricao, dataTransacao, categoria });
-  
   if (!usuarioLogado) {
     return { sucesso: false, erro: "Usuário não está logado" };
   }
@@ -167,44 +173,29 @@ export function adicionarTransacao(tipo, valor, descricao = "", dataTransacao = 
     return { sucesso: false, erro: "Usuário não encontrado" };
   }
 
-  // TRATAMENTO EXPLÍCITO DA DATA
   let dataFinal;
-  
+
   if (dataTransacao) {
-    console.log("Data recebida do frontend:", dataTransacao);
-    
-    // Se já está no formato YYYY-MM-DD (formato de input date do HTML)
     if (typeof dataTransacao === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dataTransacao)) {
       dataFinal = dataTransacao;
-      console.log("Data no formato YYYY-MM-DD:", dataFinal);
-    } 
-    // Se for uma data ISO ou outro formato
-    else {
+    } else {
       try {
         const dateObj = new Date(dataTransacao);
-        // Verifica se a data é válida
         if (!isNaN(dateObj.getTime())) {
-          // IMPORTANTE: Ajusta para o fuso horário local para evitar problemas
           const ano = dateObj.getFullYear();
           const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
           const dia = String(dateObj.getDate()).padStart(2, '0');
           dataFinal = `${ano}-${mes}-${dia}`;
-          console.log("Data convertida:", dataFinal);
         } else {
-          console.log("Data inválida, usando data atual");
           dataFinal = obterDataAtualFormatada();
         }
       } catch (e) {
-        console.error("Erro ao processar data:", e);
         dataFinal = obterDataAtualFormatada();
       }
     }
   } else {
-    console.log("Nenhuma data fornecida, usando data atual");
     dataFinal = obterDataAtualFormatada();
   }
-  
-  console.log("Data final que será salva:", dataFinal);
 
   const transacao = {
     id: Date.now(),
@@ -214,8 +205,6 @@ export function adicionarTransacao(tipo, valor, descricao = "", dataTransacao = 
     data: dataFinal,
     categoria: categoria || descricao || "Geral",
   };
-
-  console.log("Transação criada:", transacao);
 
   if (!usuarios[index].transacoes) {
     usuarios[index].transacoes = [];
@@ -231,18 +220,14 @@ export function adicionarTransacao(tipo, valor, descricao = "", dataTransacao = 
 
   usuarioLogado = usuarios[index];
   salvarUsuarios(usuarios);
-  
-  console.log("Transação salva com sucesso. Data:", dataFinal);
-  console.log("=== FIM ADICIONAR TRANSACAO ===");
 
-  return { 
-    sucesso: true, 
-    transacao, 
-    saldo: usuarios[index].saldo 
+  return {
+    sucesso: true,
+    transacao,
+    saldo: usuarios[index].saldo,
   };
 }
 
-// Função auxiliar para obter data atual formatada
 function obterDataAtualFormatada() {
   const hoje = new Date();
   const ano = hoje.getFullYear();
@@ -251,7 +236,6 @@ function obterDataAtualFormatada() {
   return `${ano}-${mes}-${dia}`;
 }
 
-// Função de remover transação (mantida igual)
 export function removerTransacao(idTransacao) {
   if (!usuarioLogado) {
     return { sucesso: false, erro: "Usuário não está logado" };
@@ -268,38 +252,28 @@ export function removerTransacao(idTransacao) {
     return { sucesso: false, erro: "Nenhuma transação encontrada" };
   }
 
-  const indexTransacao = user.transacoes.findIndex(
-    (t) => t.id === idTransacao
-  );
-
+  const indexTransacao = user.transacoes.findIndex((t) => t.id === idTransacao);
   if (indexTransacao === -1) {
     return { sucesso: false, erro: "Transação não encontrada" };
   }
 
   const transacaoRemovida = user.transacoes[indexTransacao];
-
   const valor = Number(transacaoRemovida.valor) || 0;
-  if (
-    transacaoRemovida.tipo === "deposito" ||
-    transacaoRemovida.tipo === "transferenciaEntrada"
-  ) {
+
+  if (transacaoRemovida.tipo === "deposito" || transacaoRemovida.tipo === "transferenciaEntrada") {
     user.saldo = (user.saldo || 0) - valor;
-  } else if (
-    transacaoRemovida.tipo === "saque" ||
-    transacaoRemovida.tipo === "transferenciaSaida"
-  ) {
+  } else if (transacaoRemovida.tipo === "saque" || transacaoRemovida.tipo === "transferenciaSaida") {
     user.saldo = (user.saldo || 0) + valor;
   }
 
   user.transacoes.splice(indexTransacao, 1);
-
   usuarios[indexUsuario] = user;
   usuarioLogado = user;
   salvarUsuarios(usuarios);
 
-  return { 
-    sucesso: true, 
-    transacaoRemovida, 
-    saldo: user.saldo 
+  return {
+    sucesso: true,
+    transacaoRemovida,
+    saldo: user.saldo,
   };
 }

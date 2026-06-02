@@ -1,578 +1,411 @@
-// server.js - Backend ManusBank (ESM)
-
 import express from "express";
 import cors from "cors";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import crypto from "crypto";
 
-import {
-  criarConta,
-  fazerLogin,
-  estaLogado,
-  obterUsuarioLogado,
-  obterSaldo,
-  obterTransacoes,
-  fazerLogout,
-  adicionarTransacao,
-  removerTransacao,
-} from "./auth.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 
-console.log("Iniciando server.js..."); 
+// Inicializa arquivo de usuários se não existir
+if (!fs.existsSync(USUARIOS_FILE)) {
+  fs.writeFileSync(USUARIOS_FILE, JSON.stringify([], null, 2));
+}
 
 const app = express();
-
-// ===== CONTAS A RECEBER EM MEMÓRIA =====
-let contasReceber = [];
-let nextContaReceberId = 1;
-
-// ===== CONTAS A PAGAR EM MEMÓRIA =====
-let contasPagar = [];
-let nextContaPagarId = 1;
-
-// ===== METAS EM MEMÓRIA =====
-let metas = [];
-let nextMetaId = 1;
-
-// permite JSON no body
 app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 
-// permite o frontend (React) acessar esse backend
-app.use(
-  cors({
-    origin: "*", // se quiser, depois limita para o endereço do seu front
-  })
-);
+// ===== FUNÇÕES AUXILIARES =====
+function criptografarSenha(senha) {
+  return crypto.createHash("sha256").update(senha).digest("hex");
+}
 
-// ROTA: criar conta (registro)
+function carregarUsuarios() {
+  try {
+    return JSON.parse(fs.readFileSync(USUARIOS_FILE, "utf8"));
+  } catch (e) {
+    return [];
+  }
+}
+
+function salvarUsuarios(usuarios) {
+  fs.writeFileSync(USUARIOS_FILE, JSON.stringify(usuarios, null, 2));
+}
+
+function encontrarUsuario(email) {
+  const usuarios = carregarUsuarios();
+  return usuarios.find(u => u.email === email);
+}
+
+// Middleware de autenticação (verifica se token existe e usuário está logado)
+function autenticar(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ erro: "Token não fornecido" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ erro: "Token inválido" });
+  }
+  
+  const usuarios = carregarUsuarios();
+  const usuario = usuarios.find(u => u.email === token);
+  
+  if (!usuario) {
+    return res.status(401).json({ erro: "Usuário não encontrado. Faça login novamente." });
+  }
+  
+  req.usuario = usuario;
+  req.usuarioEmail = token;
+  next();
+}
+
+// ===== ROTAS PÚBLICAS =====
+
+// REGISTRO - cria nova conta
 app.post("/api/registro", (req, res) => {
   const { nome, email, senha } = req.body;
-
-  const resultado = criarConta(nome, email, senha);
-
-  if (!resultado.sucesso) {
-    return res.status(400).json(resultado);
+  
+  if (!nome || !email || !senha) {
+    return res.status(400).json({ erro: "Preencha todos os campos" });
   }
-
-  return res.json(resultado);
+  
+  const usuarios = carregarUsuarios();
+  const emailExiste = usuarios.find(u => u.email === email);
+  
+  if (emailExiste) {
+    return res.status(400).json({ erro: "Este email já está cadastrado" });
+  }
+  
+  const novoUsuario = {
+    id: Date.now(),
+    nome,
+    email,
+    senha: criptografarSenha(senha),
+    saldo: 0,
+    transacoes: [],
+    contasReceber: [],
+    nextContaReceberId: 1,
+    contasPagar: [],
+    nextContaPagarId: 1,
+    metas: [],
+    nextMetaId: 1,
+    criadoEm: new Date().toISOString()
+  };
+  
+  usuarios.push(novoUsuario);
+  salvarUsuarios(usuarios);
+  
+  res.json({
+    sucesso: true,
+    token: email,
+    user: { id: novoUsuario.id, nome, email }
+  });
 });
 
-// ROTA: login
+// LOGIN - verifica se conta existe e senha correta
 app.post("/api/login", (req, res) => {
   const { email, senha } = req.body;
-
-  const resultado = fazerLogin(email, senha);
-
-  if (!resultado.sucesso) {
-    return res.status(400).json(resultado);
+  
+  if (!email || !senha) {
+    return res.status(400).json({ erro: "Preencha email e senha" });
   }
-
-  return res.json(resultado);
+  
+  const usuarios = carregarUsuarios();
+  const usuario = usuarios.find(u => u.email === email);
+  
+  if (!usuario) {
+    return res.status(401).json({ erro: "Conta não encontrada. Faça o registro primeiro." });
+  }
+  
+  if (usuario.senha !== criptografarSenha(senha)) {
+    return res.status(401).json({ erro: "Senha incorreta. Tente novamente." });
+  }
+  
+  res.json({
+    sucesso: true,
+    token: email,
+    user: { id: usuario.id, nome: usuario.nome, email }
+  });
 });
 
-// ROTA: dashboard (dados do usuário logado)
-app.get("/api/dashboard", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  const usuario = obterUsuarioLogado();
-  const saldo = obterSaldo();
-  const transacoes = obterTransacoes();
-
-  return res.json({ usuario, saldo, transacoes });
+// LOGOUT
+app.post("/api/logout", (req, res) => {
+  res.json({ sucesso: true });
 });
 
-// ROTA: relatórios financeiros
-app.get("/api/relatorios", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
+// ===== ROTAS PROTEGIDAS =====
 
-  const saldo = obterSaldo();
-  const transacoes = obterTransacoes() || [];
+// DASHBOARD
+app.get("/api/dashboard", autenticar, (req, res) => {
+  res.json({
+    usuario: { nome: req.usuario.nome, email: req.usuario.email },
+    saldo: req.usuario.saldo || 0,
+    transacoes: req.usuario.transacoes || []
+  });
+});
 
-  // Define receitas e despesas pelos tipos
+// RELATÓRIOS
+app.get("/api/relatorios", autenticar, (req, res) => {
+  const transacoes = req.usuario.transacoes || [];
+  const saldo = req.usuario.saldo || 0;
   const tiposReceita = ["deposito", "transferenciaEntrada"];
   const tiposDespesa = ["saque", "transferenciaSaida"];
-
   const agora = new Date();
   const mesAtual = agora.getMonth();
   const anoAtual = agora.getFullYear();
 
-  let totalReceitas = 0;
-  let totalDespesas = 0;
-
-  let totalReceitasMes = 0;
-  let totalDespesasMes = 0;
-
+  let totalReceitas = 0, totalDespesas = 0;
+  let totalReceitasMes = 0, totalDespesasMes = 0;
   const despesasPorCategoria = {};
 
   transacoes.forEach((t) => {
     const valor = Number(t.valor) || 0;
     const data = t.data ? new Date(t.data) : null;
-    const ehMesAtual =
-      data && data.getMonth() === mesAtual && data.getFullYear() === anoAtual;
+    const ehMesAtual = data && data.getMonth() === mesAtual && data.getFullYear() === anoAtual;
 
     if (tiposReceita.includes(t.tipo)) {
       totalReceitas += valor;
-      if (ehMesAtual) {
-        totalReceitasMes += valor;
-      }
+      if (ehMesAtual) totalReceitasMes += valor;
     } else if (tiposDespesa.includes(t.tipo)) {
       totalDespesas += valor;
-      if (ehMesAtual) {
-        totalDespesasMes += valor;
-      }
-
-      // Categoria básica: usa descricao como "categoria" simples
-      const categoria = t.categoria || t.descricao || "Outros";
-      if (!despesasPorCategoria[categoria]) {
-        despesasPorCategoria[categoria] = 0;
-      }
-      despesasPorCategoria[categoria] += valor;
+      if (ehMesAtual) totalDespesasMes += valor;
+      const cat = t.categoria || t.descricao || "Outros";
+      despesasPorCategoria[cat] = (despesasPorCategoria[cat] || 0) + valor;
     }
   });
 
-  const categoriasArray = Object.entries(despesasPorCategoria).map(
-    ([nome, valor]) => ({
-      nome,
-      valor,
-    })
-  );
-
-  return res.json({
+  const categoriasArray = Object.entries(despesasPorCategoria).map(([nome, valor]) => ({ nome, valor }));
+  res.json({
     saldoAtual: saldo,
     totalReceitas,
     totalDespesas,
-    receitasDespesasMes: {
-      receitas: totalReceitasMes,
-      despesas: totalDespesasMes,
-    },
-    despesasPorCategoria: categoriasArray,
+    receitasDespesasMes: { receitas: totalReceitasMes, despesas: totalDespesasMes },
+    despesasPorCategoria: categoriasArray
   });
 });
 
-// ROTA: criar transação (receita / despesa / transferência)
-app.post("/api/transacao", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  // CORRIGIDO: Extrai a data do body também
+// TRANSAÇÕES
+app.post("/api/transacao", autenticar, (req, res) => {
   const { tipo, valor, descricao, data, categoria } = req.body;
-
-  // Se a data for enviada, usa ela; caso contrário, usa a data atual
   const dataTransacao = data || new Date().toISOString().slice(0, 10);
-
-  const resultado = adicionarTransacao(
-    tipo, // "deposito", "saque", "transferenciaEntrada", "transferenciaSaida"
-    Number(valor),
-    descricao || "",
-    dataTransacao, // Passa a data
-    categoria // Passa a categoria
-  );
-
-  if (!resultado.sucesso) {
-    return res.status(400).json(resultado);
+  
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
+  const novaTransacao = {
+    id: Date.now(),
+    tipo,
+    valor: Number(valor),
+    descricao: descricao || "",
+    data: dataTransacao,
+    categoria: categoria || descricao || "Geral"
+  };
+  
+  usuarios[index].transacoes = usuarios[index].transacoes || [];
+  usuarios[index].transacoes.push(novaTransacao);
+  
+  if (tipo === "deposito" || tipo === "transferenciaEntrada") {
+    usuarios[index].saldo = (usuarios[index].saldo || 0) + Number(valor);
+  } else {
+    usuarios[index].saldo = (usuarios[index].saldo || 0) - Number(valor);
   }
-
-  return res.json(resultado);
+  
+  salvarUsuarios(usuarios);
+  
+  res.json({ 
+    sucesso: true, 
+    transacao: novaTransacao, 
+    saldo: usuarios[index].saldo 
+  });
 });
 
-// NOVO: ROTA para remover transação
-app.delete("/api/transacao/:id", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
+app.delete("/api/transacao/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
-  const resultado = removerTransacao(id);
-
-  if (!resultado.sucesso) {
-    return res.status(400).json(resultado);
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
+  const transacoes = usuarios[index].transacoes || [];
+  const transacaoIndex = transacoes.findIndex(t => t.id === id);
+  
+  if (transacaoIndex === -1) {
+    return res.status(404).json({ erro: "Transação não encontrada" });
   }
-
-  return res.json(resultado);
+  
+  const removida = transacoes.splice(transacaoIndex, 1)[0];
+  
+  if (removida.tipo === "deposito" || removida.tipo === "transferenciaEntrada") {
+    usuarios[index].saldo -= removida.valor;
+  } else {
+    usuarios[index].saldo += removida.valor;
+  }
+  
+  usuarios[index].transacoes = transacoes;
+  salvarUsuarios(usuarios);
+  
+  res.json({ sucesso: true, removida, saldo: usuarios[index].saldo });
 });
 
-// ===== ROTAS: CONTAS A RECEBER =====
-
-// GET /api/contas-receber - lista todas as contas a receber
-app.get("/api/contas-receber", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  return res.json(contasReceber);
+// ===== CONTAS A RECEBER =====
+app.get("/api/contas-receber", autenticar, (req, res) => {
+  res.json(req.usuario.contasReceber || []);
 });
 
-// POST /api/contas-receber - cria uma conta a receber (pendente)
-app.post("/api/contas-receber", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
+app.post("/api/contas-receber", autenticar, (req, res) => {
   const { cliente, valor, vencimento, descricao } = req.body;
-
   if (!cliente || !valor || !vencimento) {
-    return res
-      .status(400)
-      .json({ erro: "Campos obrigatórios: cliente, valor, vencimento" });
+    return res.status(400).json({ erro: "Cliente, valor e vencimento são obrigatórios" });
   }
-
+  
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
   const nova = {
-    id: nextContaReceberId++,
+    id: (req.usuario.nextContaReceberId || 1),
     cliente,
     valor: Number(valor),
-    // salva a data exatamente como veio do input type="date" (YYYY-MM-DD)
     vencimento: String(vencimento).slice(0, 10),
     descricao: descricao || "",
     status: "pendente",
     dataRecebimento: null,
-    dataUltimaCobranca: null,
+    dataUltimaCobranca: null
   };
-
-  contasReceber.push(nova);
-
-  return res.status(201).json(nova);
+  
+  usuarios[index].contasReceber = usuarios[index].contasReceber || [];
+  usuarios[index].contasReceber.push(nova);
+  usuarios[index].nextContaReceberId = (usuarios[index].nextContaReceberId || 1) + 1;
+  
+  salvarUsuarios(usuarios);
+  res.status(201).json(nova);
 });
 
-// PATCH /api/contas-receber/:id/pagar - marca conta como paga e cria transação de deposito
-app.patch("/api/contas-receber/:id/pagar", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
+app.patch("/api/contas-receber/:id/pagar", autenticar, (req, res) => {
   const id = Number(req.params.id);
-  const { dataRecebimento } = req.body; // CORRIGIDO: Pega a data de recebimento do body
-  const conta = contasReceber.find((c) => c.id === id);
-
-  if (!conta) {
-    return res.status(404).json({ erro: "Conta não encontrada" });
-  }
-
-  if (conta.status === "pago") {
-    return res.status(400).json({ erro: "Conta já está marcada como paga" });
-  }
-
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
+  const contas = usuarios[index].contasReceber || [];
+  const conta = contas.find(c => c.id === id);
+  
+  if (!conta) return res.status(404).json({ erro: "Conta não encontrada" });
+  if (conta.status === "pago") return res.status(400).json({ erro: "Conta já está paga" });
+  
   conta.status = "pago";
-  // CORRIGIDO: Usa a data enviada ou a data atual
-  conta.dataRecebimento = dataRecebimento || new Date().toISOString().slice(0, 10);
-
-  // registra receita no sistema existente
-  // CORRIGIDO: Passa a data de recebimento para a transação
-  const dataTransacao = dataRecebimento || new Date().toISOString().slice(0, 10);
-  const resultado = adicionarTransacao(
-    "deposito",
-    conta.valor,
-    conta.descricao || `Recebimento de ${conta.cliente}`,
-    dataTransacao,
-    "Recebimento"
-  );
-
-  if (!resultado.sucesso) {
-    return res.status(400).json(resultado);
-  }
-
-  return res.json({ conta, transacao: resultado.transacao || null });
+  conta.dataRecebimento = new Date().toISOString().slice(0, 10);
+  
+  salvarUsuarios(usuarios);
+  res.json({ conta });
 });
 
-// PATCH /api/contas-receber/:id/cobrar - registra tentativa de cobrança
-app.patch("/api/contas-receber/:id/cobrar", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
+app.delete("/api/contas-receber/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
-  const conta = contasReceber.find((c) => c.id === id);
-
-  if (!conta) {
-    return res.status(404).json({ erro: "Conta não encontrada" });
-  }
-
-  conta.dataUltimaCobranca = new Date().toISOString().slice(0, 10);
-
-  return res.json(conta);
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
+  usuarios[index].contasReceber = (usuarios[index].contasReceber || []).filter(c => c.id !== id);
+  salvarUsuarios(usuarios);
+  res.json({ sucesso: true });
 });
 
-// NOVO: DELETE /api/contas-receber/:id
-app.delete("/api/contas-receber/:id", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  const id = Number(req.params.id);
-  const index = contasReceber.findIndex((c) => c.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ erro: "Conta não encontrada" });
-  }
-
-  const removida = contasReceber.splice(index, 1)[0];
-
-  return res.json({ sucesso: true, removida });
+// ===== CONTAS A PAGAR =====
+app.get("/api/contas-pagar", autenticar, (req, res) => {
+  res.json(req.usuario.contasPagar || []);
 });
 
-// ===== ROTAS: CONTAS A PAGAR =====
-
-// GET /api/contas-pagar - lista todas as contas a pagar
-app.get("/api/contas-pagar", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  return res.json(contasPagar);
-});
-
-// POST /api/contas-pagar - cria uma conta a pagar (pendente)
-app.post("/api/contas-pagar", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
+app.post("/api/contas-pagar", autenticar, (req, res) => {
   const { titulo, tipo, valor, vencimento, descricao } = req.body;
-
   if (!titulo || !valor || !vencimento) {
-    return res.status(400).json({
-      erro: "Campos obrigatórios: titulo, valor, vencimento",
-    });
+    return res.status(400).json({ erro: "Título, valor e vencimento são obrigatórios" });
   }
-
+  
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
   const nova = {
-    id: nextContaPagarId++,
+    id: (req.usuario.nextContaPagarId || 1),
     titulo,
     tipo: tipo || "geral",
     valor: Number(valor),
-    // mesma ideia: guarda só "YYYY-MM-DD"
     vencimento: String(vencimento).slice(0, 10),
     descricao: descricao || "",
     status: "pendente",
     dataPagamento: null,
-    dataCriacao: new Date().toISOString().slice(0, 10), // CORRIGIDO: Guarda só a data
+    dataCriacao: new Date().toISOString().slice(0, 10)
   };
-
-  contasPagar.push(nova);
-
-  return res.status(201).json(nova);
+  
+  usuarios[index].contasPagar = usuarios[index].contasPagar || [];
+  usuarios[index].contasPagar.push(nova);
+  usuarios[index].nextContaPagarId = (usuarios[index].nextContaPagarId || 1) + 1;
+  
+  salvarUsuarios(usuarios);
+  res.status(201).json(nova);
 });
 
-// PATCH /api/contas-pagar/:id/pagar - marca conta como paga e cria DESPESA
-app.patch("/api/contas-pagar/:id/pagar", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
+app.patch("/api/contas-pagar/:id/pagar", autenticar, (req, res) => {
   const id = Number(req.params.id);
-  const { dataPagamento } = req.body; // CORRIGIDO: Pega a data de pagamento do body
-  const conta = contasPagar.find((c) => c.id === id);
-
-  if (!conta) {
-    return res.status(404).json({ erro: "Conta não encontrada" });
-  }
-
-  if (conta.status === "pago") {
-    return res.status(400).json({ erro: "Conta já está marcada como paga" });
-  }
-
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
+  const contas = usuarios[index].contasPagar || [];
+  const conta = contas.find(c => c.id === id);
+  
+  if (!conta) return res.status(404).json({ erro: "Conta não encontrada" });
+  if (conta.status === "pago") return res.status(400).json({ erro: "Conta já está paga" });
+  
   conta.status = "pago";
-  // CORRIGIDO: Usa a data enviada ou a data atual
-  conta.dataPagamento = dataPagamento || new Date().toISOString().slice(0, 10);
-
-  // registra despesa no sistema de transações
-  // CORRIGIDO: Passa a data de pagamento para a transação
-  const dataTransacao = dataPagamento || new Date().toISOString().slice(0, 10);
-  const resultado = adicionarTransacao(
-    "saque", // saída de dinheiro
-    conta.valor,
-    conta.descricao || `Pagamento: ${conta.titulo}`,
-    dataTransacao,
-    "Pagamento"
-  );
-
-  if (!resultado.sucesso) {
-    return res.status(400).json(resultado);
-  }
-
-  return res.json({ conta, transacao: resultado.transacao || null });
+  conta.dataPagamento = new Date().toISOString().slice(0, 10);
+  
+  salvarUsuarios(usuarios);
+  res.json({ conta });
 });
 
-// NOVO: DELETE /api/contas-pagar/:id
-app.delete("/api/contas-pagar/:id", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
+app.delete("/api/contas-pagar/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
-  const index = contasPagar.findIndex((c) => c.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ erro: "Conta não encontrada" });
-  }
-
-  const removida = contasPagar.splice(index, 1)[0];
-
-  return res.json({ sucesso: true, removida });
-});
-
-// ===== ROTAS: METAS =====
-
-// GET /api/metas - lista metas
-app.get("/api/metas", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  return res.json(metas);
-});
-
-// POST /api/metas - cria meta
-app.post("/api/metas", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  const { titulo, valorAlvo, dataMeta, descricao } = req.body;
-
-  if (!titulo || !valorAlvo || !dataMeta) {
-    return res.status(400).json({
-      erro: "Campos obrigatórios: titulo, valorAlvo, dataMeta",
-    });
-  }
-
-  const novaMeta = {
-    id: nextMetaId++,
-    titulo,
-    valorAlvo: Number(valorAlvo),
-    valorAtual: 0,
-    // aqui também guardamos só a data (YYYY-MM-DD)
-    dataMeta: String(dataMeta).slice(0, 10),
-    descricao: descricao || "",
-    dataCriacao: new Date().toISOString().slice(0, 10), // CORRIGIDO: Guarda só a data
-  };
-
-  metas.push(novaMeta);
-
-  return res.status(201).json(novaMeta);
-});
-
-// PATCH /api/metas/:id/aportar - adiciona dinheiro à meta
-app.patch("/api/metas/:id/aportar", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  const id = Number(req.params.id);
-  const { valor, descricao, dataAporte } = req.body; // CORRIGIDO: Pega a data do body
-
-  if (!valor) {
-    return res.status(400).json({ erro: "Campo obrigatório: valor" });
-  }
-
-  const meta = metas.find((m) => m.id === id);
-
-  if (!meta) {
-    return res.status(404).json({ erro: "Meta não encontrada" });
-  }
-
-  const aporte = Number(valor);
-  if (aporte <= 0) {
-    return res
-      .status(400)
-      .json({ erro: "O valor do aporte deve ser maior que zero" });
-  }
-
-  meta.valorAtual += aporte;
-
-  // registra como saque (saída) no extrato
-  const dataTransacao = dataAporte || new Date().toISOString().slice(0, 10);
-  const resultado = adicionarTransacao(
-    "saque",
-    aporte,
-    descricao || `Aporte na meta: ${meta.titulo}`,
-    dataTransacao,
-    "Aporte Meta"
-  );
-
-  if (!resultado.sucesso) {
-    return res.status(400).json(resultado);
-  }
-
-  return res.json({ meta, transacao: resultado.transacao || null });
-});
-
-// NOVO: PATCH /api/metas/:id/desaportar - tira dinheiro da meta
-app.patch("/api/metas/:id/desaportar", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  const id = Number(req.params.id);
-  const { valor, descricao, dataDesaporte } = req.body; // CORRIGIDO: Pega a data do body
-
-  if (!valor) {
-    return res.status(400).json({ erro: "Campo obrigatório: valor" });
-  }
-
-  const meta = metas.find((m) => m.id === id);
-
-  if (!meta) {
-    return res.status(404).json({ erro: "Meta não encontrada" });
-  }
-
-  const retirada = Number(valor);
-  if (retirada <= 0) {
-    return res
-      .status(400)
-      .json({ erro: "O valor a retirar deve ser maior que zero" });
-  }
-
-  // garante que não fica negativo
-  const valorAtualNumero = Number(meta.valorAtual) || 0;
-  const novoValor = Math.max(0, valorAtualNumero - retirada);
-  meta.valorAtual = novoValor;
-
-  // registra como deposito (entrada) no extrato
-  const dataTransacao = dataDesaporte || new Date().toISOString().slice(0, 10);
-  const resultado = adicionarTransacao(
-    "deposito",
-    retirada,
-    descricao || `Retirada da meta: ${meta.titulo}`,
-    dataTransacao,
-    "Retirada Meta"
-  );
-
-  if (!resultado.sucesso) {
-    return res.status(400).json(resultado);
-  }
-
-  return res.json({ meta, transacao: resultado.transacao || null });
-});
-
-// DELETE /api/metas/:id - remove meta
-app.delete("/api/metas/:id", (req, res) => {
-  if (!estaLogado()) {
-    return res.status(401).json({ erro: "Não autorizado" });
-  }
-
-  const id = Number(req.params.id);
-  const index = metas.findIndex((m) => m.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ erro: "Meta não encontrada" });
-  }
-
-  const removida = metas.splice(index, 1)[0];
-
-  return res.json({ sucesso: true, removida });
-});
-
-// ROTA: logout
-app.post("/api/logout", (req, res) => {
-  fazerLogout();
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
+  usuarios[index].contasPagar = (usuarios[index].contasPagar || []).filter(c => c.id !== id);
+  salvarUsuarios(usuarios);
   res.json({ sucesso: true });
 });
 
-console.log("Preparando para escutar na porta 3000...");
+// ===== METAS =====
+app.get("/api/metas", autenticar, (req, res) => {
+  res.json(req.usuario.metas || []);
+});
+
+app.post("/api/metas", autenticar, (req, res) => {
+  const { titulo, valorAlvo, dataMeta, descricao } = req.body;
+  if (!titulo || !valorAlvo || !dataMeta) {
+    return res.status(400).json({ erro: "Título, valor alvo e data são obrigatórios" });
+  }
+  
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+  
+  const novaMeta = {
+    id: (req.usuario.nextMetaId || 1),
+    titulo,
+    valorAlvo: Number(valorAlvo),
+    valorAtual: 0,
+    dataMeta: String(dataMeta).slice(0, 10),
+    descricao: descricao || "",
+    dataCriacao: new Date().toISOString().slice(0, 10)
+  };
+  
+  usuarios[index].metas = usuarios[index].metas || [];
+  usuarios[index].metas.push(novaMeta);
+  usuarios[index].nextMetaId = (usuarios[index].nextMetaId || 1) + 1;
+  
+  salvarUsuarios(usuarios);
+  res.status(201).json(novaMeta);
+});
 
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor ManusBank rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`📁 Usuários salvos em: ${USUARIOS_FILE}`);
 });

@@ -2,45 +2,43 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    /* Fonte moderna padrão para interfaces limpas */
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
     background: #050816;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .register-container {
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Gradiente radial mais profundo e imersivo */
     background: radial-gradient(circle at center, #0a1128 0%, #050816 100%);
     padding: 20px;
 }
 
-/* PAINEL ESQUERDO (Boas-vindas / Alternar para Login) */
-.left-panel {
-    width: 350px;
-    height: 550px; /* Alinhado com a altura da tela de login */
-    
-    /* Efeito de vidro sutil (Glassmorphism) */
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
-    border: 1px solid rgba(37, 99, 235, 0.2);
-    border-right: 2px solid #2563eb; /* Sua linha divisória clássica */
-    border-radius: 24px 0 0 24px;
-
+.left-panel, .right-panel {
+    min-height: 600px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 40px;
+    padding: 40px 30px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+/* Painel Esquerdo */
+.left-panel {
+    width: 350px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    border-right: 2px solid #2563eb;
+    border-radius: 24px 0 0 24px;
     color: white;
     text-align: center;
     box-shadow: -10px 15px 30px rgba(0, 0, 0, 0.3);
@@ -50,18 +48,17 @@ body {
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 16px;
-    letter-spacing: -0.5px;
 }
 
 .left-panel p {
-    color: #94a3b8; /* Tom cinza suave mais legível */
+    color: #94a3b8;
     font-size: 17px;
     line-height: 1.6;
     margin-bottom: 32px;
 }
 
 .destaque2 {
-    color: #3b82f6; /* Azul levemente mais vivo para destacar no tema escuro */
+    color: #3b82f6;
     font-size: 20px;
     font-weight: 700;
 }
@@ -72,56 +69,47 @@ body {
     border: 2px solid #2563eb;
     background: transparent;
     color: white;
-    border-radius: 12px; /* Cantos arredondados modernos */
+    border-radius: 12px;
     font-weight: 600;
-    font-size: 15px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
 }
 
 .signin-btn:hover {
     background: #2563eb;
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.signin-btn:active {
-    transform: translateY(0);
-}
-
-/* PAINEL DIREITO (Formulário de Cadastro) */
+/* Painel Direito */
 .right-panel {
     width: 450px;
-    height: 550px;
-    
-    /* Efeito de vidro sutil */
     background: rgba(17, 24, 39, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-left: none;
     border-radius: 0 24px 24px 0;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 20px; /* Mantive o espaçamento menor para caber mais inputs se necessário */
     box-shadow: 10px 15px 30px rgba(0, 0, 0, 0.3);
 }
 
 .right-panel h1 {
-    color: white; /* Título em branco mantendo o padrão premium */
+    color: white;
     font-size: 32px;
     font-weight: 700;
-    margin-bottom: 8px;
-    letter-spacing: -0.5px;
+    text-align: center;
+    margin-bottom: 24px;
 }
 
-/* Inputs consistentes e responsivos */
+/* Container do Formulário para centralizar o bloco */
+.right-panel form {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .right-panel input {
-    width: 320px;
+    width: 100%;
     height: 50px;
     background: #1f2937;
     border: 1px solid transparent;
@@ -137,73 +125,79 @@ body {
     color: #6b7280;
 }
 
-/* Efeito de foco com brilho neon nos inputs */
 .right-panel input:focus {
     border-color: #2563eb;
     background: #111827;
-    box-shadow: 0 0 12px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.25);
+}
+
+.right-panel input:-webkit-autofill,
+.right-panel input:-webkit-autofill:hover,
+.right-panel input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px #1f2937 inset;
+    -webkit-text-fill-color: white;
+    transition: background-color 5000s ease-in-out 0s;
 }
 
 .signup-btn {
-    width: 320px; /* Ajustado para alinhar perfeitamente com a largura dos inputs */
+    width: 100%;
     height: 50px;
     border: none;
     background: #2563eb;
     color: white;
     border-radius: 12px;
     font-weight: 600;
-    font-size: 15px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-top: 10px;
+    transition: all 0.3s ease;
+    margin-top: 8px;
 }
 
 .signup-btn:hover {
     background: #1d4ed8;
-    box-shadow: 0 4px 20px rgba(29, 78, 216, 0.4);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
-.signup-btn:active {
-    transform: translateY(0);
+.error-msg, .success-msg {
+    text-align: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    width: 100%;
 }
 
-/* Responsividade para telas menores (Dispositivos Móveis) */
+.error-msg {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.success-msg {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
 @media (max-width: 800px) {
     .register-container {
         flex-direction: column;
-        height: auto;
-        min-height: 100vh;
+        padding: 10px;
     }
     .left-panel, .right-panel {
         width: 100%;
         max-width: 400px;
-        height: auto;
-        padding: 40px 20px;
+        min-height: auto;
+        border-radius: 24px;
+        border: 1px solid rgba(37, 99, 235, 0.2);
     }
     .left-panel {
-        border-radius: 24px 24px 0 0;
-        border-right: none;
         border-bottom: 2px solid #2563eb;
+        padding: 30px 20px;
     }
     .right-panel {
-        border-radius: 0 0 24px 24px;
+        padding: 35px 20px;
     }
-    .right-panel input, .signup-btn {
-        width: 100%;
+    .right-panel form {
+        max-width: 100%;
     }
-}
-
-/* ...seu CSS que já existe... */
-
-.error-msg {
-  color: #ff4d4d;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.success-msg {
-  color: #00b894;
-  margin-bottom: 8px;
-  font-size: 14px;
 }

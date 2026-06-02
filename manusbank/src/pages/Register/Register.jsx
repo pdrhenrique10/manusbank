@@ -11,21 +11,24 @@ export default function Register() {
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  async function handleRegister() {
+  async function handleRegister(e) {
+    e.preventDefault();
     setErro("");
     setSucesso("");
 
-    // validação no frontend
     if (!nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
       setErro("Preencha todos os campos.");
-      return; // não avança
+      return;
     }
 
     if (senha !== confirmarSenha) {
       setErro("As senhas não coincidem.");
       return;
     }
+
+    setCarregando(true);
 
     try {
       const resp = await fetch("http://localhost:3000/api/registro", {
@@ -37,17 +40,25 @@ export default function Register() {
       const dados = await resp.json();
 
       if (!resp.ok) {
-        setErro(dados.erro || "Erro ao registrar.");
-        return; // não avança
+        setErro(dados.erro || "Erro ao registrar. Tente novamente.");
+        setCarregando(false);
+        return;
       }
 
-      setSucesso("Conta criada com sucesso!");
-      // você pode ir direto para o dashboard ou voltar pro login:
-      navigate("/login");
-      // ou navigate("/dashboard");
-    } catch (e) {
-      console.error(e);
-      setErro("Erro ao conectar com o servidor.");
+      // Sucesso no registro
+      localStorage.setItem("token", dados.token);
+      localStorage.setItem("user", JSON.stringify({
+        uid: dados.user?.id || Date.now().toString(),
+        email,
+        name: nome,
+      }));
+      
+      setSucesso("Conta criada com sucesso! Redirecionando...");
+      setTimeout(() => navigate("/dashboard"), 1500);
+    } catch (error) {
+      console.error("Erro na conexão:", error);
+      setErro("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");
+      setCarregando(false);
     }
   }
 
@@ -58,52 +69,48 @@ export default function Register() {
         <p>
           Entre agora para <span className="destaque2">desfrutar dos seus benefícios</span>.
         </p>
-
-        <button
-          className="signin-btn"
-          onClick={() => navigate("/dashboard")}
-        >
+        <button className="signin-btn" onClick={() => navigate("/login")}>
           Entre na sua conta
         </button>
       </div>
 
       <div className="right-panel">
         <h1>Criar Conta</h1>
-
         {erro && <p className="error-msg">{erro}</p>}
         {sucesso && <p className="success-msg">{sucesso}</p>}
-
-        <input
-          type="text"
-          placeholder="Nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-        />
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <input
-          type="password"
-          placeholder="Senha"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-        />
-
-        <input
-          type="password"
-          placeholder="Confirmar senha"
-          value={confirmarSenha}
-          onChange={(e) => setConfirmarSenha(e.target.value)}
-        />
-
-        <button className="signup-btn" onClick={handleRegister}>
-          Registrar
-        </button>
+        <form onSubmit={handleRegister}>
+          <input
+            type="text"
+            placeholder="Nome"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Confirmar senha"
+            value={confirmarSenha}
+            onChange={(e) => setConfirmarSenha(e.target.value)}
+            required
+          />
+          <button type="submit" className="signup-btn" disabled={carregando}>
+            {carregando ? "Registrando..." : "Registrar"}
+          </button>
+        </form>
       </div>
     </div>
   );
