@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Despesas.css";
@@ -19,7 +19,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
+ 
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
   if (typeof isoString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
@@ -31,13 +31,13 @@ function extrairData(isoString) {
   const dia = String(d.getDate()).padStart(2, "0");
   return `${ano}-${mes}-${dia}`;
 }
-
+ 
 function formatarData(data) {
   if (!data) return "-";
   const [ano, mes, dia] = data.substring(0, 10).split("-");
   return `${dia}/${mes}/${ano}`;
 }
-
+ 
 function Despesas() {
   const navigate = useNavigate();
   const [modalAberto, setModalAberto] = useState(false);
@@ -50,44 +50,41 @@ function Despesas() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
-
-  // Verificar autenticação e carregar dados
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-    carregarDespesas(token);
-  }, [navigate]);
-
-  async function carregarDespesas(token) {
+ 
+  // ✅ Fecha e limpa o modal
+  const fecharModal = () => {
+    setModalAberto(false);
+    setNovaDespesa({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
+    setErro("");
+  };
+ 
+  // ✅ Declarada antes do useEffect
+  const carregarDespesas = useCallback(async (token) => {
     try {
       setCarregando(true);
       setErro("");
       setSucesso("");
-
+ 
       const resp = await fetch("http://localhost:3000/api/dashboard", {
         headers: { Authorization: `Bearer ${token}` }
       });
-
+ 
       if (resp.status === 401) {
         localStorage.removeItem("token");
         navigate("/login");
         return;
       }
-
+ 
       if (!resp.ok) {
-        // Fallback: carregar do localStorage
         const despesasLocal = JSON.parse(localStorage.getItem('despesas') || '[]');
         setDespesas(despesasLocal);
         setCarregando(false);
         return;
       }
-
+ 
       const dados = await resp.json();
       const todasTransacoes = dados.transacoes || [];
-
+ 
       const apenasDespesas = todasTransacoes
         .filter(t => t.tipo === "saque" || t.tipo === "transferenciaSaida")
         .map(t => ({
@@ -96,7 +93,7 @@ function Despesas() {
           valor: Number(t.valor) || 0,
           data: extrairData(t.data),
         }));
-
+ 
       setDespesas(apenasDespesas);
       localStorage.setItem('despesas', JSON.stringify(apenasDespesas));
     } catch (e) {
@@ -107,50 +104,66 @@ function Despesas() {
     } finally {
       setCarregando(false);
     }
-  }
-
+  }, [navigate]);
+ 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    carregarDespesas(token);
+  }, [navigate, carregarDespesas]);
+ 
+  useEffect(() => {
+    if (sucesso) {
+      const timer = setTimeout(() => setSucesso(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [sucesso]);
+ 
   const dadosGrafico = despesas.map(d => ({
     nome: d.nome.length > 15 ? d.nome.substring(0, 15) + "..." : d.nome,
     valor: Number(d.valor) || 0,
   }));
-
+ 
   const totalDespesas = despesas.reduce((acc, d) => acc + (Number(d.valor) || 0), 0);
-
+ 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNovaDespesa(prev => ({ ...prev, [name]: value }));
   };
-
+ 
   const handleAdicionarDespesa = async (e) => {
     e.preventDefault();
     setErro("");
     setSucesso("");
-
+ 
     if (!novaDespesa.nome || !novaDespesa.valor || !novaDespesa.data) {
       setErro("Preencha todos os campos!");
       return;
     }
-
+ 
     const valorNumero = parseFloat(String(novaDespesa.valor).replace(",", "."));
     if (isNaN(valorNumero) || valorNumero <= 0) {
       setErro("Informe um valor válido maior que zero.");
       return;
     }
-    
+ 
     const dataFormatada = novaDespesa.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
       return;
     }
-
+ 
     const novaDespesaObj = {
       id: Date.now(),
       nome: novaDespesa.nome,
       valor: valorNumero,
       data: dataFormatada,
     };
-
+ 
     try {
       const resp = await fetch("http://localhost:3000/api/transacao", {
         method: "POST",
@@ -166,20 +179,18 @@ function Despesas() {
           categoria: novaDespesa.nome,
         }),
       });
-
+ 
       const resultado = await resp.json();
-
+ 
       if (!resp.ok || !resultado.sucesso) {
-        // Fallback local
         setDespesas(prev => [...prev, novaDespesaObj]);
         const despesasAtualizadas = [...despesas, novaDespesaObj];
         localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
         setSucesso("Despesa salva localmente!");
-        setModalAberto(false);
-        setNovaDespesa({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
+        fecharModal(); // ✅
         return;
       }
-
+ 
       const despesaLocal = {
         id: resultado.transacao?.id ?? Date.now(),
         nome: novaDespesa.nome,
@@ -189,8 +200,7 @@ function Despesas() {
       setDespesas(prev => [...prev, despesaLocal]);
       const despesasAtualizadas = [...despesas, despesaLocal];
       localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-      setNovaDespesa({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
-      setModalAberto(false);
+      fecharModal(); // ✅
       setSucesso("Despesa salva com sucesso!");
     } catch (e) {
       console.error("Erro ao salvar despesa:", e);
@@ -198,37 +208,35 @@ function Despesas() {
       const despesasAtualizadas = [...despesas, novaDespesaObj];
       localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
       setSucesso("Despesa salva localmente (offline)!");
-      setModalAberto(false);
-      setNovaDespesa({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
+      fecharModal(); // ✅
     }
   };
-
+ 
   async function handleRemoverDespesa(id) {
     const confirmar = window.confirm("Tem certeza que deseja remover esta despesa?");
     if (!confirmar) return;
-
+ 
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
       return;
     }
-
+ 
     try {
       const resp = await fetch(`http://localhost:3000/api/transacao/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
       const dados = await resp.json();
-
+ 
       if (!resp.ok || !dados.sucesso) {
-        // Fallback local
         setDespesas(prev => prev.filter(d => d.id !== id));
         const despesasAtualizadas = despesas.filter(d => d.id !== id);
         localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
         setSucesso("Despesa removida localmente!");
         return;
       }
-
+ 
       setDespesas(prev => prev.filter(d => d.id !== id));
       const despesasAtualizadas = despesas.filter(d => d.id !== id);
       localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
@@ -241,14 +249,7 @@ function Despesas() {
       setSucesso("Despesa removida localmente!");
     }
   }
-
-  useEffect(() => {
-    if (sucesso) {
-      const timer = setTimeout(() => setSucesso(""), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [sucesso]);
-
+ 
   if (carregando) {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -257,7 +258,7 @@ function Despesas() {
       </div>
     );
   }
-
+ 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar />
@@ -268,10 +269,10 @@ function Despesas() {
               <h1><Wallet size={32} /> Despesas</h1>
               <p className="subtitle">Gerencie suas saídas de dinheiro</p>
             </header>
-
+ 
             {erro && <p className="erro-msg">{erro}</p>}
             {sucesso && <p className="sucesso-msg">{sucesso}</p>}
-
+ 
             <div className="resumo-card">
               <div className="resumo-item">
                 <CreditCard size={24} />
@@ -287,17 +288,15 @@ function Despesas() {
                 <p className="resumo-secundario-label">{despesas.length} despesas cadastradas</p>
               </div>
             </div>
-
+ 
             <button className="btn-nova-despesa" onClick={() => setModalAberto(true)}>
               <Plus size={20} /> Nova Despesa
             </button>
-
+ 
             <section className="grafico-section">
               <h2>Despesas por Categoria</h2>
               <div className="grafico-container">
-                {carregando ? (
-                  <div className="grafico-vazio"><p>Carregando despesas...</p></div>
-                ) : despesas.length > 0 ? (
+                {despesas.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={dadosGrafico}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -316,13 +315,11 @@ function Despesas() {
                 )}
               </div>
             </section>
-
+ 
             <section className="lista-despesas">
               <h2>Lista de Despesas</h2>
               <div className="lista-container">
-                {carregando ? (
-                  <div className="lista-vazia"><p>Carregando despesas...</p></div>
-                ) : despesas.length > 0 ? (
+                {despesas.length > 0 ? (
                   despesas.map(despesa => (
                     <div key={despesa.id} className="despesa-item">
                       <div className="despesa-info">
@@ -345,24 +342,24 @@ function Despesas() {
               </div>
             </section>
           </div>
-
+ 
           {modalAberto && (
-            <div className="modal-overlay" onClick={() => setModalAberto(false)}>
+            <div className="modal-overlay" onClick={fecharModal}> {/* ✅ */}
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
-                <button className="modal-fechar" onClick={() => setModalAberto(false)}><X size={24} /></button>
+                <button className="modal-fechar" onClick={fecharModal}><X size={24} /></button> {/* ✅ */}
                 <h2>Nova Despesa</h2>
                 <form className="forma-despesa" onSubmit={handleAdicionarDespesa}>
                   <div className="form-group">
                     <label htmlFor="nome">Nome</label>
-                    <input type="text" id="nome" name="nome" placeholder="Ex: Mercado, Aluguel..." value={novaDespesa.nome} onChange={handleInputChange} />
+                    <input type="text" id="nome" name="nome" placeholder="Ex: Mercado, Aluguel..." autocomplete="off" value={novaDespesa.nome} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
-                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" value={novaDespesa.valor} onChange={handleInputChange} />
+                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaDespesa.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="data">Data</label>
-                    <input type="date" id="data" name="data" value={novaDespesa.data} onChange={handleInputChange} />
+                    <input type="date" id="data" name="data" autocomplete="off" value={novaDespesa.data} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar Despesa</button>
                 </form>
@@ -374,5 +371,6 @@ function Despesas() {
     </div>
   );
 }
-
+ 
 export default Despesas;
+ 

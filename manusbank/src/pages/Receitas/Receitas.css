@@ -220,7 +220,6 @@
 
 .receita-item:hover {
   border-color: #3b82f6;
-  transform: scale(1.015) translateY(-2px); /* Efeito "card flutuante" discreto */
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
 }
 
@@ -427,6 +426,16 @@
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Tema escuro (padrão) */
+.form-group input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Tema claro */
+body:not(.dark) .form-group input[type="date"] {
+  color-scheme: light;
 }
 
 /* ==========================================================================

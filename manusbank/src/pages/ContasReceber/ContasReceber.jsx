@@ -421,19 +421,19 @@ function ContasReceber() {
                 <form className="cr-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
                     <label htmlFor="cliente">Cliente</label>
-                    <input type="text" id="cliente" name="cliente" placeholder="Nome do cliente" value={novaConta.cliente} onChange={handleInputChange} />
+                    <input type="text" id="cliente" name="cliente" placeholder="Nome do cliente" autocomplete="off" value={novaConta.cliente} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
-                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" value={novaConta.valor} onChange={handleInputChange} />
+                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaConta.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="vencimento">Vencimento</label>
-                    <input type="date" id="vencimento" name="vencimento" value={novaConta.vencimento} onChange={handleInputChange} />
+                    <input type="date" id="vencimento" name="vencimento" autocomplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Empréstimo para amigo X" value={novaConta.descricao} onChange={handleInputChange} />
+                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Empréstimo para amigo X" autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar Conta</button>
                 </form>

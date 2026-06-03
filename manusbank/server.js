@@ -4,25 +4,24 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import crypto from "crypto";
-
+ 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
-
-// Inicializa arquivo de usuários se não existir
+ 
 if (!fs.existsSync(USUARIOS_FILE)) {
   fs.writeFileSync(USUARIOS_FILE, JSON.stringify([], null, 2));
 }
-
+ 
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
-
+ 
 // ===== FUNÇÕES AUXILIARES =====
 function criptografarSenha(senha) {
   return crypto.createHash("sha256").update(senha).digest("hex");
 }
-
+ 
 function carregarUsuarios() {
   try {
     return JSON.parse(fs.readFileSync(USUARIOS_FILE, "utf8"));
@@ -30,17 +29,12 @@ function carregarUsuarios() {
     return [];
   }
 }
-
+ 
 function salvarUsuarios(usuarios) {
   fs.writeFileSync(USUARIOS_FILE, JSON.stringify(usuarios, null, 2));
 }
-
-function encontrarUsuario(email) {
-  const usuarios = carregarUsuarios();
-  return usuarios.find(u => u.email === email);
-}
-
-// Middleware de autenticação (verifica se token existe e usuário está logado)
+ 
+// Middleware de autenticação
 function autenticar(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -50,36 +44,35 @@ function autenticar(req, res, next) {
   if (!token) {
     return res.status(401).json({ erro: "Token inválido" });
   }
-  
+ 
   const usuarios = carregarUsuarios();
   const usuario = usuarios.find(u => u.email === token);
-  
+ 
   if (!usuario) {
     return res.status(401).json({ erro: "Usuário não encontrado. Faça login novamente." });
   }
-  
+ 
   req.usuario = usuario;
   req.usuarioEmail = token;
   next();
 }
-
+ 
 // ===== ROTAS PÚBLICAS =====
-
-// REGISTRO - cria nova conta
+ 
 app.post("/api/registro", (req, res) => {
   const { nome, email, senha } = req.body;
-  
+ 
   if (!nome || !email || !senha) {
     return res.status(400).json({ erro: "Preencha todos os campos" });
   }
-  
+ 
   const usuarios = carregarUsuarios();
   const emailExiste = usuarios.find(u => u.email === email);
-  
+ 
   if (emailExiste) {
     return res.status(400).json({ erro: "Este email já está cadastrado" });
   }
-  
+ 
   const novoUsuario = {
     id: Date.now(),
     nome,
@@ -95,51 +88,48 @@ app.post("/api/registro", (req, res) => {
     nextMetaId: 1,
     criadoEm: new Date().toISOString()
   };
-  
+ 
   usuarios.push(novoUsuario);
   salvarUsuarios(usuarios);
-  
+ 
   res.json({
     sucesso: true,
     token: email,
     user: { id: novoUsuario.id, nome, email }
   });
 });
-
-// LOGIN - verifica se conta existe e senha correta
+ 
 app.post("/api/login", (req, res) => {
   const { email, senha } = req.body;
-  
+ 
   if (!email || !senha) {
     return res.status(400).json({ erro: "Preencha email e senha" });
   }
-  
+ 
   const usuarios = carregarUsuarios();
   const usuario = usuarios.find(u => u.email === email);
-  
+ 
   if (!usuario) {
     return res.status(401).json({ erro: "Conta não encontrada. Faça o registro primeiro." });
   }
-  
+ 
   if (usuario.senha !== criptografarSenha(senha)) {
     return res.status(401).json({ erro: "Senha incorreta. Tente novamente." });
   }
-  
+ 
   res.json({
     sucesso: true,
     token: email,
     user: { id: usuario.id, nome: usuario.nome, email }
   });
 });
-
-// LOGOUT
+ 
 app.post("/api/logout", (req, res) => {
   res.json({ sucesso: true });
 });
-
+ 
 // ===== ROTAS PROTEGIDAS =====
-
-// DASHBOARD
+ 
 app.get("/api/dashboard", autenticar, (req, res) => {
   res.json({
     usuario: { nome: req.usuario.nome, email: req.usuario.email },
@@ -147,8 +137,7 @@ app.get("/api/dashboard", autenticar, (req, res) => {
     transacoes: req.usuario.transacoes || []
   });
 });
-
-// RELATÓRIOS
+ 
 app.get("/api/relatorios", autenticar, (req, res) => {
   const transacoes = req.usuario.transacoes || [];
   const saldo = req.usuario.saldo || 0;
@@ -157,16 +146,16 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   const agora = new Date();
   const mesAtual = agora.getMonth();
   const anoAtual = agora.getFullYear();
-
+ 
   let totalReceitas = 0, totalDespesas = 0;
   let totalReceitasMes = 0, totalDespesasMes = 0;
   const despesasPorCategoria = {};
-
+ 
   transacoes.forEach((t) => {
     const valor = Number(t.valor) || 0;
     const data = t.data ? new Date(t.data) : null;
     const ehMesAtual = data && data.getMonth() === mesAtual && data.getFullYear() === anoAtual;
-
+ 
     if (tiposReceita.includes(t.tipo)) {
       totalReceitas += valor;
       if (ehMesAtual) totalReceitasMes += valor;
@@ -177,7 +166,7 @@ app.get("/api/relatorios", autenticar, (req, res) => {
       despesasPorCategoria[cat] = (despesasPorCategoria[cat] || 0) + valor;
     }
   });
-
+ 
   const categoriasArray = Object.entries(despesasPorCategoria).map(([nome, valor]) => ({ nome, valor }));
   res.json({
     saldoAtual: saldo,
@@ -187,15 +176,15 @@ app.get("/api/relatorios", autenticar, (req, res) => {
     despesasPorCategoria: categoriasArray
   });
 });
-
-// TRANSAÇÕES
+ 
+// ===== TRANSAÇÕES =====
 app.post("/api/transacao", autenticar, (req, res) => {
   const { tipo, valor, descricao, data, categoria } = req.body;
   const dataTransacao = data || new Date().toISOString().slice(0, 10);
-  
+ 
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   const novaTransacao = {
     id: Date.now(),
     tipo,
@@ -204,65 +193,65 @@ app.post("/api/transacao", autenticar, (req, res) => {
     data: dataTransacao,
     categoria: categoria || descricao || "Geral"
   };
-  
+ 
   usuarios[index].transacoes = usuarios[index].transacoes || [];
   usuarios[index].transacoes.push(novaTransacao);
-  
+ 
   if (tipo === "deposito" || tipo === "transferenciaEntrada") {
     usuarios[index].saldo = (usuarios[index].saldo || 0) + Number(valor);
   } else {
     usuarios[index].saldo = (usuarios[index].saldo || 0) - Number(valor);
   }
-  
+ 
   salvarUsuarios(usuarios);
-  
-  res.json({ 
-    sucesso: true, 
-    transacao: novaTransacao, 
-    saldo: usuarios[index].saldo 
+ 
+  res.json({
+    sucesso: true,
+    transacao: novaTransacao,
+    saldo: usuarios[index].saldo
   });
 });
-
+ 
 app.delete("/api/transacao/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   const transacoes = usuarios[index].transacoes || [];
   const transacaoIndex = transacoes.findIndex(t => t.id === id);
-  
+ 
   if (transacaoIndex === -1) {
     return res.status(404).json({ erro: "Transação não encontrada" });
   }
-  
+ 
   const removida = transacoes.splice(transacaoIndex, 1)[0];
-  
+ 
   if (removida.tipo === "deposito" || removida.tipo === "transferenciaEntrada") {
     usuarios[index].saldo -= removida.valor;
   } else {
     usuarios[index].saldo += removida.valor;
   }
-  
+ 
   usuarios[index].transacoes = transacoes;
   salvarUsuarios(usuarios);
-  
+ 
   res.json({ sucesso: true, removida, saldo: usuarios[index].saldo });
 });
-
+ 
 // ===== CONTAS A RECEBER =====
 app.get("/api/contas-receber", autenticar, (req, res) => {
   res.json(req.usuario.contasReceber || []);
 });
-
+ 
 app.post("/api/contas-receber", autenticar, (req, res) => {
   const { cliente, valor, vencimento, descricao } = req.body;
   if (!cliente || !valor || !vencimento) {
     return res.status(400).json({ erro: "Cliente, valor e vencimento são obrigatórios" });
   }
-  
+ 
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   const nova = {
     id: (req.usuario.nextContaReceberId || 1),
     cliente,
@@ -273,57 +262,74 @@ app.post("/api/contas-receber", autenticar, (req, res) => {
     dataRecebimento: null,
     dataUltimaCobranca: null
   };
-  
+ 
   usuarios[index].contasReceber = usuarios[index].contasReceber || [];
   usuarios[index].contasReceber.push(nova);
   usuarios[index].nextContaReceberId = (usuarios[index].nextContaReceberId || 1) + 1;
-  
+ 
   salvarUsuarios(usuarios);
   res.status(201).json(nova);
 });
-
+ 
+// ✅ CORRIGIDO: agora gera transação e atualiza saldo ao marcar como pago
 app.patch("/api/contas-receber/:id/pagar", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   const contas = usuarios[index].contasReceber || [];
   const conta = contas.find(c => c.id === id);
-  
+ 
   if (!conta) return res.status(404).json({ erro: "Conta não encontrada" });
   if (conta.status === "pago") return res.status(400).json({ erro: "Conta já está paga" });
-  
+ 
   conta.status = "pago";
   conta.dataRecebimento = new Date().toISOString().slice(0, 10);
-  
+ 
+  // Cria transação de depósito automaticamente
+  const novaTransacao = {
+    id: Date.now(),
+    tipo: "deposito",
+    valor: conta.valor,
+    descricao: `Recebimento: ${conta.cliente}`,
+    data: conta.dataRecebimento,
+    categoria: "Contas a Receber"
+  };
+ 
+  usuarios[index].transacoes = usuarios[index].transacoes || [];
+  usuarios[index].transacoes.push(novaTransacao);
+ 
+  // Atualiza saldo
+  usuarios[index].saldo = (usuarios[index].saldo || 0) + conta.valor;
+ 
   salvarUsuarios(usuarios);
-  res.json({ conta });
+  res.json({ conta, transacao: novaTransacao, saldo: usuarios[index].saldo });
 });
-
+ 
 app.delete("/api/contas-receber/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   usuarios[index].contasReceber = (usuarios[index].contasReceber || []).filter(c => c.id !== id);
   salvarUsuarios(usuarios);
   res.json({ sucesso: true });
 });
-
+ 
 // ===== CONTAS A PAGAR =====
 app.get("/api/contas-pagar", autenticar, (req, res) => {
   res.json(req.usuario.contasPagar || []);
 });
-
+ 
 app.post("/api/contas-pagar", autenticar, (req, res) => {
   const { titulo, tipo, valor, vencimento, descricao } = req.body;
   if (!titulo || !valor || !vencimento) {
     return res.status(400).json({ erro: "Título, valor e vencimento são obrigatórios" });
   }
-  
+ 
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   const nova = {
     id: (req.usuario.nextContaPagarId || 1),
     titulo,
@@ -335,57 +341,73 @@ app.post("/api/contas-pagar", autenticar, (req, res) => {
     dataPagamento: null,
     dataCriacao: new Date().toISOString().slice(0, 10)
   };
-  
+ 
   usuarios[index].contasPagar = usuarios[index].contasPagar || [];
   usuarios[index].contasPagar.push(nova);
   usuarios[index].nextContaPagarId = (usuarios[index].nextContaPagarId || 1) + 1;
-  
+ 
   salvarUsuarios(usuarios);
   res.status(201).json(nova);
 });
-
+ 
 app.patch("/api/contas-pagar/:id/pagar", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   const contas = usuarios[index].contasPagar || [];
   const conta = contas.find(c => c.id === id);
-  
+ 
   if (!conta) return res.status(404).json({ erro: "Conta não encontrada" });
   if (conta.status === "pago") return res.status(400).json({ erro: "Conta já está paga" });
-  
+ 
   conta.status = "pago";
   conta.dataPagamento = new Date().toISOString().slice(0, 10);
-  
+ 
+  // Cria transação de saque automaticamente
+  const novaTransacao = {
+    id: Date.now(),
+    tipo: "saque",
+    valor: conta.valor,
+    descricao: `Pagamento: ${conta.titulo}`,
+    data: conta.dataPagamento,
+    categoria: conta.tipo || "Contas a Pagar"
+  };
+ 
+  usuarios[index].transacoes = usuarios[index].transacoes || [];
+  usuarios[index].transacoes.push(novaTransacao);
+ 
+  // Deduz do saldo
+  usuarios[index].saldo = (usuarios[index].saldo || 0) - conta.valor;
+ 
   salvarUsuarios(usuarios);
-  res.json({ conta });
+  res.json({ conta, transacao: novaTransacao, saldo: usuarios[index].saldo });
 });
-
+ 
 app.delete("/api/contas-pagar/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   usuarios[index].contasPagar = (usuarios[index].contasPagar || []).filter(c => c.id !== id);
   salvarUsuarios(usuarios);
   res.json({ sucesso: true });
 });
-
+ 
 // ===== METAS =====
 app.get("/api/metas", autenticar, (req, res) => {
   res.json(req.usuario.metas || []);
 });
-
+ 
 app.post("/api/metas", autenticar, (req, res) => {
   const { titulo, valorAlvo, dataMeta, descricao } = req.body;
   if (!titulo || !valorAlvo || !dataMeta) {
     return res.status(400).json({ erro: "Título, valor alvo e data são obrigatórios" });
   }
-  
+ 
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
-  
+ 
   const novaMeta = {
     id: (req.usuario.nextMetaId || 1),
     titulo,
@@ -395,17 +417,37 @@ app.post("/api/metas", autenticar, (req, res) => {
     descricao: descricao || "",
     dataCriacao: new Date().toISOString().slice(0, 10)
   };
-  
+ 
   usuarios[index].metas = usuarios[index].metas || [];
   usuarios[index].metas.push(novaMeta);
   usuarios[index].nextMetaId = (usuarios[index].nextMetaId || 1) + 1;
-  
+ 
   salvarUsuarios(usuarios);
   res.status(201).json(novaMeta);
 });
-
+ 
+// ===== DELETE META =====
+app.delete("/api/metas/:id", autenticar, (req, res) => {
+  const id = Number(req.params.id);
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex(u => u.email === req.usuarioEmail);
+ 
+  const metasAntes = usuarios[index].metas || [];
+  const metaExiste = metasAntes.find(m => m.id === id);
+ 
+  if (!metaExiste) {
+    return res.status(404).json({ erro: "Meta não encontrada" });
+  }
+ 
+  usuarios[index].metas = metasAntes.filter(m => m.id !== id);
+  salvarUsuarios(usuarios);
+ 
+  res.json({ sucesso: true });
+});
+ 
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📁 Usuários salvos em: ${USUARIOS_FILE}`);
 });
+ 

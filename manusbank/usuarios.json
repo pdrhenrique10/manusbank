@@ -4,58 +4,122 @@
     "nome": "Pedro",
     "email": "pedro@email.com",
     "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
-    "saldo": 4750,
+    "saldo": 500,
     "transacoes": [
       {
-        "id": 1780422078814,
+        "id": 1780447661503,
+        "tipo": "saque",
+        "valor": 600,
+        "descricao": "luz",
+        "data": "2026-07-03",
+        "categoria": "luz"
+      },
+      {
+        "id": 1780447686072,
         "tipo": "deposito",
-        "valor": 7000,
-        "descricao": "salario",
-        "data": "2026-06-01",
-        "categoria": "salario"
+        "valor": 1300,
+        "descricao": "salário",
+        "data": "2026-06-03",
+        "categoria": "salário"
       },
       {
-        "id": 1780422091283,
+        "id": 1780447718772,
         "tipo": "saque",
-        "valor": 1000,
-        "descricao": "Aluguel",
+        "valor": 200,
+        "descricao": "agua",
+        "data": "2026-07-03",
+        "categoria": "agua"
+      }
+    ],
+    "contasReceber": [],
+    "nextContaReceberId": 4,
+    "contasPagar": [],
+    "nextContaPagarId": 8,
+    "metas": [],
+    "nextMetaId": 2,
+    "criadoEm": "2026-06-02T17:40:15.077Z"
+  },
+  {
+    "id": 1780437082250,
+    "nome": "Luiz Philipe",
+    "email": "luiz@gmail.com",
+    "senha": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "saldo": 7250,
+    "transacoes": [
+      {
+        "id": 1780437126699,
+        "tipo": "deposito",
+        "valor": 10000,
+        "descricao": "SALÁRIO",
         "data": "2026-06-02",
-        "categoria": "Aluguel"
+        "categoria": "SALÁRIO"
       },
       {
-        "id": 1780422099958,
-        "tipo": "saque",
+        "id": 1780437177866,
+        "tipo": "deposito",
         "valor": 500,
-        "descricao": "mercado",
+        "descricao": "DINHEIRO EMPRESTADO A JUROS",
         "data": "2026-06-02",
-        "categoria": "mercado"
+        "categoria": "DINHEIRO EMPRESTADO A JUROS"
       },
       {
-        "id": 1780422116077,
-        "tipo": "saque",
-        "valor": 100,
-        "descricao": "Luz",
+        "id": 1780437191531,
+        "tipo": "deposito",
+        "valor": 750,
+        "descricao": "FREELANCER",
         "data": "2026-06-02",
-        "categoria": "Luz"
+        "categoria": "FREELANCER"
       },
       {
-        "id": 1780422131067,
+        "id": 1780437241632,
         "tipo": "saque",
-        "valor": 650,
-        "descricao": "RX 580 pc novo",
+        "valor": 1200,
+        "descricao": "ALUGUEL",
         "data": "2026-06-02",
-        "categoria": "RX 580 pc novo"
+        "categoria": "ALUGUEL"
+      },
+      {
+        "id": 1780437251120,
+        "tipo": "saque",
+        "valor": 1500,
+        "descricao": "MERCADO",
+        "data": "2026-06-02",
+        "categoria": "MERCADO"
+      },
+      {
+        "id": 1780437258432,
+        "tipo": "saque",
+        "valor": 300,
+        "descricao": "LUZ ",
+        "data": "2026-06-02",
+        "categoria": "LUZ "
+      },
+      {
+        "id": 1780437265472,
+        "tipo": "saque",
+        "valor": 250,
+        "descricao": "AGUA",
+        "data": "2026-06-02",
+        "categoria": "AGUA"
+      },
+      {
+        "id": 1780437280816,
+        "tipo": "saque",
+        "valor": 750,
+        "descricao": "PLANO DE SAÚDE",
+        "data": "2026-06-02",
+        "categoria": "PLANO DE SAÚDE"
       }
     ],
     "contasReceber": [
       {
         "id": 1,
-        "cliente": "Comprador do meu PS5",
-        "valor": 3000,
-        "vencimento": "2026-06-04",
-        "descricao": "",
-        "status": "pendente",
-        "dataRecebimento": null,
+        "cliente": "JOÃO",
+        "valor": 500,
+        "vencimento": "2026-06-10",
+        "descricao": "DINHEIRO EMPRESTADO A JUROS DE 40%",
+        "status": "pago",
+        "dataRecebimento": "2026-06-02",
         "dataUltimaCobranca": null
       }
     ],
@@ -63,13 +127,13 @@
     "contasPagar": [
       {
         "id": 1,
-        "titulo": "pix meu irmao",
-        "tipo": "Pix - pagar",
-        "valor": 300,
-        "vencimento": "2026-06-05",
+        "titulo": "FINANCIAMENTO MOTO",
+        "tipo": "FINANCIAMENTO",
+        "valor": 1000,
+        "vencimento": "2026-06-03",
         "descricao": "",
-        "status": "pendente",
-        "dataPagamento": null,
+        "status": "pago",
+        "dataPagamento": "2026-06-02",
         "dataCriacao": "2026-06-02"
       }
     ],
@@ -77,15 +141,104 @@
     "metas": [
       {
         "id": 1,
-        "titulo": "Hilux",
-        "valorAlvo": 80000,
+        "titulo": "CASA PRÓPRIA",
+        "valorAlvo": 500000,
         "valorAtual": 0,
-        "dataMeta": "2026-08-13",
-        "descricao": "meu primeiro carro ",
+        "dataMeta": "2030-01-01",
+        "descricao": "",
         "dataCriacao": "2026-06-02"
       }
     ],
     "nextMetaId": 2,
-    "criadoEm": "2026-06-02T17:40:15.077Z"
+    "criadoEm": "2026-06-02T21:51:22.251Z"
+  },
+  {
+    "id": 1780448505083,
+    "nome": "leonardo",
+    "email": "leo@email.com",
+    "senha": "115f652493147e000824c52a7c6cb2cb776fbdbe8f67680832f00b21c315fe3d",
+    "saldo": 48300,
+    "transacoes": [
+      {
+        "id": 1780448563787,
+        "tipo": "deposito",
+        "valor": 50000,
+        "descricao": "Salário",
+        "data": "2026-06-03",
+        "categoria": "Salário"
+      },
+      {
+        "id": 1780448594283,
+        "tipo": "saque",
+        "valor": 3000,
+        "descricao": "Aluguel",
+        "data": "2026-06-03",
+        "categoria": "Aluguel"
+      },
+      {
+        "id": 1780448659442,
+        "tipo": "saque",
+        "valor": 700,
+        "descricao": "Conta de Luz",
+        "data": "2026-07-03",
+        "categoria": "Conta de Luz"
+      },
+      {
+        "id": 1780448737498,
+        "tipo": "deposito",
+        "valor": 3000,
+        "descricao": "Recebimento: Ps5 vendido",
+        "data": "2026-06-03",
+        "categoria": "Contas a Receber"
+      },
+      {
+        "id": 1780448785791,
+        "tipo": "saque",
+        "valor": 1000,
+        "descricao": "Pagamento: Financiamento do carro",
+        "data": "2026-06-03",
+        "categoria": "geral"
+      }
+    ],
+    "contasReceber": [
+      {
+        "id": 1,
+        "cliente": "Ps5 vendido",
+        "valor": 3000,
+        "vencimento": "2026-06-10",
+        "descricao": "vendi um ps5 para um colega meu da rua.",
+        "status": "pago",
+        "dataRecebimento": "2026-06-03",
+        "dataUltimaCobranca": null
+      }
+    ],
+    "nextContaReceberId": 2,
+    "contasPagar": [
+      {
+        "id": 1,
+        "titulo": "Financiamento do carro",
+        "tipo": "geral",
+        "valor": 1000,
+        "vencimento": "2026-06-03",
+        "descricao": "comecei a financiar um corolla",
+        "status": "pago",
+        "dataPagamento": "2026-06-03",
+        "dataCriacao": "2026-06-03"
+      }
+    ],
+    "nextContaPagarId": 2,
+    "metas": [
+      {
+        "id": 1,
+        "titulo": "Iphone 17 pro max",
+        "valorAlvo": 12000,
+        "valorAtual": 0,
+        "dataMeta": "2026-12-10",
+        "descricao": "meu sonho agora é comprar esse iphone pra gravar video pro tiktok.",
+        "dataCriacao": "2026-06-03"
+      }
+    ],
+    "nextMetaId": 2,
+    "criadoEm": "2026-06-03T01:01:45.083Z"
   }
 ]

@@ -62,7 +62,7 @@ export default function Sidebar() {
         </button>
 
         <div className="logo">
-          <h2>ManusBank</h2>
+          <h2>ManusFinance</h2>
         </div>
       </div>
 

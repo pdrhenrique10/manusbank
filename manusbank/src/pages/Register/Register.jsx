@@ -18,7 +18,12 @@ export default function Register() {
     setErro("");
     setSucesso("");
 
-    if (!nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
+    if (
+      !nome.trim() ||
+      !email.trim() ||
+      !senha.trim() ||
+      !confirmarSenha.trim()
+    ) {
       setErro("Preencha todos os campos.");
       return;
     }
@@ -45,69 +50,107 @@ export default function Register() {
         return;
       }
 
-      // Sucesso no registro
       localStorage.setItem("token", dados.token);
-      localStorage.setItem("user", JSON.stringify({
-        uid: dados.user?.id || Date.now().toString(),
-        email,
-        name: nome,
-      }));
-      
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          uid: dados.user?.id || Date.now().toString(),
+          email,
+          name: nome,
+        })
+      );
+
       setSucesso("Conta criada com sucesso! Redirecionando...");
-      setTimeout(() => navigate("/dashboard"), 1500);
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
     } catch (error) {
       console.error("Erro na conexão:", error);
-      setErro("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");
+      setErro(
+        "Não foi possível conectar ao servidor. Verifique se o backend está rodando."
+      );
       setCarregando(false);
     }
   }
 
   return (
     <div className="register-container">
+      {/* Botão Home */}
+      <button
+        className="back-home-btn"
+        onClick={() => navigate("/")}
+      >
+        ← 
+      </button>
+
       <div className="left-panel">
         <h1>Já possui conta?</h1>
+
         <p>
-          Entre agora para <span className="destaque2">desfrutar dos seus benefícios</span>.
+          Entre agora para{" "}
+          <span className="destaque2">
+            desfrutar dos seus benefícios
+          </span>.
         </p>
-        <button className="signin-btn" onClick={() => navigate("/login")}>
+
+        <button
+          className="signin-btn"
+          onClick={() => navigate("/login")}
+        >
           Entre na sua conta
         </button>
       </div>
 
       <div className="right-panel">
         <h1>Criar Conta</h1>
+
         {erro && <p className="error-msg">{erro}</p>}
         {sucesso && <p className="success-msg">{sucesso}</p>}
+
         <form onSubmit={handleRegister}>
           <input
             type="text"
             placeholder="Nome"
             value={nome}
+            autoComplete="off"
             onChange={(e) => setNome(e.target.value)}
             required
           />
+
           <input
             type="email"
             placeholder="Email"
             value={email}
+            autoComplete="off"
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
           <input
             type="password"
             placeholder="Senha"
             value={senha}
+            autoComplete="off"
             onChange={(e) => setSenha(e.target.value)}
             required
           />
+
           <input
             type="password"
             placeholder="Confirmar senha"
             value={confirmarSenha}
+            autoComplete="off"
             onChange={(e) => setConfirmarSenha(e.target.value)}
             required
           />
-          <button type="submit" className="signup-btn" disabled={carregando}>
+
+          <button
+            type="submit"
+            className="signup-btn"
+            disabled={carregando}
+          >
             {carregando ? "Registrando..." : "Registrar"}
           </button>
         </form>

@@ -23,6 +23,17 @@ import {
 
 const COLORS = ["#6C63FF", "#7C4DFF", "#3B82F6", "#22C55E", "#F97316"];
 
+const tooltipStyle = {
+  contentStyle: {
+    background: "#1f2937",
+    border: "none",
+    borderRadius: "8px",
+    boxShadow: "none",
+  },
+  itemStyle: { color: "#f9fafb" },
+  labelStyle: { color: "#9ca3af" },
+};
+
 export default function Dashboard() {
   const [usuario, setUsuario] = useState(null);
   const [saldo, setSaldo] = useState(0);
@@ -31,7 +42,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Verificar autenticação via token no localStorage
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -39,7 +49,6 @@ export default function Dashboard() {
       return;
     }
 
-    // Buscar dados do usuário e dashboard
     const fetchDashboard = async () => {
       try {
         const resp = await fetch("http://localhost:3000/api/dashboard", {
@@ -82,7 +91,6 @@ export default function Dashboard() {
     fetchContasReceber();
   }, [navigate]);
 
-  // ===== ENTRADAS X SAÍDAS (agrupado por mês) =====
   const monthlyMap = transacoes.reduce((acc, t) => {
     if (!t.data) return acc;
     const date = new Date(t.data);
@@ -98,7 +106,6 @@ export default function Dashboard() {
   }, {});
   const data = Object.values(monthlyMap);
 
-  // ===== DESPESAS POR CATEGORIA =====
   const despesasPorCategoriaMapa = transacoes
     .filter((t) => t.tipo === "saque" || t.tipo === "transferenciaSaida")
     .reduce((acc, t) => {
@@ -111,15 +118,17 @@ export default function Dashboard() {
     value: despesasPorCategoriaMapa[categoria],
   }));
 
-  // ===== MÉTRICAS DO MÊS ATUAL =====
   const agora = new Date();
   const mesAtual = agora.getMonth();
   const anoAtual = agora.getFullYear();
+  console.log("Mês atual:", mesAtual, "Ano:", anoAtual);
+console.log("Todas transações:", transacoes);
   const transacoesMesAtual = transacoes.filter((t) => {
     if (!t.data) return false;
     const d = new Date(t.data);
     return d.getFullYear() === anoAtual && d.getMonth() === mesAtual;
   });
+  console.log("Transações do mês:", transacoesMesAtual);
   const receitasMesAtual = transacoesMesAtual
     .filter((t) => t.tipo === "deposito" || t.tipo === "transferenciaEntrada")
     .reduce((acc, t) => acc + t.valor, 0);
@@ -129,7 +138,6 @@ export default function Dashboard() {
   const lucroMesAtual = receitasMesAtual - despesasMesAtual;
   const totalDespesasMesAtual = despesasMesAtual;
 
-  // ===== CONTAS A RECEBER PENDENTES =====
   const contasPendentes = contasReceber.filter((c) => c.status === "pendente");
   const totalContasPendentes = contasPendentes.length;
 
@@ -182,6 +190,7 @@ export default function Dashboard() {
           </div>
 
           <div className="charts">
+            {/* ===== ÁREA: ENTRADAS E SAÍDAS ===== */}
             <div className="chartCard big">
               <div className="chartHeader">
                 <h3>Entradas e Saídas — {anoAtual}</h3>
@@ -194,11 +203,29 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={320}>
-                  <AreaChart data={data}>
-                    <XAxis dataKey="name" stroke="#6b7280" />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="receitas" stroke="#00E5A8" fill="#00E5A8" fillOpacity={0.15} strokeWidth={3} />
-                    <Area type="monotone" dataKey="despesas" stroke="#FF4D4D" fill="#FF4D4D" fillOpacity={0.12} strokeWidth={3} />
+                  <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" stroke="#6b7280" axisLine={false} tickLine={false} />
+                    <Tooltip {...tooltipStyle} />
+                    <Area
+                      type="monotone"
+                      dataKey="receitas"
+                      stroke="#00E5A8"
+                      fill="#00E5A8"
+                      fillOpacity={0.15}
+                      strokeWidth={3}
+                      dot={false}
+                      activeDot={{ r: 4, strokeWidth: 0 }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="despesas"
+                      stroke="#FF4D4D"
+                      fill="#FF4D4D"
+                      fillOpacity={0.12}
+                      strokeWidth={3}
+                      dot={false}
+                      activeDot={{ r: 4, strokeWidth: 0 }}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -208,17 +235,41 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* ===== PIE: DESPESAS POR CATEGORIA ===== */}
             <div className="chartCard pieCard">
               <div className="chartHeader">
                 <h3>Despesas por Categoria</h3>
-                <p>{new Date().toLocaleString('pt-BR', { month: 'short', year: 'numeric' })}</p>
+                <p>{new Date().toLocaleString("pt-BR", { month: "short", year: "numeric" })}</p>
               </div>
               <div className="pieWrapper">
                 <ResponsiveContainer width="100%" height={240}>
-                  <PieChart>
-                    <Pie data={pieData} innerRadius={70} outerRadius={95} dataKey="value">
+                  <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                    <Tooltip
+                      contentStyle={{
+                        background: "#1f2937",
+                        border: "none",
+                        borderRadius: "8px",
+                        boxShadow: "none",
+                      }}
+                      itemStyle={{ color: "#f9fafb" }}
+                      labelStyle={{ color: "#9ca3af" }}
+                      formatter={(value) => [`R$ ${value.toFixed(2)}`, ""]}
+                    />
+                    <Pie
+                      data={pieData}
+                      innerRadius={70}
+                      outerRadius={95}
+                      dataKey="value"
+                      stroke="none"
+                      strokeWidth={0}
+                    >
                       {pieData.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                          stroke="none"
+                          strokeWidth={0}
+                        />
                       ))}
                     </Pie>
                   </PieChart>

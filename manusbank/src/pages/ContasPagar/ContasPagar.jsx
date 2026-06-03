@@ -455,23 +455,23 @@ function ContasPagar() {
                 <form className="cp-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
                     <label htmlFor="titulo">Título da conta</label>
-                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Luz, Internet, Pix fulano..." value={novaConta.titulo} onChange={handleInputChange} />
+                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Luz, Internet, Pix fulano..." autocomplete="off" value={novaConta.titulo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="tipo">Tipo (opcional)</label>
-                    <input type="text" id="tipo" name="tipo" placeholder="Ex: fixa, variável, empréstimo..." value={novaConta.tipo} onChange={handleInputChange} />
+                    <input type="text" id="tipo" name="tipo" placeholder="Ex: fixa, variável, empréstimo..." autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
-                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" value={novaConta.valor} onChange={handleInputChange} />
+                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaConta.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="vencimento">Vencimento</label>
-                    <input type="date" id="vencimento" name="vencimento" value={novaConta.vencimento} onChange={handleInputChange} />
+                    <input type="date" id="vencimento" name="vencimento" autocomplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: conta de casa, dinheiro devendo..." value={novaConta.descricao} onChange={handleInputChange} />
+                    <input type="text" id="descricao" name="descricao" placeholder="Ex: conta de casa, dinheiro devendo..." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar Conta</button>
                 </form>

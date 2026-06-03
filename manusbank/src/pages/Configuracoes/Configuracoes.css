@@ -72,59 +72,6 @@
   border: 3px solid #3b82f6;
 }
 
-/* Botões de upload */
-.config-upload-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.config-btn-upload {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  background: #3b82f6;
-  color: white;
-  border-radius: 40px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.config-btn-upload:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-}
-
-.config-btn-upload.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.config-btn-remove-photo {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  background: #ef4444;
-  color: white;
-  border-radius: 40px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.config-btn-remove-photo:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
-}
-
 /* Linhas de informação */
 .config-row {
   display: flex;

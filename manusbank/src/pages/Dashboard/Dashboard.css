@@ -140,6 +140,7 @@ body {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 18px;
+  outline: none;
 }
 
 .chartCard {
@@ -148,6 +149,7 @@ body {
   border: 1px solid var(--border-soft);
   padding: 18px 20px;
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  outline: none;
 }
 
 .chartHeader h3 {
@@ -199,6 +201,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  outline: none;
 }
 
 .pieLegend {
@@ -206,6 +209,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  outline: none;
 }
 
 .legendItem {
@@ -215,6 +219,7 @@ body {
   font-size: 0.8rem;
   padding: 6px 0;
   border-bottom: 1px solid var(--border-soft);
+  outline: none;
 }
 
 .legendItem:last-child {
@@ -231,6 +236,41 @@ body {
 .purple {
   background: #6d28d9;
 }
+
+/* Remove borda/outline de todos os elementos do Recharts */
+.recharts-wrapper,
+.recharts-wrapper svg,
+.recharts-surface {
+  outline: none !important;
+  border: none !important;
+  overflow: visible !important;
+}
+ 
+/* Remove borda branca entre fatias do Pie */
+.recharts-pie-sector path,
+.recharts-pie path {
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+ 
+/* Remove cursor/linha vertical branca do gráfico de área */
+.recharts-cartesian-grid line,
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: transparent !important;
+}
+ 
+/* Tooltip sem borda branca */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+  border: none !important;
+}
+ 
+.recharts-default-tooltip {
+  border: none !important;
+  box-shadow: none !important;
+}
+ 
 
 /* Responsividade */
 @media (max-width: 1300px) {

@@ -484,19 +484,19 @@ function MetasFinanceiras() {
                 <form className="mf-form" onSubmit={handleAdicionarMeta}>
                   <div className="form-group">
                     <label htmlFor="titulo">Nome da Meta</label>
-                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Carro, PC gamer, Casa..." value={novaMeta.titulo} onChange={handleInputChange} />
+                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Carro, PC gamer, Casa..." autocomplete="off" value={novaMeta.titulo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valorAlvo">Valor objetivo (R$)</label>
-                    <input type="number" id="valorAlvo" name="valorAlvo" placeholder="0.00" step="0.01" min="0" value={novaMeta.valorAlvo} onChange={handleInputChange} />
+                    <input type="number" id="valorAlvo" name="valorAlvo" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaMeta.valorAlvo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="dataMeta">Data para bater a meta</label>
-                    <input type="date" id="dataMeta" name="dataMeta" value={novaMeta.dataMeta} onChange={handleInputChange} />
+                    <input type="date" id="dataMeta" name="dataMeta" autocomplete="off" value={novaMeta.dataMeta} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Meu primeiro carro, upgrade de celular..." value={novaMeta.descricao} onChange={handleInputChange} />
+                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Meu primeiro carro, upgrade de celular..." autocomplete="off" value={novaMeta.descricao} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar Meta</button>
                 </form>

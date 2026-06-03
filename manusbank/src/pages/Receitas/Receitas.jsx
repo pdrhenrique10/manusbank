@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Receitas.css";
 import { Plus, X, Wallet, TrendingUp, DollarSign, Trash2 } from "lucide-react";
-
+ 
 import {
   BarChart,
   Bar,
@@ -13,7 +13,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
+ 
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
   if (typeof isoString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
@@ -25,13 +25,13 @@ function extrairData(isoString) {
   const dia = String(d.getDate()).padStart(2, "0");
   return `${ano}-${mes}-${dia}`;
 }
-
+ 
 function formatarData(data) {
   if (!data) return "-";
   const [ano, mes, dia] = data.substring(0, 10).split("-");
   return `${dia}/${mes}/${ano}`;
 }
-
+ 
 function Receitas() {
   const navigate = useNavigate();
   const [modalAberto, setModalAberto] = useState(false);
@@ -44,24 +44,20 @@ function Receitas() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
   const [carregando, setCarregando] = useState(true);
-
-  // Verificar autenticação via token
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-    // Se token existe, carrega os dados
-    carregarReceitas(token);
-  }, [navigate]);
-
-  async function carregarReceitas(token) {
+ 
+  // ✅ Função centralizada para fechar e limpar o modal
+  const fecharModal = () => {
+    setModalAberto(false);
+    setNovaReceita({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
+    setErro("");
+  };
+ 
+  const carregarReceitas = useCallback(async (token) => {
     try {
       setCarregando(true);
       setErro("");
       setSucesso("");
-
+ 
       const resp = await fetch("http://localhost:3000/api/dashboard", {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -76,7 +72,7 @@ function Receitas() {
         setCarregando(false);
         return;
       }
-
+ 
       const dados = await resp.json();
       const receitasBackend = (dados.transacoes || [])
         .filter(t => t.tipo === "deposito" || t.tipo === "transferenciaEntrada")
@@ -86,7 +82,7 @@ function Receitas() {
           valor: Number(t.valor) || 0,
           data: extrairData(t.data),
         }));
-
+ 
       setReceitas(receitasBackend);
       localStorage.setItem('receitas', JSON.stringify(receitasBackend));
     } catch (e) {
@@ -97,50 +93,59 @@ function Receitas() {
     } finally {
       setCarregando(false);
     }
-  }
-
+  }, [navigate]);
+ 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    carregarReceitas(token);
+  }, [navigate, carregarReceitas]);
+ 
   const dadosGrafico = receitas.map(r => ({
     nome: r.nome.length > 15 ? r.nome.substring(0, 15) + "..." : r.nome,
     valor: Number(r.valor) || 0,
   }));
-
+ 
   const totalReceitas = receitas.reduce((acc, r) => acc + (Number(r.valor) || 0), 0);
-
+ 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNovaReceita(prev => ({ ...prev, [name]: value }));
   };
-
+ 
   async function handleAdicionarReceita(e) {
     e.preventDefault();
     setErro("");
     setSucesso("");
-
+ 
     if (!novaReceita.nome || !novaReceita.valor || !novaReceita.data) {
       setErro("Preencha todos os campos!");
       return;
     }
-
+ 
     const valorNumero = parseFloat(String(novaReceita.valor).replace(",", "."));
     if (isNaN(valorNumero) || valorNumero <= 0) {
       setErro("Informe um valor válido maior que zero.");
       return;
     }
-
+ 
     const dataFormatada = novaReceita.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
       return;
     }
-
+ 
     const novaReceitaObj = {
       id: Date.now(),
       nome: novaReceita.nome,
       valor: valorNumero,
       data: dataFormatada,
     };
-
+ 
     try {
       const resp = await fetch("http://localhost:3000/api/transacao", {
         method: "POST",
@@ -156,20 +161,18 @@ function Receitas() {
           categoria: novaReceita.nome,
         }),
       });
-
+ 
       const dados = await resp.json();
-
+ 
       if (!resp.ok || !dados.sucesso) {
-        // fallback local
         setReceitas(prev => [...prev, novaReceitaObj]);
         const receitasAtualizadas = [...receitas, novaReceitaObj];
         localStorage.setItem('receitas', JSON.stringify(receitasAtualizadas));
         setSucesso("Receita salva localmente!");
-        setModalAberto(false);
-        setNovaReceita({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
+        fecharModal(); // ✅
         return;
       }
-
+ 
       const receita = {
         id: dados.transacao?.id ?? Date.now(),
         nome: novaReceita.nome,
@@ -179,8 +182,7 @@ function Receitas() {
       setReceitas(prev => [...prev, receita]);
       const receitasAtualizadas = [...receitas, receita];
       localStorage.setItem('receitas', JSON.stringify(receitasAtualizadas));
-      setNovaReceita({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
-      setModalAberto(false);
+      fecharModal(); // ✅
       setSucesso("Receita salva com sucesso!");
     } catch (err) {
       console.error("Erro ao salvar receita:", err);
@@ -188,37 +190,35 @@ function Receitas() {
       const receitasAtualizadas = [...receitas, novaReceitaObj];
       localStorage.setItem('receitas', JSON.stringify(receitasAtualizadas));
       setSucesso("Receita salva localmente (offline)!");
-      setModalAberto(false);
-      setNovaReceita({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
+      fecharModal(); // ✅
     }
   }
-
+ 
   async function handleRemoverReceita(id) {
     const confirmar = window.confirm("Tem certeza que deseja remover esta receita?");
     if (!confirmar) return;
-
+ 
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
       return;
     }
-
+ 
     try {
       const resp = await fetch(`http://localhost:3000/api/transacao/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
       const dados = await resp.json();
-
+ 
       if (!resp.ok || !dados.sucesso) {
-        // fallback local
         setReceitas(prev => prev.filter(r => r.id !== id));
         const receitasAtualizadas = receitas.filter(r => r.id !== id);
         localStorage.setItem('receitas', JSON.stringify(receitasAtualizadas));
         setSucesso("Receita removida localmente!");
         return;
       }
-
+ 
       setReceitas(prev => prev.filter(r => r.id !== id));
       const receitasAtualizadas = receitas.filter(r => r.id !== id);
       localStorage.setItem('receitas', JSON.stringify(receitasAtualizadas));
@@ -231,7 +231,7 @@ function Receitas() {
       setSucesso("Receita removida localmente!");
     }
   }
-
+ 
   if (carregando) {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -240,7 +240,7 @@ function Receitas() {
       </div>
     );
   }
-
+ 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar />
@@ -251,10 +251,10 @@ function Receitas() {
               <h1><Wallet size={32} /> Receitas</h1>
               <p className="subtitle">Gerencie suas entradas de dinheiro</p>
             </header>
-
+ 
             {erro && <p className="erro-msg">{erro}</p>}
             {sucesso && <p className="sucesso-msg">{sucesso}</p>}
-
+ 
             <div className="resumo-card">
               <div className="resumo-item">
                 <DollarSign size={24} />
@@ -270,11 +270,11 @@ function Receitas() {
                 <p className="resumo-secundario-label">{receitas.length} receitas cadastradas</p>
               </div>
             </div>
-
+ 
             <button className="btn-nova-receita" onClick={() => setModalAberto(true)}>
               <Plus size={20} /> Nova Receita
             </button>
-
+ 
             <section className="grafico-section">
               <h2>Receitas por Categoria</h2>
               <div className="grafico-container">
@@ -297,7 +297,7 @@ function Receitas() {
                 )}
               </div>
             </section>
-
+ 
             <section className="lista-receitas">
               <h2>Lista de Receitas</h2>
               <div className="lista-container">
@@ -322,24 +322,24 @@ function Receitas() {
               </div>
             </section>
           </div>
-
+ 
           {modalAberto && (
-            <div className="modal-overlay" onClick={() => setModalAberto(false)}>
+            <div className="modal-overlay" onClick={fecharModal}> {/* ✅ */}
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
-                <button className="modal-fechar" onClick={() => setModalAberto(false)}><X size={24} /></button>
+                <button className="modal-fechar" onClick={fecharModal}><X size={24} /></button> {/* ✅ */}
                 <h2>Nova Receita</h2>
                 <form className="forma-receita" onSubmit={handleAdicionarReceita}>
                   <div className="form-group">
                     <label htmlFor="nome">Nome</label>
-                    <input type="text" id="nome" name="nome" placeholder="Ex: Salário, Freelance..." value={novaReceita.nome} onChange={handleInputChange} />
+                    <input type="text" id="nome" name="nome" placeholder="Ex: Salário, Freelance..." autocomplete="off" value={novaReceita.nome} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
-                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" value={novaReceita.valor} onChange={handleInputChange} />
+                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaReceita.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="data">Data</label>
-                    <input type="date" id="data" name="data" value={novaReceita.data} onChange={handleInputChange} />
+                    <input type="date" id="data" name="data" autocomplete="off" value={novaReceita.data} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar Receita</button>
                 </form>
@@ -351,5 +351,6 @@ function Receitas() {
     </div>
   );
 }
-
+ 
 export default Receitas;
+ 

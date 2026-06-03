@@ -24,11 +24,11 @@ export default function Home() {
         <div>
 
           <h1 className="logo">
-            ManusBank
+            ManusFinance
           </h1>
 
           <p className="subtitle">
-            Plataforma Financeira
+            Plataforma de gestão financeira pessoal
           </p>
 
         </div>

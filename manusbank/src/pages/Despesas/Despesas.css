@@ -368,6 +368,16 @@
   height: 16px;
 }
 
+/* Tema escuro (padrão) */
+.form-group input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Tema claro */
+body:not(.dark) .form-group input[type="date"] {
+  color-scheme: light;
+}
+
 /* Responsivo */
 
 @media (max-width: 768px) {
