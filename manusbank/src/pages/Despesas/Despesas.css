@@ -1,69 +1,75 @@
-/* Layout geral */
+/* ==========================================================================
+   Layout geral
+   ========================================================================== */
 
 .despesas-container {
   width: 100%;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+  padding: 48px 32px;
   background: var(--bg-main);
   color: var(--text-primary);
 }
 
 .despesas-card {
   width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  padding: 32px 32px 36px;
-  border-radius: 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
-  overflow-y: auto;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0;
 }
 
-/* HEADER */
+/* ==========================================================================
+   Header
+   ========================================================================== */
 
 .despesas-header {
-  text-align: center;
   margin-bottom: 24px;
+  text-align: left;
 }
 
 .despesas-header h1 {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
+  margin: 0 0 4px;
+  color: var(--text-primary);
   font-size: 28px;
   font-weight: 700;
-  color: #f97316;
-  margin-bottom: 8px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.despesas-header h1 svg {
+  color: #ef4444;
 }
 
 .subtitle {
+  margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
+  font-weight: 400;
 }
 
-/* RESUMO */
+/* ==========================================================================
+   Resumo
+   ========================================================================== */
 
 .resumo-card {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 20px 24px;
-  margin-bottom: 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 20px 24px;
+  background: var(--bg-card);
   border: 1px solid var(--border-soft);
+  border-radius: 14px;
 }
 
 .resumo-item {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .resumo-item svg {
@@ -71,22 +77,28 @@
 }
 
 .resumo-label {
+  margin-bottom: 4px;
   color: var(--text-secondary);
-  font-size: 13px;
-  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .resumo-valor {
   color: var(--text-primary);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0;
 }
 
 .resumo-item-secundario {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: #f97316;
+  font-weight: 500;
 }
 
 .resumo-secundario-label {
@@ -94,56 +106,69 @@
   font-size: 13px;
 }
 
-/* BOTÃO NOVA DESPESA */
+/* ==========================================================================
+   Botao principal
+   ========================================================================== */
 
 .btn-nova-despesa {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #ef4444;
-  color: #0f172a;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.1s ease,
-    box-shadow 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 24px;
+  width: auto;
+  min-width: 180px;
+  min-height: 48px;
+  margin: 0 0 32px auto;
+  padding: 0 20px;
+  background: #dc2626;
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .btn-nova-despesa:hover {
-  background: #f87171;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(248, 113, 113, 0.32);
+  background: #b91c1c;
 }
 
-/* GRÁFICO */
+.btn-nova-despesa:active {
+  transform: translateY(1px);
+}
+
+.btn-nova-despesa:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2);
+}
+
+/* ==========================================================================
+   Grafico
+   ========================================================================== */
 
 .grafico-section {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .grafico-section h2 {
+  margin: 0 0 16px;
   color: var(--text-primary);
   font-size: 18px;
-  margin-bottom: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 
 .grafico-container {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 16px 20px;
-  border: 1px solid var(--border-soft);
-  min-height: 250px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
 }
 
 .grafico-vazio {
@@ -151,216 +176,109 @@
   font-size: 14px;
 }
 
-/* LISTA */
+/* ==========================================================================
+   Lista de despesas
+   ========================================================================== */
 
 .lista-despesas h2 {
+  margin: 0 0 16px;
   color: var(--text-primary);
   font-size: 18px;
-  margin-bottom: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 
 .lista-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 300px;
-  overflow-y: auto;
+  gap: 12px;
 }
 
 .lista-vazia {
+  padding: 32px;
   background: var(--bg-card);
-  border-radius: 12px;
-  padding: 24px;
+  border: 1px dashed var(--border-soft);
+  border-radius: 14px;
   text-align: center;
-  border: 1px solid var(--border-soft);
 }
 
 .lista-vazia p {
+  margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
 }
 
 .despesa-item {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 14px 16px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-card);
   border: 1px solid var(--border-soft);
-  transition:
-    border-color 0.2s ease,
-    transform 0.1s ease,
-    box-shadow 0.2s ease;
+  border-radius: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .despesa-item:hover {
-  border-color: #ef4444;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  background: rgba(148, 163, 184, 0.06);
+  border-color: rgba(239, 68, 68, 0.45);
 }
 
 .despesa-info h3 {
+  margin: 0 0 4px;
   color: var(--text-primary);
   font-size: 15px;
-  margin-bottom: 2px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .despesa-data {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 13px;
+}
+
+.despesa-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .despesa-valor {
   color: #f97316;
   font-size: 16px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
-/* MODAL */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.modal-conteudo {
-  background: var(--bg-card);
-  border-radius: 20px;
-  padding: 24px 24px 28px;
-  width: 100%;
-  max-width: 440px;
-  border: 1px solid var(--border-soft);
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.9);
-  position: relative;
-}
-
-.modal-fechar {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
-  padding: 6px;
-  border-radius: 999px;
-}
-
-.modal-fechar:hover {
-  color: var(--text-primary);
-  background: rgba(148, 163, 184, 0.25);
-}
-
-.modal-conteudo h2 {
-  color: var(--text-primary);
-  font-size: 20px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-/* Formulário */
-
-.forma-despesa {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.form-group input {
-  padding: 12px;
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  background: var(--bg-main);
-  color: var(--text-primary);
-  font-size: 14px;
-  outline: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-}
-
-.form-group input::placeholder {
-  color: #64748b;
-}
-
-.form-group input:focus {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.35);
-}
-
-/* Botão salvar */
-
-.btn-salvar {
-  margin-top: 4px;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #ef4444;
-  color: #0f172a;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.1s ease,
-    box-shadow 0.2s ease;
-}
-
-.btn-salvar:hover {
-  background: #f87171;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(248, 113, 113, 0.32);
-}
-.despesa-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Botão remover despesa */
 .btn-remover-despesa {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid rgba(248, 113, 113, 0.5);
-  background: rgba(248, 113, 113, 0.08);
-  color: #f87171;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 50%;
+  color: #ef4444;
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.1s ease,
-    box-shadow 0.15s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-remover-despesa:hover {
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(248, 113, 113, 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.35);
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.btn-remover-despesa:active {
+  transform: translateY(1px);
+}
+
+.btn-remover-despesa:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
 }
 
 .btn-remover-despesa svg {
@@ -368,31 +286,236 @@
   height: 16px;
 }
 
-/* Tema escuro (padrão) */
+/* ==========================================================================
+   Modal
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.18s ease-out;
+}
+
+.modal-conteudo {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.22s ease-out;
+}
+
+.modal-conteudo h2 {
+  margin: 0 0 24px;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.modal-fechar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.modal-fechar:hover {
+  background: rgba(148, 163, 184, 0.14);
+  color: var(--text-primary);
+}
+
+.modal-fechar:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2);
+}
+
+/* ==========================================================================
+   Formulario
+   ========================================================================== */
+
+.forma-despesa {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder {
+  color: #64748b;
+}
+
+.form-group input:focus {
+  background: var(--bg-card);
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.18);
+}
+
 .form-group input[type="date"] {
   color-scheme: dark;
 }
 
-/* Tema claro */
 body:not(.dark) .form-group input[type="date"] {
   color-scheme: light;
 }
 
-/* Responsivo */
+.btn-salvar {
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 0 20px;
+  background: #dc2626;
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.btn-salvar:hover {
+  background: #b91c1c;
+}
+
+.btn-salvar:active {
+  transform: translateY(1px);
+}
+
+.btn-salvar:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2);
+}
+
+/* ==========================================================================
+   Animacoes
+   ========================================================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Responsivo
+   ========================================================================== */
 
 @media (max-width: 768px) {
-  .despesas-card {
-    padding: 20px 16px 24px;
+  .despesas-container {
+    padding: 20px 16px;
+  }
+
+  .despesas-header {
+    margin-bottom: 20px;
+  }
+
+  .despesas-header h1 {
+    font-size: 24px;
   }
 
   .resumo-card {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .resumo-item {
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .resumo-item-secundario {
+    justify-content: space-between;
+  }
+
+  .resumo-valor {
+    font-size: 22px;
+  }
+
+  .btn-nova-despesa {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .grafico-container {
+    min-height: 240px;
+    padding: 16px;
   }
 
   .despesa-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
+  }
+
+  .despesa-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .modal-conteudo {
+    padding: 24px;
   }
 }

@@ -288,9 +288,9 @@ function ContasReceber() {
             <header className="cr-header">
               <h1>
                 <WalletCards size={32} />
-                Contas a Receber
+                Ganhos não-fixos
               </h1>
-              <p className="subtitle">Controle seus recebimentos pendentes</p>
+              <p className="subtitle">Controle o dinheiro que você recebe de rendas a parte.</p>
             </header>
 
             {erro && <p className="erro-msg">{erro}</p>}
@@ -315,11 +315,11 @@ function ContasReceber() {
             </div>
 
             <button className="cr-btn-nova" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> Nova Conta a Receber
+              <Plus size={20} /> Novo ganho
             </button>
 
             <section className="cr-grafico-section">
-              <h2>Contas por Cliente (pendentes)</h2>
+              <h2>Ganhos cadastrados</h2>
               <div className="cr-grafico-container">
                 {carregando ? (
                   <div className="cr-grafico-vazio"><p>Carregando contas...</p></div>
@@ -344,7 +344,7 @@ function ContasReceber() {
             </section>
 
             <section className="cr-lista">
-              <h2>Lista de Contas a Receber</h2>
+              <h2>Lista de ganhos registrados</h2>
               <div className="cr-lista-container">
                 {carregando ? (
                   <div className="cr-lista-vazia"><p>Carregando contas...</p></div>
@@ -399,7 +399,7 @@ function ContasReceber() {
                           </div>
                           {isPendente && (
                             <button className="cr-btn-acao" onClick={() => handleMarcarComoPaga(conta.id)}>
-                              Marcar como paga
+                              Marcar como recebido
                             </button>
                           )}
                         </div>
@@ -417,11 +417,11 @@ function ContasReceber() {
             <div className="modal-overlay" onClick={() => setModalAberto(false)}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={() => setModalAberto(false)}><X size={24} /></button>
-                <h2>Nova Conta a Receber</h2>
+                <h2>Novo Ganho</h2>
                 <form className="cr-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
-                    <label htmlFor="cliente">Cliente</label>
-                    <input type="text" id="cliente" name="cliente" placeholder="Nome do cliente" autocomplete="off" value={novaConta.cliente} onChange={handleInputChange} />
+                    <label htmlFor="cliente">Nome</label>
+                    <input type="text" id="cliente" name="cliente" placeholder="Ex: Alguém devendo, venda de algo, etc." autocomplete="off" value={novaConta.cliente} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>

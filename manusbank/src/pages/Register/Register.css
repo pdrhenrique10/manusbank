@@ -6,7 +6,7 @@
 }
 
 body {
-    background: #050816;
+    background: #000000;
     overflow-x: hidden;
     overflow-y: auto;
 }
@@ -35,9 +35,9 @@ body {
 /* Painel Esquerdo */
 .left-panel {
     width: 350px;
-    background: rgba(15, 23, 42, 0.75);
+    background: rgb(3, 0, 22);
     border: 1px solid rgba(37, 99, 235, 0.2);
-    border-right: 2px solid #2563eb;
+    border-right: 2px solid #010d55;
     border-radius: 24px 0 0 24px;
     color: white;
     text-align: center;

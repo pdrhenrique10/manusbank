@@ -248,8 +248,8 @@ function Receitas() {
         <div className="receitas-container">
           <div className="receitas-card">
             <header className="receitas-header">
-              <h1><Wallet size={32} /> Receitas</h1>
-              <p className="subtitle">Gerencie suas entradas de dinheiro</p>
+              <h1><Wallet size={32} /> Rendas Fixas</h1>
+              <p className="subtitle">Gerencie suas rendas fixas de dinheiro.</p>
             </header>
  
             {erro && <p className="erro-msg">{erro}</p>}
@@ -272,7 +272,7 @@ function Receitas() {
             </div>
  
             <button className="btn-nova-receita" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> Nova Receita
+              <Plus size={20} /> Nova Renda
             </button>
  
             <section className="grafico-section">
@@ -327,7 +327,7 @@ function Receitas() {
             <div className="modal-overlay" onClick={fecharModal}> {/* ✅ */}
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={fecharModal}><X size={24} /></button> {/* ✅ */}
-                <h2>Nova Receita</h2>
+                <h2>Nova Renda</h2>
                 <form className="forma-receita" onSubmit={handleAdicionarReceita}>
                   <div className="form-group">
                     <label htmlFor="nome">Nome</label>

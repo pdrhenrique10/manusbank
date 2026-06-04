@@ -1,38 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import Sidebar from "../../components/Sidebar/Sidebar";
 
 import {
-  ArrowUpRight,
   ArrowDownRight,
-  TrendingUp,
+  ArrowUpRight,
+  CheckCircle2,
   Clock3,
+  CreditCard,
+  ListChecks,
+  PiggyBank,
+  Plus,
+  Target,
+  Wallet,
 } from "lucide-react";
 
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-
-const COLORS = ["#6C63FF", "#7C4DFF", "#3B82F6", "#22C55E", "#F97316"];
-
-const tooltipStyle = {
-  contentStyle: {
-    background: "#1f2937",
-    border: "none",
-    borderRadius: "8px",
-    boxShadow: "none",
-  },
-  itemStyle: { color: "#f9fafb" },
-  labelStyle: { color: "#9ca3af" },
-};
+// 🔧 Formata uma string YYYY-MM-DD para DD/MM/YYYY (sem fuso horário)
+function formatarDataString(dataString) {
+  if (!dataString) return "Sem data";
+  const partes = dataString.split("-");
+  if (partes.length !== 3) return dataString;
+  const [ano, mes, dia] = partes;
+  return `${dia}/${mes}/${ano}`;
+}
 
 export default function Dashboard() {
   const [usuario, setUsuario] = useState(null);
@@ -54,6 +45,7 @@ export default function Dashboard() {
         const resp = await fetch("http://localhost:3000/api/dashboard", {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (!resp.ok) {
           if (resp.status === 401) {
             localStorage.removeItem("token");
@@ -61,6 +53,7 @@ export default function Dashboard() {
           }
           throw new Error("Erro ao carregar dashboard");
         }
+
         const dados = await resp.json();
         setUsuario(dados.usuario);
         setSaldo(dados.saldo || 0);
@@ -78,6 +71,7 @@ export default function Dashboard() {
         const resp = await fetch("http://localhost:3000/api/contas-receber", {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (resp.ok) {
           const dados = await resp.json();
           setContasReceber(dados || []);
@@ -91,207 +85,253 @@ export default function Dashboard() {
     fetchContasReceber();
   }, [navigate]);
 
-  const monthlyMap = transacoes.reduce((acc, t) => {
-    if (!t.data) return acc;
-    const date = new Date(t.data);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    if (!acc[monthKey]) {
-      acc[monthKey] = { name: monthKey, receitas: 0, despesas: 0 };
-    }
-    const isReceita = t.tipo === "deposito" || t.tipo === "transferenciaEntrada";
-    const isDespesa = t.tipo === "saque" || t.tipo === "transferenciaSaida";
-    if (isReceita) acc[monthKey].receitas += t.valor;
-    else if (isDespesa) acc[monthKey].despesas += t.valor;
-    return acc;
-  }, {});
-  const data = Object.values(monthlyMap);
-
-  const despesasPorCategoriaMapa = transacoes
-    .filter((t) => t.tipo === "saque" || t.tipo === "transferenciaSaida")
-    .reduce((acc, t) => {
-      const categoria = t.categoria || "Sem categoria";
-      acc[categoria] = (acc[categoria] || 0) + t.valor;
-      return acc;
-    }, {});
-  const pieData = Object.keys(despesasPorCategoriaMapa).map((categoria) => ({
-    name: categoria,
-    value: despesasPorCategoriaMapa[categoria],
-  }));
+  const formatMoney = (value) =>
+    Number(value || 0).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
 
   const agora = new Date();
-  const mesAtual = agora.getMonth();
+  const mesAtual = agora.getMonth(); // 0-indexed (janeiro = 0)
   const anoAtual = agora.getFullYear();
-  console.log("Mês atual:", mesAtual, "Ano:", anoAtual);
-console.log("Todas transações:", transacoes);
-  const transacoesMesAtual = transacoes.filter((t) => {
-    if (!t.data) return false;
-    const d = new Date(t.data);
-    return d.getFullYear() === anoAtual && d.getMonth() === mesAtual;
-  });
-  console.log("Transações do mês:", transacoesMesAtual);
+
+  // Filtra transações do mês atual usando a string YYYY-MM-DD (sem fuso)
+  const transacoesMesAtual = useMemo(() => {
+    return transacoes.filter((t) => {
+      if (!t.data) return false;
+      const [anoStr, mesStr] = t.data.split("-");
+      const ano = parseInt(anoStr, 10);
+      const mes = parseInt(mesStr, 10) - 1; // converte para 0-indexed
+      return ano === anoAtual && mes === mesAtual;
+    });
+  }, [transacoes, anoAtual, mesAtual]);
+
   const receitasMesAtual = transacoesMesAtual
     .filter((t) => t.tipo === "deposito" || t.tipo === "transferenciaEntrada")
-    .reduce((acc, t) => acc + t.valor, 0);
-  const despesasMesAtual = transacoesMesAtual
-    .filter((t) => t.tipo === "saque" || t.tipo === "transferenciaSaida")
-    .reduce((acc, t) => acc + t.valor, 0);
-  const lucroMesAtual = receitasMesAtual - despesasMesAtual;
-  const totalDespesasMesAtual = despesasMesAtual;
+    .reduce((acc, t) => acc + Number(t.valor || 0), 0);
 
-  const contasPendentes = contasReceber.filter((c) => c.status === "pendente");
-  const totalContasPendentes = contasPendentes.length;
+  const gastosMesAtual = transacoesMesAtual
+    .filter((t) => t.tipo === "saque" || t.tipo === "transferenciaSaida")
+    .reduce((acc, t) => acc + Number(t.valor || 0), 0);
+
+  const sobraMesAtual = receitasMesAtual - gastosMesAtual;
+
+  const contasPendentes = contasReceber.filter((conta) => conta.status === "pendente");
+
+  // Últimas movimentações: ordena pela string YYYY-MM-DD decrescente (lexicográfica funciona)
+  const ultimasMovimentacoes = [...transacoes]
+    .sort((a, b) => (b.data || "").localeCompare(a.data || ""))
+    .slice(0, 5);
+
+  const temDados = transacoes.length > 0 || contasReceber.length > 0;
+
+  const acoesRapidas = [
+    { label: "Receitas fixas", path: "/receitas", icon: ArrowUpRight },
+    { label: "Entradas", path: "/contas-a-receber", icon: Wallet },
+    { label: "Gastos mensais", path: "/despesas", icon: ArrowDownRight },
+    { label: "Gastos imprevistos", path: "/contas-a-pagar", icon: CreditCard },
+    { label: "Suas Metas", path: "/metasfinanceiras", icon: Target },
+  ];
+
+  const passosIniciais = [
+    {
+      title: "Cadastre suas receitas principais",
+      text: "Salário fixo e outras rendas fixas.",
+      path: "/receitas",
+    },
+    {
+      title: "Adicione uma conta importante",
+      text: "Registre contas que você tem que pagar sempre.",
+      path: "/despesas",
+    },
+    {
+      title: "Crie sua primeira meta",
+      text: "Defina um objetivo e acompanhe o progresso.",
+      path: "/metasfinanceiras",
+    },
+  ];
 
   if (loading) {
     return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
+      <div className="mainLayout">
         <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>Carregando...</main>
+        <main className="dashboard">
+          <div className="loadingBox">Carregando...</div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="mainLayout">
       <Sidebar />
-      <main style={{ flex: 1, padding: "20px" }}>
-        <div className="dashboard">
-          <div className="top">
-            <div>
-              <h1>Dashboard</h1>
-              <p>{usuario?.nome || usuario?.email} — Resumo financeiro</p>
-            </div>
-          </div>
-
-          <div className="cards">
-            <div className="card green">
-              <div className="iconBox greenBg"><ArrowUpRight size={18} /></div>
-              <h2>R$ {saldo.toFixed(2)}</h2>
-              <span>Saldo atual</span>
-              <p>Valor disponível na sua conta</p>
-            </div>
-            <div className="card red">
-              <div className="iconBox redBg"><ArrowDownRight size={18} /></div>
-              <h2>R$ {totalDespesasMesAtual.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</h2>
-              <span>Gastos do mês</span>
-              <p>Despesas registradas</p>
-            </div>
-            <div className="card blue">
-              <div className="iconBox blueBg"><TrendingUp size={18} /></div>
-              <h2>R$ {lucroMesAtual.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</h2>
-              <span>Lucro do mês</span>
-              <p>Receitas - Despesas</p>
-            </div>
-            <div className="card yellow">
-              <div className="iconBox yellowBg"><Clock3 size={18} /></div>
-              <h2>{totalContasPendentes}</h2>
-              <span>Contas pendentes</span>
-              <p>{totalContasPendentes} conta(s) a receber</p>
-            </div>
-          </div>
-
-          <div className="charts">
-            {/* ===== ÁREA: ENTRADAS E SAÍDAS ===== */}
-            <div className="chartCard big">
-              <div className="chartHeader">
-                <h3>Entradas e Saídas — {anoAtual}</h3>
-                <p>Comparativo mensal de receitas e despesas</p>
-              </div>
-              {data.length <= 1 ? (
-                <div style={{ padding: "16px", color: "#9ca3af", fontSize: "0.9rem" }}>
-                  Ainda não há dados suficientes para montar o gráfico.
-                  Registre transações em meses diferentes para ver o histórico.
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={320}>
-                  <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <XAxis dataKey="name" stroke="#6b7280" axisLine={false} tickLine={false} />
-                    <Tooltip {...tooltipStyle} />
-                    <Area
-                      type="monotone"
-                      dataKey="receitas"
-                      stroke="#00E5A8"
-                      fill="#00E5A8"
-                      fillOpacity={0.15}
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{ r: 4, strokeWidth: 0 }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="despesas"
-                      stroke="#FF4D4D"
-                      fill="#FF4D4D"
-                      fillOpacity={0.12}
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{ r: 4, strokeWidth: 0 }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-              <div className="legend">
-                <div><span className="dot greenDot"></span> Receitas</div>
-                <div><span className="dot redDot"></span> Despesas</div>
-              </div>
-            </div>
-
-            {/* ===== PIE: DESPESAS POR CATEGORIA ===== */}
-            <div className="chartCard pieCard">
-              <div className="chartHeader">
-                <h3>Despesas por Categoria</h3>
-                <p>{new Date().toLocaleString("pt-BR", { month: "short", year: "numeric" })}</p>
-              </div>
-              <div className="pieWrapper">
-                <ResponsiveContainer width="100%" height={240}>
-                  <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <Tooltip
-                      contentStyle={{
-                        background: "#1f2937",
-                        border: "none",
-                        borderRadius: "8px",
-                        boxShadow: "none",
-                      }}
-                      itemStyle={{ color: "#f9fafb" }}
-                      labelStyle={{ color: "#9ca3af" }}
-                      formatter={(value) => [`R$ ${value.toFixed(2)}`, ""]}
-                    />
-                    <Pie
-                      data={pieData}
-                      innerRadius={70}
-                      outerRadius={95}
-                      dataKey="value"
-                      stroke="none"
-                      strokeWidth={0}
-                    >
-                      {pieData.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                          stroke="none"
-                          strokeWidth={0}
-                        />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="pieLegend">
-                {pieData.map((item, index) => (
-                  <div className="legendItem" key={item.name}>
-                    <div className="left">
-                      <span className="dot" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
-                      {item.name}
-                    </div>
-                    <strong>R$ {item.value.toFixed(2)}</strong>
-                  </div>
-                ))}
-                {pieData.length === 0 && (
-                  <p style={{ fontSize: "0.85rem", color: "#9ca3af" }}>Nenhuma despesa cadastrada ainda.</p>
-                )}
-              </div>
-            </div>
+      <main className="dashboard">
+        <div className="top">
+          <div>
+            <h1>Início</h1>
+            <p>
+              {usuario?.nome || usuario?.email || "Sua conta"} - prioridades, pendências e
+              próximos passos.
+            </p>
           </div>
         </div>
+
+        <section className="heroPanel">
+          <div>
+            <span className="eyebrow">Situação de hoje</span>
+            <h2>
+              {temDados
+                ? contasPendentes.length > 0
+                  ? `Você tem ${contasPendentes.length} recebimento(s) pendente(s).`
+                  : "Nenhuma pendência crítica no momento."
+                : "Comece registrando os dados principais da sua vida financeira."}
+            </h2>
+            <p>
+              {temDados
+                ? "Use esta tela para agir rápido. Relatórios ficam para análise detalhada."
+                : "Sem dados, gráfico nenhum ajuda. Primeiro alimente o sistema com entradas, gastos, contas e metas."}
+            </p>
+          </div>
+
+          <button className="heroButton" type="button" onClick={() => navigate("/receitas")}>
+            <Plus size={18} />
+            Registrar renda
+          </button>
+        </section>
+
+        <section className="cards">
+          <div className="card green">
+            <div className="iconBox greenBg">
+              <Wallet size={18} />
+            </div>
+            <h2>{formatMoney(saldo)}</h2>
+            <span>Saldo atual</span>
+            <p>Valor disponível agora.</p>
+          </div>
+
+          <div className="card blue">
+            <div className="iconBox blueBg">
+              <ArrowUpRight size={18} />
+            </div>
+            <h2>{formatMoney(receitasMesAtual)}</h2>
+            <span>Entradas do mês</span>
+            <p>Receitas e entradas registradas.</p>
+          </div>
+
+          <div className="card red">
+            <div className="iconBox redBg">
+              <ArrowDownRight size={18} />
+            </div>
+            <h2>{formatMoney(gastosMesAtual)}</h2>
+            <span>Gastos do mês</span>
+            <p>Saídas registradas neste mês.</p>
+          </div>
+
+          <div className="card yellow">
+            <div className="iconBox yellowBg">
+              <PiggyBank size={18} />
+            </div>
+            <h2>{formatMoney(sobraMesAtual)}</h2>
+            <span>Sobra do mês</span>
+            <p>Entradas menos gastos.</p>
+          </div>
+        </section>
+
+        <section className="quickActions">
+          {acoesRapidas.map((acao) => {
+            const Icon = acao.icon;
+            return (
+              <button key={acao.label} type="button" onClick={() => navigate(acao.path)}>
+                <Icon size={17} />
+                {acao.label}
+              </button>
+            );
+          })}
+        </section>
+
+        <section className="dashboardGrid">
+          <div className="panel">
+            <div className="panelHeader">
+              <div>
+                <h3>Pendências</h3>
+                <p>O que pede atenção antes de virar problema.</p>
+              </div>
+              <Clock3 size={18} />
+            </div>
+
+            {contasPendentes.length > 0 ? (
+              <div className="taskList">
+                {contasPendentes.slice(0, 4).map((conta) => (
+                  <div className="taskItem" key={conta.id || conta._id || conta.descricao}>
+                    <div>
+                      <strong>{conta.descricao || conta.nome || "Recebimento pendente"}</strong>
+                      {/* ✅ Formatação segura da data */}
+                      <span>{formatarDataString(conta.data)}</span>
+                    </div>
+                    <b>{formatMoney(conta.valor)}</b>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="emptyState">
+                <CheckCircle2 size={22} />
+                <p>Nenhum recebimento pendente registrado.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="panel">
+            <div className="panelHeader">
+              <div>
+                <h3>Primeiros passos</h3>
+                <p>Atalhos para deixar o sistema útil mais rápido.</p>
+              </div>
+              <ListChecks size={18} />
+            </div>
+
+            <div className="setupList">
+              {passosIniciais.map((passo) => (
+                <button key={passo.title} type="button" onClick={() => navigate(passo.path)}>
+                  <strong>{passo.title}</strong>
+                  <span>{passo.text}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="panel wide">
+            <div className="panelHeader">
+              <div>
+                <h3>Últimas movimentações</h3>
+                <p>O que entrou ou saiu recentemente.</p>
+              </div>
+            </div>
+
+            {ultimasMovimentacoes.length > 0 ? (
+              <div className="movementList">
+                {ultimasMovimentacoes.map((t) => {
+                  const entrada = t.tipo === "deposito" || t.tipo === "transferenciaEntrada";
+                  return (
+                    <div className="movementItem" key={t.id || t._id || `${t.data}-${t.valor}`}>
+                      <div>
+                        <strong>{t.descricao || t.categoria || "Movimentação"}</strong>
+                        {/* ✅ Formatação segura da data */}
+                        <span>{formatarDataString(t.data)}</span>
+                      </div>
+                      <b className={entrada ? "positiveValue" : "negativeValue"}>
+                        {entrada ? "+" : "-"} {formatMoney(t.valor)}
+                      </b>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="emptyState">
+                <p>Nenhuma movimentação registrada ainda.</p>
+              </div>
+            )}
+          </div>
+        </section>
       </main>
     </div>
   );

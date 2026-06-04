@@ -1,181 +1,484 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* ==========================================================================
+   Layout geral
+   ========================================================================== */
 
 .rel-container {
   width: 100%;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+  padding: 48px 32px;
+  background: var(--bg-main);
+  color: var(--text-primary);
 }
 
 .rel-card {
   width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  padding: 32px 32px 36px;
-  border-radius: 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
-  overflow-y: auto;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0;
 }
 
-.rel-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.rel-header h1 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-size: 28px;
-  font-weight: 700;
-  color: #38bdf8;
-  margin-bottom: 8px;
-}
-
-.subtitle {
+.rel-loading {
+  padding: 48px 32px;
   color: var(--text-secondary);
   font-size: 14px;
 }
 
-/* Resumo */
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.rel-header {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.rel-header h1 {
+   display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.rel-header h1 svg {
+  color: #38bdf8;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* ==========================================================================
+   Filtros
+   ========================================================================== */
+
+.rel-filtros {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+}
+
+.rel-filtros-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rel-filtros svg {
+  color: #38bdf8;
+}
+
+.rel-periodos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rel-periodos button {
+  min-height: 34px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.rel-periodos button:hover,
+.rel-periodos button.ativo {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #7dd3fc;
+}
+
+.rel-periodos button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.16);
+}
+
+.rel-janela {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Resumo — mesma estrutura dos cards de metas
+   ========================================================================== */
 
 .rel-resumo {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+  margin-bottom: 32px;
 }
 
 .rel-resumo-card {
-  flex: 1;
-  min-width: 180px;
-  border-radius: 16px;
-  padding: 16px 18px;
-  border: 1px solid var(--border-soft);
+  min-width: 0;
+  padding: 20px 24px;
   background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.rel-resumo-card:hover {
+  background: rgba(148, 163, 184, 0.06);
 }
 
 .rel-resumo-card.saldo {
-  border-color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.45);
 }
 
-.rel-resumo-card.receita {
-  border-color: #22c55e;
+.rel-resumo-card.receita,
+.rel-resumo-card.positivo {
+  border-color: rgba(34, 197, 94, 0.45);
 }
 
-.rel-resumo-card.despesa {
-  border-color: #ef4444;
+.rel-resumo-card.despesa,
+.rel-resumo-card.negativo {
+  border-color: rgba(239, 68, 68, 0.45);
 }
 
 .rel-resumo-label {
+  margin: 0 0 6px;
   color: var(--text-secondary);
-  font-size: 13px;
-  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .rel-resumo-valor {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.rel-resumo-card.saldo .rel-resumo-valor     { color: #38bdf8; }
+.rel-resumo-card.receita .rel-resumo-valor,
+.rel-resumo-card.positivo .rel-resumo-valor  { color: #22c55e; }
+.rel-resumo-card.despesa .rel-resumo-valor,
+.rel-resumo-card.negativo .rel-resumo-valor  { color: #ef4444; }
+
+/* ==========================================================================
+   Estados vazios — mesmo estilo de .mf-lista-vazia
+   ========================================================================== */
+
+.rel-empty {
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-soft);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.rel-empty svg {
+  color: #38bdf8;
+  margin-bottom: 12px;
+}
+
+.rel-empty h2 {
+  margin: 0 0 8px;
   color: var(--text-primary);
   font-size: 20px;
   font-weight: 700;
 }
 
-/* Gráficos */
-
-.rel-grafico-section {
-  margin-bottom: 24px;
-}
-
-.rel-grafico-section h2 {
-  color: var(--text-primary);
-  font-size: 18px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-}
-
-.rel-grafico-container {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 16px 20px;
-  border: 1px solid var(--border-soft);
-  min-height: 250px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.rel-grafico-vazio {
+.rel-empty p {
+  margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
 }
 
-/* Tabela de categorias */
+/* ==========================================================================
+   Gráficos e insights — mesma estrutura de .mf-grafico-section
+   ========================================================================== */
+
+.rel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.75fr);
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.rel-grafico-section,
+.rel-insights {
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.rel-grafico-section {
+  margin-bottom: 32px;
+}
+
+.rel-grafico-section:hover,
+.rel-insights:hover {
+  background: rgba(148, 163, 184, 0.06);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.rel-grid .rel-grafico-section {
+  margin-bottom: 0;
+}
+
+.rel-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.rel-section-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.rel-section-header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.rel-section-header svg {
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+.rel-grafico-container {
+  min-height: 280px;
+}
+
+.rel-grafico-vazio {
+  margin: 0;
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-soft);
+  border-radius: 14px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Insights — mesmo ritmo visual dos .mf-item */
+.rel-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.rel-insight:last-child {
+  border-bottom: none;
+}
+
+.rel-insight span {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  background: #38bdf8;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rel-insight p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   Tabela de categorias
+   ========================================================================== */
+
 .rel-tabela-categorias {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #334155;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-soft);
 }
 
 .rel-tabela-categorias h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 16px;
+  margin: 0 0 16px;
   color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .rel-tabela {
   width: 100%;
-  border-collapse: collapse;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
 }
 
 .rel-tabela th,
 .rel-tabela td {
-  padding: 10px 8px;
+  padding: 14px 16px;
   text-align: left;
-  border-bottom: 1px solid #334155;
-  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .rel-tabela th {
-  font-weight: 600;
   color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rel-tabela td {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.rel-tabela tr:last-child td {
+  border-bottom: none;
 }
 
 .rel-cor-indicador {
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 10px;
+  height: 10px;
   margin-right: 8px;
+  border-radius: 50%;
   vertical-align: middle;
 }
 
+/* ==========================================================================
+   Feedback
+   ========================================================================== */
+
 .erro-msg {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-  padding: 10px 15px;
-  border-radius: 8px;
   margin-bottom: 20px;
-  text-align: center;
+  padding: 12px 14px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  color: #f87171;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
 }
 
-/* Responsivo */
+/* ==========================================================================
+   Recharts
+   ========================================================================== */
+
+.recharts-wrapper,
+.recharts-wrapper svg,
+.recharts-surface {
+  outline: none !important;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+
+/* ==========================================================================
+   Responsivo
+   ========================================================================== */
+
+@media (max-width: 1100px) {
+  .rel-resumo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rel-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 768px) {
-  .rel-card {
-    padding: 20px 16px 24px;
+  .rel-container {
+    padding: 20px 16px;
+  }
+
+  .rel-header {
+    margin-bottom: 20px;
+  }
+
+  .rel-header h1 {
+    font-size: 24px;
+  }
+
+  .rel-filtros {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .rel-periodos {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .rel-periodos button {
+    white-space: nowrap;
   }
 
   .rel-resumo {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    margin-bottom: 24px;
+  }
+
+  .rel-grafico-section,
+  .rel-insights {
+    padding: 16px;
+  }
+
+  .rel-grafico-container {
+    min-height: 240px;
+  }
+
+  .rel-tabela {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .rel-tabela th,
+  .rel-tabela td {
+    padding: 12px;
+    white-space: nowrap;
   }
 }

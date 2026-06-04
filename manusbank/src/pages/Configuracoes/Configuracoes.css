@@ -1,75 +1,103 @@
+/* ========== Config Page – Temas dinâmicos (sem transições) ========== */
+
 .config-main {
   flex: 1;
-  padding: 32px 24px;
-  background: var(--bg-main, #0f172a);
-  color: var(--text-primary, #f8fafc);
+  padding: 40px 32px;
+  background: var(--bg-main, #0b1120);
+  color: var(--text-primary, #e2e8f0);
   overflow-y: auto;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .config-container {
-  max-width: 800px;
+  max-width: 780px;
   margin: 0 auto;
 }
 
+/* Cabeçalho */
 .config-header {
-  text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .config-header h1 {
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 700;
-  color: var(--text-primary, #f8fafc);
+  letter-spacing: -0.5px;
+  color: var(--text-primary, #f1f5f9);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.config-header h1 svg {
+  color: var(--accent-color, #60a5fa);
+  flex-shrink: 0;
 }
 
 .config-subtitle {
   color: var(--text-secondary, #94a3b8);
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
+/* Cartão de seção */
 .config-section {
-  background: var(--bg-card, #1e293b);
-  border-radius: 24px;
-  padding: 24px;
+  background: var(--bg-card, #111827);
+  border-radius: 20px;
+  padding: 28px 32px;
   margin-bottom: 24px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(2px);
 }
 
 .config-section h2 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 20px;
-  color: var(--text-primary, #f8fafc);
+  margin-bottom: 24px;
+  color: var(--text-primary, #cbd5e1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.2px;
 }
 
 /* Avatar */
 .config-avatar-row {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .config-avatar-img {
-  width: 120px;
-  height: 120px;
+  width: 112px;
+  height: 112px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #3b82f6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 3px solid var(--avatar-border, #334155);
+  box-shadow: var(--avatar-shadow, 0 0 0 4px rgba(59, 130, 246, 0.15), 0 10px 20px rgba(0, 0, 0, 0.4));
+}
+
+.config-avatar-img:hover {
+  transform: scale(1.02);
+  box-shadow: var(--avatar-shadow-hover, 0 0 0 4px rgba(59, 130, 246, 0.25), 0 14px 28px rgba(0, 0, 0, 0.5));
 }
 
 .config-avatar {
-  width: 120px;
-  height: 120px;
+  width: 112px;
+  height: 112px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  background: var(--avatar-bg, linear-gradient(180deg, #0034a3, #050030));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
-  font-weight: bold;
+  font-size: 44px;
+  font-weight: 600;
   color: white;
-  border: 3px solid #3b82f6;
+  border: 3px solid var(--avatar-border, #334155);
+  box-shadow: var(--avatar-shadow, 0 0 0 4px rgba(59, 130, 246, 0.15), 0 10px 20px rgba(0, 0, 0, 0.4));
+  user-select: none;
 }
 
 /* Linhas de informação */
@@ -77,79 +105,110 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid #334155;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--divider-color, rgba(255, 255, 255, 0.05));
 }
 
 .config-row:last-child {
   border-bottom: none;
 }
 
+.config-row:hover {
+  background: var(--row-hover-bg, rgba(255, 255, 255, 0.02));
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 8px;
+}
+
 .config-text {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--text-secondary, #94a3b8);
   font-size: 0.95rem;
+  font-weight: 450;
 }
 
 .config-icon {
-  color: #3b82f6;
+  color: var(--accent-color, #60a5fa);
+  flex-shrink: 0;
+  stroke-width: 1.8;
 }
 
 .config-value {
-  color: var(--text-primary, #f8fafc);
+  color: var(--text-primary, #e2e8f0);
   font-weight: 500;
+  font-size: 0.95rem;
+  text-align: right;
 }
 
 /* Botões de ação */
 .config-btn-danger {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 8px 20px;
-  background: #ef4444;
+  padding: 10px 24px;
+  background: var(--danger-bg, #b60000);
   color: white;
   border: none;
   border-radius: 40px;
   font-weight: 500;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s;
+  box-shadow: var(--danger-shadow, 0 4px 10px rgba(0, 0, 0, 0.3));
+  letter-spacing: -0.2px;
 }
 
 .config-btn-danger:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
+  background: #5f0000;
+  transition: background 0.3s ease;
 }
 
 .config-btn-toggle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 8px 20px;
-  background: #334155;
-  color: white;
-  border: none;
+  padding: 10px 24px;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  border: 1px solid var(--toggle-border, #334155);
   border-radius: 40px;
+  font-weight: 500;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s;
+  box-shadow: var(--toggle-shadow, 0 4px 10px rgba(0, 0, 0, 0.2));
+  letter-spacing: -0.2px;
 }
 
 .config-btn-toggle:hover {
-  background: #475569;
-  transform: translateY(-2px);
+  background: #2b2b2b;
+  transition: background 0.3s ease;
 }
 
 /* Responsividade */
 @media (max-width: 640px) {
   .config-main {
-    padding: 20px 16px;
+    padding: 24px 16px;
   }
+
+  .config-section {
+    padding: 24px 20px;
+    border-radius: 18px;
+  }
+
   .config-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 10px;
   }
+
+  .config-value {
+    text-align: left;
+  }
+
   .config-btn-danger,
   .config-btn-toggle {
     width: 100%;

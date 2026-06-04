@@ -62,6 +62,7 @@ export default function Sidebar() {
         </button>
 
         <div className="logo">
+          <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="logo-image" />
           <h2>ManusFinance</h2>
         </div>
       </div>
@@ -69,17 +70,17 @@ export default function Sidebar() {
       <nav className="sidebarMenu">
         <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
           <LayoutDashboard size={19} />
-          <span>Dashboard</span>
+          <span>Página inicial</span>
         </NavLink>
 
         <NavLink to="/receitas" className={({ isActive }) => (isActive ? "active" : "")}>
           <TrendingUp size={19} />
-          <span>Receitas</span>
+          <span>Rendas Fixas</span>
         </NavLink>
 
         <NavLink to="/despesas" className={({ isActive }) => (isActive ? "active" : "")}>
           <TrendingDown size={19} />
-          <span>Despesas</span>
+          <span>Despesas Fixas</span>
         </NavLink>
 
         <NavLink
@@ -87,7 +88,7 @@ export default function Sidebar() {
           className={({ isActive }) => (isActive ? "active" : "")}
         >
           <WalletCards size={19} />
-          <span>Contas a Receber</span>
+          <span>Ganhos</span>
         </NavLink>
 
         <NavLink
@@ -95,7 +96,7 @@ export default function Sidebar() {
           className={({ isActive }) => (isActive ? "active" : "")}
         >
           <WalletCards size={19} />
-          <span>Contas a Pagar</span>
+          <span>Gastos</span>
         </NavLink>
 
         <NavLink

@@ -104,7 +104,7 @@ export default function Register() {
       </div>
 
       <div className="right-panel">
-        <h1>Criar Conta</h1>
+        <h1>Crie sua conta</h1>
 
         {erro && <p className="error-msg">{erro}</p>}
         {sucesso && <p className="success-msg">{sucesso}</p>}

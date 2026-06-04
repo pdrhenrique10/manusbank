@@ -4,33 +4,8 @@
     "nome": "Pedro",
     "email": "pedro@email.com",
     "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
-    "saldo": 500,
-    "transacoes": [
-      {
-        "id": 1780447661503,
-        "tipo": "saque",
-        "valor": 600,
-        "descricao": "luz",
-        "data": "2026-07-03",
-        "categoria": "luz"
-      },
-      {
-        "id": 1780447686072,
-        "tipo": "deposito",
-        "valor": 1300,
-        "descricao": "salário",
-        "data": "2026-06-03",
-        "categoria": "salário"
-      },
-      {
-        "id": 1780447718772,
-        "tipo": "saque",
-        "valor": 200,
-        "descricao": "agua",
-        "data": "2026-07-03",
-        "categoria": "agua"
-      }
-    ],
+    "saldo": 0,
+    "transacoes": [],
     "contasReceber": [],
     "nextContaReceberId": 4,
     "contasPagar": [],
@@ -240,5 +215,20 @@
     ],
     "nextMetaId": 2,
     "criadoEm": "2026-06-03T01:01:45.083Z"
+  },
+  {
+    "id": 1780545733655,
+    "nome": "Testes",
+    "email": "teste@gmail.com",
+    "senha": "289160db0d9f39f9ae1754c4ec9c16f90b50e32e09c5fb5481ae642b3d3d1a36",
+    "saldo": 0,
+    "transacoes": [],
+    "contasReceber": [],
+    "nextContaReceberId": 2,
+    "contasPagar": [],
+    "nextContaPagarId": 1,
+    "metas": [],
+    "nextMetaId": 2,
+    "criadoEm": "2026-06-04T04:02:13.655Z"
   }
 ]

@@ -1,80 +1,75 @@
-/* RESET BÁSICO – idealmente isso fica num global, mas deixei aqui */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: var(--bg-main);
-  color: var(--text-primary);
-}
-
-/* LAYOUT GERAL */
+/* ==========================================================================
+   Layout geral
+   ========================================================================== */
 
 .cr-container {
   width: 100%;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+  padding: 48px 32px;
+  background: var(--bg-main);
+  color: var(--text-primary);
 }
 
 .cr-card {
   width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  padding: 32px 32px 36px;
-  border-radius: 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
-  overflow-y: auto;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0;
 }
 
-/* HEADER */
+/* ==========================================================================
+   Header
+   ========================================================================== */
 
 .cr-header {
-  text-align: center;
   margin-bottom: 24px;
+  text-align: left;
 }
 
 .cr-header h1 {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
+  margin: 0 0 4px;
+  color: var(--text-primary);
   font-size: 28px;
   font-weight: 700;
-  color: #60a5fa;
-  margin-bottom: 8px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.cr-header h1 svg {
+  color: #22c55e;
 }
 
 .subtitle {
+  margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
+  font-weight: 400;
 }
 
-/* RESUMO */
+/* ==========================================================================
+   Resumo
+   ========================================================================== */
 
 .cr-resumo-card {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 20px 24px;
-  margin-bottom: 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 20px 24px;
+  background: var(--bg-card);
   border: 1px solid var(--border-soft);
+  border-radius: 14px;
 }
 
 .cr-resumo-item {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .cr-resumo-item svg {
@@ -82,22 +77,28 @@ body {
 }
 
 .cr-resumo-label {
+  margin-bottom: 4px;
   color: var(--text-secondary);
-  font-size: 13px;
-  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .cr-resumo-valor {
   color: var(--text-primary);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0;
 }
 
 .cr-resumo-item-secundario {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: #4ade80;
+  gap: 8px;
+  color: #f59e0b;
+  font-weight: 500;
 }
 
 .cr-resumo-secundario-label {
@@ -105,53 +106,69 @@ body {
   font-size: 13px;
 }
 
-/* BOTÃO NOVA CONTA */
+/* ==========================================================================
+   Botao principal
+   ========================================================================== */
 
 .cr-btn-nova {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #22c55e;
-  color: #0f172a;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 24px;
+  width: auto;
+  min-width: 210px;
+  min-height: 48px;
+  margin: 0 0 32px auto;
+  padding: 0 20px;
+  background: #16a34a;
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .cr-btn-nova:hover {
-  background: #16a34a;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.25);
+  background: #15803d;
 }
 
-/* GRÁFICO */
+.cr-btn-nova:active {
+  transform: translateY(1px);
+}
+
+.cr-btn-nova:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+}
+
+/* ==========================================================================
+   Grafico
+   ========================================================================== */
 
 .cr-grafico-section {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .cr-grafico-section h2 {
+  margin: 0 0 16px;
   color: var(--text-primary);
   font-size: 18px;
-  margin-bottom: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 
 .cr-grafico-container {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 16px 20px;
-  border: 1px solid var(--border-soft);
-  min-height: 250px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
 }
 
 .cr-grafico-vazio {
@@ -159,272 +176,181 @@ body {
   font-size: 14px;
 }
 
-/* LISTA */
+/* ==========================================================================
+   Lista de contas a receber
+   ========================================================================== */
 
 .cr-lista {
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 .cr-lista h2 {
+  margin: 0 0 16px;
   color: var(--text-primary);
   font-size: 18px;
-  margin-bottom: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 
 .cr-lista-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 320px;
-  overflow-y: auto;
+  gap: 12px;
 }
 
 .cr-lista-vazia {
+  padding: 32px;
   background: var(--bg-card);
-  border-radius: 12px;
-  padding: 24px;
+  border: 1px dashed var(--border-soft);
+  border-radius: 14px;
   text-align: center;
-  border: 1px solid var(--border-soft);
 }
 
 .cr-lista-vazia p {
+  margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
 }
 
 .cr-item {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 14px 16px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-card);
   border: 1px solid var(--border-soft);
-  transition: border-color 0.2s ease, transform 0.1s ease,
-    box-shadow 0.2s ease;
+  border-radius: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .cr-item:hover {
-  border-color: #22c55e;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  background: rgba(148, 163, 184, 0.06);
+  border-color: rgba(34, 197, 94, 0.45);
 }
 
 .cr-info h3 {
-  color: var(--text-primary);
-  font-size: 15px;
-  margin-bottom: 2px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .cr-data {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 13px;
+}
+
+.cr-valor-e-remover {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .cr-valor {
   color: #22c55e;
   font-size: 16px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
-/* AÇÕES E BOTÃO "MARCAR COMO PAGA" */
+/* ==========================================================================
+   Acoes e status
+   ========================================================================== */
 
 .cr-acoes {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cr-btn-acao {
-  padding: 6px 12px;
-  font-size: 12px;
+  min-height: 30px;
+  padding: 0 12px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
   border-radius: 999px;
-  border: none;
+  color: #4ade80;
   cursor: pointer;
-  background: #22c55e;
-  color: #0f172a;
+  font-size: 12px;
   font-weight: 600;
-  transition: background 0.2s ease, transform 0.1s ease,
-    box-shadow 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .cr-btn-acao:hover {
   background: #16a34a;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.25);
+  border-color: #16a34a;
+  color: #ffffff;
 }
 
-/* STATUS CHIPS */
+.cr-btn-acao:active {
+  transform: translateY(1px);
+}
+
+.cr-btn-acao:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+}
 
 .cr-status {
-  display: inline-block;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
   border-radius: 999px;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .cr-status.pago {
-  background-color: #bbf7d0;
-  color: #166534;
+  background: rgba(34, 197, 94, 0.14);
+  color: #4ade80;
 }
 
 .cr-status.pendente {
-  background-color: #fef9c3;
-  color: #854d0e;
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
 }
 
 .cr-status.atrasado {
-  background-color: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
 }
 
-/* MODAL */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.modal-conteudo {
-  background: var(--bg-card);
-  border-radius: 20px;
-  padding: 24px 24px 28px;
-  width: 100%;
-  max-width: 440px;
-  border: 1px solid var(--border-soft);
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
-  position: relative;
-}
-
-.modal-fechar {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
-  padding: 6px;
-  border-radius: 999px;
-}
-
-.modal-fechar:hover {
-  color: var(--text-primary);
-  background: rgba(148, 163, 184, 0.25);
-}
-
-.modal-conteudo h2 {
-  color: var(--text-primary);
-  font-size: 20px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-/* FORMULÁRIO */
-
-.cr-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.form-group input {
-  padding: 12px;
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  background: var(--bg-main);
-  color: var(--text-primary);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease,
-    background 0.2s ease;
-}
-
-.form-group input::placeholder {
-  color: #64748b;
-}
-
-.form-group input:focus {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
-}
-
-/* BOTÃO SALVAR */
-
-.btn-salvar {
-  margin-top: 4px;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #22c55e;
-  color: #0f172a;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease,
-    box-shadow 0.2s ease;
-}
-
-.btn-salvar:hover {
-  background: #16a34a;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.25);
-}
-
-.cr-valor-e-remover {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Botão remover conta a receber */
 .cr-btn-remover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid rgba(248, 113, 113, 0.5);
-  background: rgba(248, 113, 113, 0.08);
-  color: #f87171;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 50%;
+  color: #ef4444;
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.1s ease,
-    box-shadow 0.15s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .cr-btn-remover:hover {
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(248, 113, 113, 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.35);
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.cr-btn-remover:active {
+  transform: translateY(1px);
+}
+
+.cr-btn-remover:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
 }
 
 .cr-btn-remover svg {
@@ -432,24 +358,241 @@ body {
   height: 16px;
 }
 
-/* RESPONSIVO */
+/* ==========================================================================
+   Modal
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.18s ease-out;
+}
+
+.modal-conteudo {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.22s ease-out;
+}
+
+.modal-conteudo h2 {
+  margin: 0 0 24px;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.modal-fechar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.modal-fechar:hover {
+  background: rgba(148, 163, 184, 0.14);
+  color: var(--text-primary);
+}
+
+.modal-fechar:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+}
+
+/* ==========================================================================
+   Formulario
+   ========================================================================== */
+
+.cr-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder {
+  color: #64748b;
+}
+
+.form-group input:focus {
+  background: var(--bg-card);
+  border-color: #16a34a;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+}
+
+.form-group input[type="date"] {
+  color-scheme: dark;
+}
+
+body:not(.dark) .form-group input[type="date"] {
+  color-scheme: light;
+}
+
+.btn-salvar {
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 0 20px;
+  background: #16a34a;
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.btn-salvar:hover {
+  background: #15803d;
+}
+
+.btn-salvar:active {
+  transform: translateY(1px);
+}
+
+.btn-salvar:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+}
+
+/* ==========================================================================
+   Animacoes
+   ========================================================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Responsivo
+   ========================================================================== */
 
 @media (max-width: 768px) {
-  .cr-card {
-    padding: 20px 16px 24px;
+  .cr-container {
+    padding: 20px 16px;
+  }
+
+  .cr-header {
+    margin-bottom: 20px;
+  }
+
+  .cr-header h1 {
+    font-size: 24px;
   }
 
   .cr-resumo-card {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .cr-resumo-item {
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .cr-resumo-item-secundario {
+    justify-content: space-between;
+  }
+
+  .cr-resumo-valor {
+    font-size: 22px;
+  }
+
+  .cr-btn-nova {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .cr-grafico-container {
+    min-height: 240px;
+    padding: 16px;
   }
 
   .cr-item {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .cr-acoes {
+    width: 100%;
     align-items: flex-start;
+  }
+
+  .cr-valor-e-remover {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .modal-conteudo {
+    padding: 24px;
   }
 }

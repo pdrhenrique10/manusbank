@@ -312,10 +312,10 @@ function ContasPagar() {
             <header className="cp-header">
               <h1>
                 <CreditCard size={32} />
-                Contas a Pagar
+                Gastos não-fixos
               </h1>
               <p className="subtitle">
-                Controle suas contas pendentes para pagar
+                Controle seus gastos imprevistos que surgem no dia-a-dia.
               </p>
             </header>
 
@@ -451,11 +451,11 @@ function ContasPagar() {
             <div className="modal-overlay" onClick={() => setModalAberto(false)}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={() => setModalAberto(false)}><X size={24} /></button>
-                <h2>Nova Conta a Pagar</h2>
+                <h2>Nova Gasto</h2>
                 <form className="cp-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
-                    <label htmlFor="titulo">Título da conta</label>
-                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Luz, Internet, Pix fulano..." autocomplete="off" value={novaConta.titulo} onChange={handleInputChange} />
+                    <label htmlFor="titulo">Nome</label>
+                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Pix de alguém, lanche/compra na rua, etc." autocomplete="off" value={novaConta.titulo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="tipo">Tipo (opcional)</label>

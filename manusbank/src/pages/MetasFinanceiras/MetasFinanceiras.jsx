@@ -351,7 +351,7 @@ function MetasFinanceiras() {
                 <Target size={32} />
                 Metas Financeiras
               </h1>
-              <p className="subtitle">Defina e acompanhe suas metas materiais</p>
+              <p className="subtitle">Defina e acompanhe suas metas materiais.</p>
             </header>
 
             {erro && <p className="erro-msg">{erro}</p>}

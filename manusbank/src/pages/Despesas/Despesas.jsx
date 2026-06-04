@@ -266,8 +266,8 @@ function Despesas() {
         <div className="despesas-container">
           <div className="despesas-card">
             <header className="despesas-header">
-              <h1><Wallet size={32} /> Despesas</h1>
-              <p className="subtitle">Gerencie suas saídas de dinheiro</p>
+              <h1><Wallet size={32} /> Despesas Fixas</h1>
+              <p className="subtitle">Gerencie seus gastos fixos de dinheiro.</p>
             </header>
  
             {erro && <p className="erro-msg">{erro}</p>}
