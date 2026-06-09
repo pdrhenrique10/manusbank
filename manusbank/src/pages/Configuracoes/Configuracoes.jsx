@@ -67,7 +67,6 @@ function Configuracoes() {
           {/* Título da página com ícone */}
           <header className="config-header">
             <h1>
-              <Settings size={28} />
               Configurações
             </h1>
             <p className="config-subtitle">Ajuste preferências da sua conta e do sistema.</p>

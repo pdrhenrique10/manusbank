@@ -123,7 +123,7 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -133,7 +133,7 @@
   padding: 18px 20px;
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
-  border-radius: 14px;
+  border-radius: 10px;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
@@ -151,10 +151,6 @@
 
 .blue {
   border-top: 3px solid #38bdf8;
-}
-
-.yellow {
-  border-top: 3px solid #eab308;
 }
 
 .iconBox {

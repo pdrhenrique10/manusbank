@@ -58,7 +58,7 @@ export default function Sidebar() {
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="sidebarTop">
         <button className="menuButton" onClick={handleToggleSidebar}>
-          {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          {isCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
         </button>
 
         <div className="logo">

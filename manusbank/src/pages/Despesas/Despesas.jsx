@@ -266,7 +266,7 @@ function Despesas() {
         <div className="despesas-container">
           <div className="despesas-card">
             <header className="despesas-header">
-              <h1><Wallet size={32} /> Despesas Fixas</h1>
+              <h1>Despesas Fixas</h1>
               <p className="subtitle">Gerencie seus gastos fixos de dinheiro.</p>
             </header>
  

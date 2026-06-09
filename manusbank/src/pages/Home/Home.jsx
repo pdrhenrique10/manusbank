@@ -55,7 +55,7 @@ const about = [
   {
     icon: <GraduationCap size={26} />,
     title: "Projeto acadêmico",
-    desc: "Desenvolvido por estudantes da turma de T.I para a FeiraTech, e também utilizaremos para o TCC do SENAI.",
+    desc: "Desenvolvido por um grupo de estudantes da turma de Informática para a FeiraTech, que também será utilizado para o TCC do SENAI.",
   },
   {
     icon: <Users size={26} />,

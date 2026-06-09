@@ -248,7 +248,7 @@ function Receitas() {
         <div className="receitas-container">
           <div className="receitas-card">
             <header className="receitas-header">
-              <h1><Wallet size={32} /> Rendas Fixas</h1>
+              <h1> Rendas Fixas</h1>
               <p className="subtitle">Gerencie suas rendas fixas de dinheiro.</p>
             </header>
  

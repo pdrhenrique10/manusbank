@@ -34,7 +34,6 @@ function salvarUsuarios(usuarios) {
   fs.writeFileSync(USUARIOS_FILE, JSON.stringify(usuarios, null, 2));
 }
 
-// Retorna a data atual no fuso local, formato YYYY-MM-DD
 function dataHoje() {
   const agora = new Date();
   const ano = agora.getFullYear();
@@ -44,52 +43,29 @@ function dataHoje() {
 }
 
 // ===== LÓGICA DE PERÍODO =====
-//
-// Cada período define uma janela: [dataInicio, dataFim].
-// dataFim é sempre hoje.
-// dataInicio varia por período:
-//
-//   "mes"  → 1º dia do mês atual
-//   "3m"   → hoje − 90 dias (últimos 3 meses corridos)
-//   "6m"   → hoje − 180 dias (últimos 6 meses corridos)
-//   "ano"  → 1º de janeiro do ano atual
-//
-// Uma transação entra no filtro se:
-//   dataInicio <= t.data <= dataFim
-//
-// NOTA: mesmo que o período "não tenha passado todo" (ex: estamos no
-// dia 4 e o período é "esse mês"), os dados existentes são exibidos
-// normalmente. O frontend mostra o que há, e o backend sinaliza
-// se há ou não dados via `temDados`.
-
 function calcularJanela(periodo) {
-  const hoje = dataHoje(); // "YYYY-MM-DD"
+  const hoje = dataHoje();
   const [ano, mes] = hoje.split("-").map(Number);
 
   let dataInicio;
 
   if (periodo === "mes") {
-    // Do 1º dia do mês atual até hoje
     dataInicio = `${ano}-${String(mes).padStart(2, "0")}-01`;
 
   } else if (periodo === "3m") {
-    // Últimos 90 dias corridos
-    const d = new Date();
-    d.setDate(d.getDate() - 90);
-    dataInicio = d.toISOString().slice(0, 10);
+    const d = new Date(ano, mes - 1, 1);
+    d.setMonth(d.getMonth() - 2);
+    dataInicio = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 
   } else if (periodo === "6m") {
-    // Últimos 180 dias corridos
-    const d = new Date();
-    d.setDate(d.getDate() - 180);
-    dataInicio = d.toISOString().slice(0, 10);
+    const d = new Date(ano, mes - 1, 1);
+    d.setMonth(d.getMonth() - 5);
+    dataInicio = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 
   } else if (periodo === "ano") {
-    // Do 1º de janeiro do ano atual até hoje
     dataInicio = `${ano}-01-01`;
 
   } else {
-    // Fallback: mês atual
     dataInicio = `${ano}-${String(mes).padStart(2, "0")}-01`;
   }
 
@@ -97,7 +73,6 @@ function calcularJanela(periodo) {
 }
 
 function dentroDoPeriodo(dataStr, dataInicio, dataFim) {
-  // Comparação de strings funciona corretamente para datas no formato YYYY-MM-DD
   return dataStr >= dataInicio && dataStr <= dataFim;
 }
 
@@ -213,7 +188,6 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   const periodosValidos = ["mes", "3m", "6m", "ano"];
   const periodo = periodosValidos.includes(req.query.periodo) ? req.query.periodo : "mes";
 
-  // Define a janela de datas com base no período selecionado
   const { dataInicio, dataFim } = calcularJanela(periodo);
 
   const tiposReceita = ["deposito", "transferenciaEntrada"];
@@ -224,7 +198,6 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   const despesasPorCategoria = {};
   const evolucaoPorMes = {};
 
-  // Filtra apenas as transações dentro da janela [dataInicio, dataFim]
   const transacoesFiltradas = transacoes.filter((t) =>
     t.data && dentroDoPeriodo(t.data, dataInicio, dataFim)
   );
@@ -260,10 +233,8 @@ app.get("/api/relatorios", autenticar, (req, res) => {
     a.nome.localeCompare(b.nome)
   );
 
-  // temDados é a fonte da verdade — o frontend não precisa recalcular
   const temDados = transacoesFiltradas.length > 0;
 
-  // Mensagem descritiva para o frontend exibir quando não há dados
   const labelsPeriodo = { mes: "este mês", "3m": "nos últimos 3 meses", "6m": "nos últimos 6 meses", ano: "este ano" };
   const mensagem = temDados
     ? null
@@ -271,8 +242,6 @@ app.get("/api/relatorios", autenticar, (req, res) => {
 
   res.json({
     periodo,
-    dataInicio,  // Exposto para o frontend exibir a janela exata ao usuário se quiser
-    dataFim,
     saldoAtual: saldo,
     totalReceitas,
     totalDespesas,

@@ -287,7 +287,6 @@ function ContasReceber() {
           <div className="cr-card">
             <header className="cr-header">
               <h1>
-                <WalletCards size={32} />
                 Ganhos não-fixos
               </h1>
               <p className="subtitle">Controle o dinheiro que você recebe de rendas a parte.</p>

@@ -221,12 +221,113 @@
     "nome": "Testes",
     "email": "teste@gmail.com",
     "senha": "289160db0d9f39f9ae1754c4ec9c16f90b50e32e09c5fb5481ae642b3d3d1a36",
-    "saldo": 0,
-    "transacoes": [],
-    "contasReceber": [],
-    "nextContaReceberId": 2,
-    "contasPagar": [],
-    "nextContaPagarId": 1,
+    "saldo": 7180,
+    "transacoes": [
+      {
+        "id": 1780959790735,
+        "tipo": "deposito",
+        "valor": 5000,
+        "descricao": "Salário ",
+        "data": "2026-06-08",
+        "categoria": "Salário "
+      },
+      {
+        "id": 1780959800630,
+        "tipo": "saque",
+        "valor": 600,
+        "descricao": "Aluguel",
+        "data": "2026-06-08",
+        "categoria": "Aluguel"
+      },
+      {
+        "id": 1780959807830,
+        "tipo": "saque",
+        "valor": 200,
+        "descricao": "Luz",
+        "data": "2026-06-08",
+        "categoria": "Luz"
+      },
+      {
+        "id": 1780959818214,
+        "tipo": "saque",
+        "valor": 1000,
+        "descricao": "Mercado",
+        "data": "2026-06-08",
+        "categoria": "Mercado"
+      },
+      {
+        "id": 1780959919577,
+        "tipo": "saque",
+        "valor": 20,
+        "descricao": "Pagamento: Lanche na rua",
+        "data": "2026-06-08",
+        "categoria": "geral"
+      },
+      {
+        "id": 1780959990617,
+        "tipo": "saque",
+        "valor": 2000,
+        "descricao": "Pagamento: Celular novo",
+        "data": "2026-06-08",
+        "categoria": "geral"
+      },
+      {
+        "id": 1780960060481,
+        "tipo": "deposito",
+        "valor": 6000,
+        "descricao": "Recebimento: Venda de iphone",
+        "data": "2026-06-08",
+        "categoria": "Contas a Receber"
+      }
+    ],
+    "contasReceber": [
+      {
+        "id": 2,
+        "cliente": "PS5 ",
+        "valor": 3000,
+        "vencimento": "2026-06-10",
+        "descricao": "vendi meu ps5 ",
+        "status": "pago",
+        "dataRecebimento": "2026-06-08",
+        "dataUltimaCobranca": null
+      },
+      {
+        "id": 3,
+        "cliente": "Venda de iphone",
+        "valor": 6000,
+        "vencimento": "2026-06-12",
+        "descricao": "",
+        "status": "pago",
+        "dataRecebimento": "2026-06-08",
+        "dataUltimaCobranca": null
+      }
+    ],
+    "nextContaReceberId": 4,
+    "contasPagar": [
+      {
+        "id": 1,
+        "titulo": "Lanche na rua",
+        "tipo": "geral",
+        "valor": 20,
+        "vencimento": "2026-06-10",
+        "descricao": "lanchei na rua ",
+        "status": "pago",
+        "dataPagamento": "2026-06-08",
+        "dataCriacao": "2026-06-08"
+      },
+      {
+        "id": 2,
+        "titulo": "Celular novo",
+        "tipo": "geral",
+        "valor": 2000,
+        "vencimento": "2026-06-11",
+        "descricao": "",
+        "status": "pago",
+        "dataPagamento": "2026-06-08",
+        "dataCriacao": "2026-06-08"
+      }
+    ],
+    "nextContaPagarId": 3,
     "metas": [],
     "nextMetaId": 2,
     "criadoEm": "2026-06-04T04:02:13.655Z"

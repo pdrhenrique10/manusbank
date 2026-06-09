@@ -5,14 +5,13 @@
 .cr-container {
   width: 100%;
   min-height: 100vh;
-  padding: 48px 32px;
+  padding: 32px;
   background: var(--bg-main);
   color: var(--text-primary);
 }
 
 .cr-card {
   width: 100%;
-  max-width: 1040px;
   margin: 0 auto;
   padding: 0;
 }

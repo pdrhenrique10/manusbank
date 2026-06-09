@@ -226,15 +226,6 @@ export default function Dashboard() {
             <span>Gastos do mês</span>
             <p>Saídas registradas neste mês.</p>
           </div>
-
-          <div className="card yellow">
-            <div className="iconBox yellowBg">
-              <PiggyBank size={18} />
-            </div>
-            <h2>{formatMoney(sobraMesAtual)}</h2>
-            <span>Sobra do mês</span>
-            <p>Entradas menos gastos.</p>
-          </div>
         </section>
 
         <section className="quickActions">

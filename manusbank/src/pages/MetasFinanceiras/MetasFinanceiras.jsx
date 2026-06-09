@@ -348,7 +348,6 @@ function MetasFinanceiras() {
           <div className="mf-card">
             <header className="mf-header">
               <h1>
-                <Target size={32} />
                 Metas Financeiras
               </h1>
               <p className="subtitle">Defina e acompanhe suas metas materiais.</p>

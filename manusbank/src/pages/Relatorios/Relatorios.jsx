@@ -176,7 +176,6 @@ function Relatorios() {
           <div className="rel-card">
             <header className="rel-header">
               <h1>
-                <BarChart2 size={28} />
                 Relatórios
               </h1>
               <p className="subtitle">Analise entradas, gastos, sobra e categorias por período.</p>

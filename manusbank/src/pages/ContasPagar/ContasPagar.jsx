@@ -311,7 +311,6 @@ function ContasPagar() {
           <div className="cp-card">
             <header className="cp-header">
               <h1>
-                <CreditCard size={32} />
                 Gastos não-fixos
               </h1>
               <p className="subtitle">
