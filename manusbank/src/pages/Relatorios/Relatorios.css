@@ -1,4 +1,26 @@
 /* ==========================================================================
+   VARIÁVEIS E TEMAS
+   ========================================================================== */
+
+:root {
+  --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --bg-card-solid: #1e293b;
+  --border-soft: rgba(71, 85, 105, 0.5);
+  --border-glow: rgba(56, 189, 248, 0.3);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-blue: #38bdf8;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+/* ==========================================================================
    Layout geral
    ========================================================================== */
 
@@ -8,16 +30,35 @@
   padding: 32px;
   background: var(--bg-main);
   color: var(--text-primary);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.rel-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .rel-card {
+  max-width: 1400px;
   width: 100%;
   margin: 0 auto;
   padding: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .rel-loading {
-  padding: 48px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
   color: var(--text-secondary);
   font-size: 14px;
 }
@@ -27,32 +68,48 @@
    ========================================================================== */
 
 .rel-header {
-  margin-bottom: 24px;
-  text-align: left;
+  margin-bottom: 32px;
+  text-align: center;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .rel-header h1 {
-   display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 12px;
-  margin: 0 0 4px;
-  color: var(--text-primary);
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: 0;
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .rel-header h1 svg {
-  color: #38bdf8;
+  color: var(--accent-blue);
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.3));
 }
 
 .subtitle {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
+  text-align: center;
 }
 
 /* ==========================================================================
@@ -63,12 +120,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding: 14px 16px;
+  gap: 20px;
+  margin-bottom: 28px;
+  padding: 8px 20px;
   background: var(--bg-card);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
-  border-radius: 14px;
+  border-radius: 60px;
+  transition: all 0.3s ease;
+}
+
+.rel-filtros:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow);
 }
 
 .rel-filtros-label {
@@ -78,169 +142,211 @@
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .rel-filtros svg {
-  color: #38bdf8;
+  color: var(--accent-blue);
 }
 
 .rel-periodos {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .rel-periodos button {
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 36px;
+  padding: 0 18px;
   background: transparent;
   border: 1px solid var(--border-soft);
-  border-radius: 999px;
+  border-radius: 40px;
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.rel-periodos button:hover,
+.rel-periodos button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+.rel-periodos button:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+.rel-periodos button:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  transform: translateY(-1px);
+}
+
 .rel-periodos button.ativo {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.45);
-  color: #7dd3fc;
-}
-
-.rel-periodos button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.16);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.05));
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
 }
 
 .rel-janela {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 /* ==========================================================================
-   Resumo — mesma estrutura dos cards de metas
+   Cards de resumo
    ========================================================================== */
 
 .rel-resumo {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 20px;
   margin-bottom: 32px;
 }
 
 .rel-resumo-card {
-  min-width: 0;
+  position: relative;
   padding: 20px 24px;
   background: var(--bg-card);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
-  border-radius: 14px;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.rel-resumo-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+}
+
+.rel-resumo-card:hover::before {
+  transform: translateX(100%);
 }
 
 .rel-resumo-card:hover {
-  background: rgba(148, 163, 184, 0.06);
+  transform: translateY(-4px);
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
 .rel-resumo-card.saldo {
-  border-color: rgba(56, 189, 248, 0.45);
+  border-left: 3px solid var(--accent-blue);
 }
 
 .rel-resumo-card.receita,
 .rel-resumo-card.positivo {
-  border-color: rgba(34, 197, 94, 0.45);
+  border-left: 3px solid var(--accent-green);
 }
 
 .rel-resumo-card.despesa,
 .rel-resumo-card.negativo {
-  border-color: rgba(239, 68, 68, 0.45);
+  border-left: 3px solid var(--accent-red);
 }
 
 .rel-resumo-label {
-  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.1em;
 }
 
 .rel-resumo-valor {
   margin: 0;
-  color: var(--text-primary);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.15;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.rel-resumo-card.saldo .rel-resumo-valor     { color: #38bdf8; }
+.rel-resumo-card.saldo .rel-resumo-valor { 
+  color: var(--accent-blue);
+  text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+}
+
 .rel-resumo-card.receita .rel-resumo-valor,
-.rel-resumo-card.positivo .rel-resumo-valor  { color: #22c55e; }
+.rel-resumo-card.positivo .rel-resumo-valor { 
+  color: var(--accent-green);
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
 .rel-resumo-card.despesa .rel-resumo-valor,
-.rel-resumo-card.negativo .rel-resumo-valor  { color: #ef4444; }
-
-/* ==========================================================================
-   Estados vazios — mesmo estilo de .mf-lista-vazia
-   ========================================================================== */
-
-.rel-empty {
-  padding: 32px;
-  background: var(--bg-card);
-  border: 1px dashed var(--border-soft);
-  border-radius: 14px;
-  text-align: center;
-}
-
-.rel-empty svg {
-  color: #38bdf8;
-  margin-bottom: 12px;
-}
-
-.rel-empty h2 {
-  margin: 0 0 8px;
-  color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.rel-empty p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
+.rel-resumo-card.negativo .rel-resumo-valor { 
+  color: var(--accent-red);
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
 /* ==========================================================================
-   Gráficos e insights — mesma estrutura de .mf-grafico-section
+   Seções de gráficos
    ========================================================================== */
 
 .rel-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.75fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.8fr);
+  gap: 24px;
   margin-bottom: 32px;
 }
 
 .rel-grafico-section,
 .rel-insights {
-  padding: 20px;
+  padding: 24px;
   background: var(--bg-card);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
-  border-radius: 14px;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  border-radius: 24px;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.rel-grafico-section {
-  margin-bottom: 32px;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .rel-grafico-section:hover,
 .rel-insights:hover {
-  background: rgba(148, 163, 184, 0.06);
-  border-color: rgba(59, 130, 246, 0.45);
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.rel-grafico-section {
+  margin-bottom: 32px;
 }
 
 .rel-grid .rel-grafico-section {
@@ -252,7 +358,9 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-soft);
 }
 
 .rel-section-header h2 {
@@ -260,47 +368,53 @@
   align-items: center;
   gap: 8px;
   margin: 0 0 4px;
-  color: var(--text-primary);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: 0;
+  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .rel-section-header p {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .rel-section-header svg {
-  color: #38bdf8;
+  color: var(--accent-blue);
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.rel-section-header:hover svg {
+  transform: scale(1.1);
 }
 
 .rel-grafico-container {
-  min-height: 280px;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.rel-grafico-vazio {
-  margin: 0;
-  padding: 32px;
-  background: var(--bg-card);
-  border: 1px dashed var(--border-soft);
-  border-radius: 14px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  text-align: center;
-}
+/* ==========================================================================
+   Insights
+   ========================================================================== */
 
-/* Insights — mesmo ritmo visual dos .mf-item */
 .rel-insight {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 12px 0;
+  gap: 12px;
+  padding: 16px 0;
   border-bottom: 1px solid var(--border-soft);
+  transition: transform 0.2s ease;
+}
+
+.rel-insight:hover {
+  transform: translateX(4px);
 }
 
 .rel-insight:last-child {
@@ -311,16 +425,30 @@
   width: 8px;
   height: 8px;
   margin-top: 6px;
-  background: #38bdf8;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
 }
 
 .rel-insight p {
   margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.5;
+  font-weight: 500;
 }
 
 /* ==========================================================================
@@ -330,22 +458,26 @@
 .rel-tabela-categorias {
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid var(--border-soft);
+  border-top: 2px solid var(--border-soft);
+  animation: fadeInUp 0.6s ease-out 0.2s both;
 }
 
 .rel-tabela-categorias h3 {
-  margin: 0 0 16px;
-  color: var(--text-primary);
-  font-size: 18px;
+  margin: 0 0 20px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 1.3;
+  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .rel-tabela {
   width: 100%;
   background: var(--bg-card);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
-  border-radius: 14px;
+  border-radius: 16px;
   border-collapse: separate;
   border-spacing: 0;
   overflow: hidden;
@@ -353,22 +485,32 @@
 
 .rel-tabela th,
 .rel-tabela td {
-  padding: 14px 16px;
+  padding: 16px 20px;
   text-align: left;
   border-bottom: 1px solid var(--border-soft);
 }
 
 .rel-tabela th {
+  background: rgba(56, 189, 248, 0.05);
   color: var(--text-primary);
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+}
+
+.rel-tabela tr {
+  transition: background 0.2s ease;
+}
+
+.rel-tabela tr:hover td {
+  background: rgba(56, 189, 248, 0.05);
 }
 
 .rel-tabela td {
   color: var(--text-secondary);
   font-size: 14px;
+  font-weight: 500;
 }
 
 .rel-tabela tr:last-child td {
@@ -379,105 +521,311 @@
   display: inline-block;
   width: 10px;
   height: 10px;
-  margin-right: 8px;
+  margin-right: 10px;
   border-radius: 50%;
   vertical-align: middle;
+  box-shadow: 0 0 8px currentColor;
 }
 
 /* ==========================================================================
-   Feedback
+   Estados vazios
+   ========================================================================== */
+
+.rel-empty {
+  padding: 48px 32px;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 2px dashed var(--border-soft);
+  border-radius: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.rel-empty:hover {
+  border-color: var(--accent-blue);
+  box-shadow: var(--shadow-glow);
+}
+
+.rel-empty svg {
+  color: var(--accent-blue);
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.3));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.rel-empty h2 {
+  margin: 0 0 12px;
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rel-empty p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   Feedback de erro
    ========================================================================== */
 
 .erro-msg {
-  margin-bottom: 20px;
-  padding: 12px 14px;
+  margin-bottom: 24px;
+  padding: 14px 20px;
   background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
   color: #f87171;
   font-size: 14px;
-  font-weight: 500;
-  text-align: left;
+  font-weight: 600;
+  text-align: center;
+  animation: shake 0.5s ease-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
 }
 
 /* ==========================================================================
-   Recharts
+   Gráficos Recharts - Estilização avançada
    ========================================================================== */
 
-.recharts-wrapper,
-.recharts-wrapper svg,
+.recharts-wrapper {
+  outline: none !important;
+}
+
 .recharts-surface {
   outline: none !important;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(71, 85, 105, 0.3);
 }
 
 .recharts-tooltip-wrapper {
   outline: none !important;
 }
 
+.recharts-default-tooltip {
+  background: rgba(30, 41, 59, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid var(--border-glow) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 12px 16px !important;
+}
+
+.recharts-tooltip-label {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+}
+
+.recharts-bar-rectangle {
+  transition: all 0.2s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.recharts-bar-rectangle:hover {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  opacity: 0.9;
+}
+
+/* ==========================================================================
+   Scrollbar personalizada
+   ========================================================================== */
+
+.rel-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.rel-container::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: 10px;
+}
+
+.rel-container::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 10px;
+}
+
+.rel-container::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+}
+
+/* Botões para alternar tipo de gráfico */
+.rel-tipo-grafico {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.rel-tipo-grafico button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 14px;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-soft);
+  border-radius: 40px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.rel-tipo-grafico button:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  transform: translateY(-1px);
+}
+
+.rel-tipo-grafico button.ativo {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
 /* ==========================================================================
    Responsivo
    ========================================================================== */
 
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .rel-resumo {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
+  
+  .rel-resumo-valor {
+    font-size: 24px;
+  }
+}
 
+@media (max-width: 1024px) {
+  .rel-container {
+    padding: 24px;
+  }
+  
   .rel-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .rel-resumo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
   .rel-container {
-    padding: 20px 16px;
+    padding: 16px;
   }
-
-  .rel-header {
-    margin-bottom: 20px;
-  }
-
+  
   .rel-header h1 {
     font-size: 24px;
   }
-
-  .rel-filtros {
-    align-items: flex-start;
-    flex-direction: column;
+  
+  .subtitle {
+    font-size: 13px;
   }
-
+  
+  .rel-filtros {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 20px;
+    padding: 16px;
+  }
+  
   .rel-periodos {
     width: 100%;
     overflow-x: auto;
-    padding-bottom: 2px;
+    padding-bottom: 4px;
   }
-
+  
   .rel-periodos button {
     white-space: nowrap;
   }
-
+  
   .rel-resumo {
     grid-template-columns: 1fr;
-    margin-bottom: 24px;
+    gap: 12px;
   }
-
+  
+  .rel-resumo-card {
+    padding: 16px 20px;
+  }
+  
+  .rel-resumo-valor {
+    font-size: 22px;
+  }
+  
   .rel-grafico-section,
   .rel-insights {
     padding: 16px;
   }
-
-  .rel-grafico-container {
-    min-height: 240px;
+  
+  .rel-section-header h2 {
+    font-size: 18px;
   }
-
+  
+  .rel-grafico-container {
+    min-height: 280px;
+  }
+  
   .rel-tabela {
     display: block;
     overflow-x: auto;
   }
-
+  
   .rel-tabela th,
   .rel-tabela td {
-    padding: 12px;
+    padding: 12px 16px;
     white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .rel-container {
+    padding: 12px;
+  }
+  
+  .rel-header h1 {
+    font-size: 20px;
+    gap: 8px;
+  }
+  
+  .rel-header h1 svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .rel-resumo-card {
+    padding: 12px 16px;
+  }
+  
+  .rel-resumo-valor {
+    font-size: 20px;
+  }
+  
+  .rel-grafico-container {
+    min-height: 240px;
   }
 }

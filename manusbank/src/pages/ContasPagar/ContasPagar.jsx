@@ -340,14 +340,14 @@ function ContasPagar() {
             </div>
 
             <button className="cp-btn-nova" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> Nova Conta a Pagar
+              <Plus size={20} /> Novo Gasto 
             </button>
 
             <section className="cp-grafico-section">
-              <h2>Contas por Título (pendentes)</h2>
+              <h2>Gastos por Título (pendentes)</h2>
               <div className="cp-grafico-container">
                 {carregando ? (
-                  <div className="cp-grafico-vazio"><p>Carregando contas...</p></div>
+                  <div className="cp-grafico-vazio"><p>Carregando gastos...</p></div>
                 ) : dadosGrafico.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={dadosGrafico}>
@@ -363,16 +363,16 @@ function ContasPagar() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="cp-grafico-vazio"><p>Não há contas pendentes</p></div>
+                  <div className="cp-grafico-vazio"><p>Não há gastos pendentes</p></div>
                 )}
               </div>
             </section>
 
             <section className="cp-lista">
-              <h2>Lista de Contas a Pagar</h2>
+              <h2>Lista de Gastos</h2>
               <div className="cp-lista-container">
                 {carregando ? (
-                  <div className="cp-lista-vazia"><p>Carregando contas...</p></div>
+                  <div className="cp-lista-vazia"><p>Carregando gastos...</p></div>
                 ) : contas.length > 0 ? (
                   contas.map(conta => {
                     const isPendente = conta.status === "pendente";
@@ -440,7 +440,7 @@ function ContasPagar() {
                     );
                   })
                 ) : (
-                  <div className="cp-lista-vazia"><p>Nenhuma conta cadastrada</p></div>
+                  <div className="cp-lista-vazia"><p>Nenhum gasto cadastrado</p></div>
                 )}
               </div>
             </section>
@@ -454,7 +454,7 @@ function ContasPagar() {
                 <form className="cp-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
                     <label htmlFor="titulo">Nome</label>
-                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Pix de alguém, lanche/compra na rua, etc." autocomplete="off" value={novaConta.titulo} onChange={handleInputChange} />
+                    <input type="text" id="titulo" name="titulo" autocomplete="off" value={novaConta.titulo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="tipo">Tipo (opcional)</label>
@@ -470,9 +470,9 @@ function ContasPagar() {
                   </div>
                   <div className="form-group">
                     <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: conta de casa, dinheiro devendo..." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
+                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Pix de alguém, lanche/compra na rua, etc." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar Conta</button>
+                  <button type="submit" className="btn-salvar">Salvar Gasto</button>
                 </form>
               </div>
             </div>

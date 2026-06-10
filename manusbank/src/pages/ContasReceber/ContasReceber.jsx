@@ -308,20 +308,20 @@ function ContasReceber() {
               <div className="cr-resumo-item-secundario">
                 <CalendarClock size={20} />
                 <p className="cr-resumo-secundario-label">
-                  {contas.filter(c => c.status === "pendente").length} contas pendentes
+                  {contas.filter(c => c.status === "pendente").length} ganhos pendentes
                 </p>
               </div>
             </div>
 
             <button className="cr-btn-nova" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> Novo ganho
+              <Plus size={20} /> Novo Ganho
             </button>
 
             <section className="cr-grafico-section">
               <h2>Ganhos cadastrados</h2>
               <div className="cr-grafico-container">
                 {carregando ? (
-                  <div className="cr-grafico-vazio"><p>Carregando contas...</p></div>
+                  <div className="cr-grafico-vazio"><p>Carregando ganhos...</p></div>
                 ) : dadosGrafico.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={dadosGrafico}>
@@ -337,7 +337,7 @@ function ContasReceber() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="cr-grafico-vazio"><p>Não há contas pendentes</p></div>
+                  <div className="cr-grafico-vazio"><p>Não há ganhos pendentes</p></div>
                 )}
               </div>
             </section>
@@ -346,7 +346,7 @@ function ContasReceber() {
               <h2>Lista de ganhos registrados</h2>
               <div className="cr-lista-container">
                 {carregando ? (
-                  <div className="cr-lista-vazia"><p>Carregando contas...</p></div>
+                  <div className="cr-lista-vazia"><p>Carregando ganhos...</p></div>
                 ) : contas.length > 0 ? (
                   contas.map(conta => {
                     const isPendente = conta.status === "pendente";
@@ -406,7 +406,7 @@ function ContasReceber() {
                     );
                   })
                 ) : (
-                  <div className="cr-lista-vazia"><p>Nenhuma conta cadastrada</p></div>
+                  <div className="cr-lista-vazia"><p>Nenhum ganho cadastrado</p></div>
                 )}
               </div>
             </section>
@@ -434,7 +434,7 @@ function ContasReceber() {
                     <label htmlFor="descricao">Descrição (opcional)</label>
                     <input type="text" id="descricao" name="descricao" placeholder="Ex: Empréstimo para amigo X" autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar Conta</button>
+                  <button type="submit" className="btn-salvar">Salvar Ganho</button>
                 </form>
               </div>
             </div>

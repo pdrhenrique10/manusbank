@@ -180,7 +180,7 @@ app.get("/api/dashboard", autenticar, (req, res) => {
   });
 });
 
-// ===== RELATÓRIOS =====
+// ===== RELATÓRIOS CORRIGIDO =====
 app.get("/api/relatorios", autenticar, (req, res) => {
   const transacoes = req.usuario.transacoes || [];
   const saldo = req.usuario.saldo || 0;
@@ -196,6 +196,7 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   let totalReceitas = 0;
   let totalDespesas = 0;
   const despesasPorCategoria = {};
+  const receitasPorCategoria = {};
   const evolucaoPorMes = {};
 
   const transacoesFiltradas = transacoes.filter((t) =>
@@ -211,11 +212,16 @@ app.get("/api/relatorios", autenticar, (req, res) => {
       evolucaoPorMes[mesKey] = { nome: mesKey, receitas: 0, despesas: 0 };
     }
 
+    // Processar receitas
     if (tiposReceita.includes(t.tipo)) {
       totalReceitas += valor;
       evolucaoPorMes[mesKey].receitas += valor;
+      
+      const categoria = t.categoria || t.descricao || "Receitas";
+      receitasPorCategoria[categoria] = (receitasPorCategoria[categoria] || 0) + valor;
     }
 
+    // Processar despesas
     if (tiposDespesa.includes(t.tipo)) {
       totalDespesas += valor;
       evolucaoPorMes[mesKey].despesas += valor;
@@ -225,7 +231,12 @@ app.get("/api/relatorios", autenticar, (req, res) => {
     }
   });
 
-  const categoriasArray = Object.entries(despesasPorCategoria)
+  // Ordenar categorias por valor (maior para menor)
+  const gastosPorCategoria = Object.entries(despesasPorCategoria)
+    .map(([nome, valor]) => ({ nome, valor }))
+    .sort((a, b) => b.valor - a.valor);
+
+  const entradasPorCategoria = Object.entries(receitasPorCategoria)
     .map(([nome, valor]) => ({ nome, valor }))
     .sort((a, b) => b.valor - a.valor);
 
@@ -235,20 +246,102 @@ app.get("/api/relatorios", autenticar, (req, res) => {
 
   const temDados = transacoesFiltradas.length > 0;
 
-  const labelsPeriodo = { mes: "este mês", "3m": "nos últimos 3 meses", "6m": "nos últimos 6 meses", ano: "este ano" };
+  const labelsPeriodo = { 
+    mes: "este mês", 
+    "3m": "nos últimos 3 meses", 
+    "6m": "nos últimos 6 meses", 
+    ano: "este ano" 
+  };
+  
   const mensagem = temDados
     ? null
     : `Você ainda não registrou nenhuma transação ${labelsPeriodo[periodo]}.`;
 
+  // Calcular sobra e taxa de economia
+  const sobra = totalReceitas - totalDespesas;
+  const taxaEconomia = totalReceitas > 0 ? (sobra / totalReceitas) * 100 : 0;
+
   res.json({
     periodo,
     saldoAtual: saldo,
+    totalEntradas: totalReceitas,
+    totalGastos: totalDespesas,
     totalReceitas,
     totalDespesas,
-    despesasPorCategoria: categoriasArray,
+    sobra,
+    taxaEconomia: Math.round(taxaEconomia),
+    gastosPorCategoria,
+    entradasPorCategoria,
+    despesasPorCategoria: gastosPorCategoria,
     evolucaoMensal,
     temDados,
     mensagem,
+    // Dados para o gráfico de comparação Entradas x Gastos
+    comparativoMensal: evolucaoMensal.map(m => ({
+      mes: m.nome,
+      entradas: m.receitas,
+      gastos: m.despesas
+    }))
+  });
+});
+
+// ===== ENDPOINT ESPECÍFICO PARA GRÁFICO =====
+app.get("/api/relatorios/grafico", autenticar, (req, res) => {
+  const transacoes = req.usuario.transacoes || [];
+  const periodo = req.query.periodo || "mes";
+  
+  const { dataInicio, dataFim } = calcularJanela(periodo);
+  
+  const tiposReceita = ["deposito", "transferenciaEntrada"];
+  const tiposDespesa = ["saque", "transferenciaSaida"];
+  
+  // Dados para gráfico de barras (entradas vs gastos por mês)
+  const dadosPorMes = {};
+  
+  transacoes.forEach(t => {
+    if (!t.data || t.data < dataInicio || t.data > dataFim) return;
+    
+    const [ano, mes] = t.data.split("-");
+    const chave = `${ano}-${mes}`;
+    const nomeMes = new Date(ano, parseInt(mes) - 1).toLocaleString('pt-BR', { month: 'short' });
+    
+    if (!dadosPorMes[chave]) {
+      dadosPorMes[chave] = { mes: nomeMes, entradas: 0, gastos: 0 };
+    }
+    
+    const valor = Number(t.valor) || 0;
+    if (tiposReceita.includes(t.tipo)) {
+      dadosPorMes[chave].entradas += valor;
+    } else if (tiposDespesa.includes(t.tipo)) {
+      dadosPorMes[chave].gastos += valor;
+    }
+  });
+  
+  // Ordenar por data
+  const comparativoMensal = Object.keys(dadosPorMes)
+    .sort()
+    .map(key => dadosPorMes[key]);
+  
+  // Dados para gráfico de pizza (gastos por categoria)
+  const gastosPorCategoria = {};
+  transacoes.forEach(t => {
+    if (!t.data || t.data < dataInicio || t.data > dataFim) return;
+    if (!tiposDespesa.includes(t.tipo)) return;
+    
+    const categoria = t.categoria || t.descricao || "Outros";
+    const valor = Number(t.valor) || 0;
+    gastosPorCategoria[categoria] = (gastosPorCategoria[categoria] || 0) + valor;
+  });
+  
+  const categorias = Object.entries(gastosPorCategoria)
+    .map(([nome, valor]) => ({ nome, valor }))
+    .sort((a, b) => b.valor - a.valor);
+  
+  res.json({
+    comparativoMensal,
+    gastosPorCategoria: categorias,
+    totalEntradas: comparativoMensal.reduce((sum, m) => sum + m.entradas, 0),
+    totalGastos: comparativoMensal.reduce((sum, m) => sum + m.gastos, 0)
   });
 });
 
@@ -518,4 +611,4 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📁 Usuários salvos em: ${USUARIOS_FILE}`);
-});
+}); 

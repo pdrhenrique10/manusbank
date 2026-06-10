@@ -1,68 +1,162 @@
-/* ========== Config Page – Temas dinâmicos (sem transições) ========== */
+/* ==========================================================================
+   VARIÁVEIS E TEMAS (mesmas do sistema)
+   ========================================================================== */
+
+:root {
+  --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --bg-card-solid: #1e293b;
+  --border-soft: rgba(71, 85, 105, 0.5);
+  --border-glow: rgba(59, 130, 246, 0.3);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-blue: #38bdf8;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
+  --divider-color: rgba(71, 85, 105, 0.3);
+  --row-hover-bg: rgba(56, 189, 248, 0.05);
+  --danger-bg: #dc2626;
+  --danger-hover: #b91c1c;
+  --toggle-border: rgba(71, 85, 105, 0.5);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+/* ==========================================================================
+   Layout principal
+   ========================================================================== */
 
 .config-main {
   flex: 1;
   padding: 48px 32px;
-  background: var(--bg-main, #0b1120);
-  color: var(--text-primary, #e2e8f0);
+  background: var(--bg-main);
+  color: var(--text-primary);
   overflow-y: auto;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  position: relative;
+}
+
+.config-main::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .config-container {
+  width: 100%;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
-/* Cabeçalho */
+/* ==========================================================================
+   Cabeçalho
+   ========================================================================== */
+
 .config-header {
   margin-bottom: 40px;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .config-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--text-primary, #f1f5f9);
-  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 12px;
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .config-header h1 svg {
-  color: var(--accent-color, #60a5fa);
-  flex-shrink: 0;
+  color: var(--accent-blue);
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.3));
 }
 
 .config-subtitle {
-  color: var(--text-secondary, #94a3b8);
-  font-size: 1rem;
+  color: var(--text-secondary);
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.5;
 }
 
-/* Cartão de seção */
+/* ==========================================================================
+   Cartão de seção
+   ========================================================================== */
+
 .config-section {
-  background: var(--bg-card, #111827);
-  border-radius: 20px;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
   padding: 28px 32px;
   margin-bottom: 24px;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
-  backdrop-filter: blur(2px);
+  border: 1px solid var(--border-soft);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.config-section:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
 }
 
 .config-section h2 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 24px;
-  color: var(--text-primary, #cbd5e1);
   display: flex;
   align-items: center;
-  gap: 8px;
-  letter-spacing: -0.2px;
+  gap: 10px;
+  margin: 0 0 24px;
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
 }
 
-/* Avatar */
+.config-section h2 svg {
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Avatar
+   ========================================================================== */
+
 .config-avatar-row {
   display: flex;
   justify-content: center;
@@ -74,38 +168,53 @@
   height: 112px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--avatar-border, #334155);
-  box-shadow: var(--avatar-shadow, 0 0 0 4px rgba(59, 130, 246, 0.15), 0 10px 20px rgba(0, 0, 0, 0.4));
+  border: 3px solid var(--border-soft);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15), var(--shadow-lg);
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .config-avatar-img:hover {
-  transform: scale(1.02);
-  box-shadow: var(--avatar-shadow-hover, 0 0 0 4px rgba(59, 130, 246, 0.25), 0 14px 28px rgba(0, 0, 0, 0.5));
+  transform: scale(1.05);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), var(--shadow-lg);
+  border-color: var(--accent-blue);
 }
 
 .config-avatar {
   width: 112px;
   height: 112px;
   border-radius: 50%;
-  background: var(--avatar-bg, linear-gradient(180deg, #0034a3, #050030));
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 44px;
-  font-weight: 600;
+  font-size: 48px;
+  font-weight: 700;
   color: white;
-  border: 3px solid var(--avatar-border, #334155);
-  box-shadow: var(--avatar-shadow, 0 0 0 4px rgba(59, 130, 246, 0.15), 0 10px 20px rgba(0, 0, 0, 0.4));
+  border: 3px solid var(--border-soft);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15), var(--shadow-lg);
   user-select: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-/* Linhas de informação */
+.config-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), var(--shadow-lg);
+  border-color: var(--accent-blue);
+}
+
+/* ==========================================================================
+   Linhas de informação
+   ========================================================================== */
+
 .config-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--divider-color, rgba(255, 255, 255, 0.05));
+  padding: 16px 0;
+  border-bottom: 1px solid var(--divider-color);
+  transition: all 0.2s ease;
 }
 
 .config-row:last-child {
@@ -113,104 +222,326 @@
 }
 
 .config-row:hover {
-  background: var(--row-hover-bg, rgba(255, 255, 255, 0.02));
+  background: var(--row-hover-bg);
   margin: 0 -12px;
   padding-left: 12px;
   padding-right: 12px;
-  border-radius: 8px;
+  border-radius: 12px;
+  border-bottom-color: transparent;
 }
 
 .config-text {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--text-secondary, #94a3b8);
-  font-size: 0.95rem;
-  font-weight: 450;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .config-icon {
-  color: var(--accent-color, #60a5fa);
+  color: var(--accent-blue);
   flex-shrink: 0;
-  stroke-width: 1.8;
+  transition: transform 0.2s ease;
+}
+
+.config-row:hover .config-icon {
+  transform: scale(1.1);
 }
 
 .config-value {
-  color: var(--text-primary, #e2e8f0);
-  font-weight: 500;
-  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
   text-align: right;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
 }
 
-/* Botões de ação */
+/* ==========================================================================
+   Botões de ação
+   ========================================================================== */
+
 .config-btn-danger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 24px;
-  background: var(--danger-bg, #b60000);
+  gap: 10px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, var(--danger-bg), var(--danger-hover));
   color: white;
   border: none;
   border-radius: 40px;
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  box-shadow: var(--danger-shadow, 0 4px 10px rgba(0, 0, 0, 0.3));
-  letter-spacing: -0.2px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.config-btn-danger::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.config-btn-danger:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .config-btn-danger:hover {
-  background: #5f0000;
-  transition: background 0.3s ease;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
+}
+
+.config-btn-danger:active {
+  transform: translateY(0);
 }
 
 .config-btn-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 24px;
-  background: var(--bg-main);
+  gap: 10px;
+  padding: 12px 28px;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
   color: var(--text-primary);
-  border: 1px solid var(--toggle-border, #334155);
+  border: 1px solid var(--toggle-border);
   border-radius: 40px;
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  box-shadow: var(--toggle-shadow, 0 4px 10px rgba(0, 0, 0, 0.2));
-  letter-spacing: -0.2px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.config-btn-toggle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.config-btn-toggle:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .config-btn-toggle:hover {
-  background: #2b2b2b;
-  transition: background 0.3s ease;
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
 }
 
-/* Responsividade */
-@media (max-width: 640px) {
+.config-btn-toggle:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Scrollbar personalizada
+   ========================================================================== */
+
+.config-main::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.config-main::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: 10px;
+}
+
+.config-main::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 10px;
+}
+
+.config-main::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+}
+
+/* ==========================================================================
+   Animações
+   ========================================================================== */
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Responsividade
+   ========================================================================== */
+
+@media (max-width: 1024px) {
   .config-main {
-    padding: 24px 16px;
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .config-main {
+    padding: 24px 20px;
+  }
+
+  .config-header {
+    margin-bottom: 32px;
+  }
+
+  .config-header h1 {
+    font-size: 24px;
+  }
+
+  .config-subtitle {
+    font-size: 13px;
   }
 
   .config-section {
-    padding: 24px 20px;
-    border-radius: 18px;
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .config-section h2 {
+    font-size: 16px;
+    margin-bottom: 20px;
   }
 
   .config-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
+    padding: 14px 0;
   }
 
   .config-value {
     text-align: left;
+    width: auto;
   }
 
   .config-btn-danger,
   .config-btn-toggle {
     width: 100%;
     justify-content: center;
+    padding: 10px 20px;
+  }
+
+  .config-avatar-img,
+  .config-avatar {
+    width: 88px;
+    height: 88px;
+    font-size: 36px;
+  }
+
+  .config-avatar-row {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .config-main {
+    padding: 16px 12px;
+  }
+
+  .config-header h1 {
+    font-size: 20px;
+  }
+
+  .config-header h1 svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .config-subtitle {
+    font-size: 12px;
+  }
+
+  .config-section {
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
+
+  .config-section h2 {
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+
+  .config-section h2 svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .config-row {
+    padding: 12px 0;
+  }
+
+  .config-text {
+    font-size: 13px;
+    gap: 10px;
+  }
+
+  .config-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .config-value {
+    font-size: 13px;
+    padding: 2px 10px;
+  }
+
+  .config-btn-danger,
+  .config-btn-toggle {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .config-btn-danger svg,
+  .config-btn-toggle svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .config-avatar-img,
+  .config-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 28px;
   }
 }
