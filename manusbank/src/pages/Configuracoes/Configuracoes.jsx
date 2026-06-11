@@ -12,6 +12,8 @@ import {
   Settings,
   Palette,
   ShieldCheck,
+  AlertTriangle,
+  X,
 } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 
@@ -20,6 +22,8 @@ function Configuracoes() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const [logoutTimer, setLogoutTimer] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -44,6 +48,33 @@ function Configuracoes() {
     navigate("/login");
   };
 
+  const showLogoutWarning = () => {
+    setShowToast(true);
+    
+    // Timer para esconder o toast após 5 segundos
+    const timer = setTimeout(() => {
+      setShowToast(false);
+    }, 5000);
+    
+    setLogoutTimer(timer);
+  };
+
+  const confirmLogout = () => {
+    // Limpa o timer do toast se existir
+    if (logoutTimer) {
+      clearTimeout(logoutTimer);
+    }
+    setShowToast(false);
+    handleLogout();
+  };
+
+  const cancelLogout = () => {
+    setShowToast(false);
+    if (logoutTimer) {
+      clearTimeout(logoutTimer);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -59,16 +90,13 @@ function Configuracoes() {
     user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase();
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
       <Sidebar />
       <main className="config-main">
         <div className="config-container">
-
           {/* Título da página com ícone */}
           <header className="config-header">
-            <h1>
-              Configurações
-            </h1>
+            <h1>Configurações</h1>
             <p className="config-subtitle">Ajuste preferências da sua conta e do sistema.</p>
           </header>
 
@@ -112,7 +140,7 @@ function Configuracoes() {
               <div className="config-text">
                 <LogOut size={16} className="config-icon" /> Sair da conta:
               </div>
-              <button className="config-btn-danger" onClick={handleLogout}>
+              <button className="config-btn-danger" onClick={showLogoutWarning}>
                 <LogOut size={18} /> Sair
               </button>
             </div>
@@ -139,9 +167,32 @@ function Configuracoes() {
               </button>
             </div>
           </section>
-
         </div>
       </main>
+
+      {/* Toast de aviso no topo */}
+      {showToast && (
+        <div className="toast-warning">
+          <div className="toast-content">
+            <AlertTriangle size={20} className="toast-icon" />
+            <div className="toast-message">
+              <strong>Atenção!</strong> Você tem certeza que deseja sair da conta? 
+              Você precisará fazer login novamente para acessar o sistema.
+            </div>
+          </div>
+          <div className="toast-actions">
+            <button className="toast-btn-cancel" onClick={cancelLogout}>
+              Cancelar
+            </button>
+            <button className="toast-btn-confirm" onClick={confirmLogout}>
+              Confirmar
+            </button>
+          </div>
+          <button className="toast-close" onClick={cancelLogout}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

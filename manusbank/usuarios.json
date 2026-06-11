@@ -4,57 +4,14 @@
     "nome": "Pedro",
     "email": "pedro@email.com",
     "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
-    "saldo": 6800,
-    "transacoes": [
-      {
-        "id": 1781053208519,
-        "tipo": "deposito",
-        "valor": 5000,
-        "descricao": "salario",
-        "data": "2026-06-02",
-        "categoria": "salario"
-      },
-      {
-        "id": 1781053242014,
-        "tipo": "saque",
-        "valor": 700,
-        "descricao": "aluguel",
-        "data": "2026-06-02",
-        "categoria": "aluguel"
-      },
-      {
-        "id": 1781053292351,
-        "tipo": "deposito",
-        "valor": 3000,
-        "descricao": "salario",
-        "data": "2026-07-06",
-        "categoria": "salario"
-      },
-      {
-        "id": 1781053311887,
-        "tipo": "saque",
-        "valor": 500,
-        "descricao": "aluguel",
-        "data": "2026-07-10",
-        "categoria": "aluguel"
-      }
-    ],
+    "saldo": 0,
+    "transacoes": [],
     "contasReceber": [],
-    "nextContaReceberId": 4,
+    "nextContaReceberId": 5,
     "contasPagar": [],
     "nextContaPagarId": 8,
-    "metas": [
-      {
-        "id": 2,
-        "titulo": "pc gamer",
-        "valorAlvo": 8000,
-        "valorAtual": 0,
-        "dataMeta": "2026-10-09",
-        "descricao": "",
-        "dataCriacao": "2026-06-09"
-      }
-    ],
-    "nextMetaId": 3,
+    "metas": [],
+    "nextMetaId": 4,
     "criadoEm": "2026-06-02T17:40:15.077Z"
   },
   {

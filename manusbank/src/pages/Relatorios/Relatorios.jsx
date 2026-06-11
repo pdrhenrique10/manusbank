@@ -224,30 +224,6 @@ function Relatorios() {
                   </button>
                 ))}
               </div>
-
-              {/* Botão para alternar tipo de gráfico */}
-              {dadosEvolucao.length > 0 && (
-                <div className="rel-tipo-grafico">
-                  <button
-                    type="button"
-                    className={tipoGrafico === "linha" ? "ativo" : ""}
-                    onClick={() => setTipoGrafico("linha")}
-                    title="Gráfico de linhas"
-                  >
-                    <LineChart size={16} />
-                    Linhas
-                  </button>
-                  <button
-                    type="button"
-                    className={tipoGrafico === "barra" ? "ativo" : ""}
-                    onClick={() => setTipoGrafico("barra")}
-                    title="Gráfico de barras"
-                  >
-                    <TrendIcon size={16} />
-                    Barras
-                  </button>
-                </div>
-              )}
             </section>
 
             {/* CARDS DE RESUMO */}
@@ -331,60 +307,6 @@ function Relatorios() {
     </ResponsiveContainer>
   </div>
 </section>
-
-                {/* GRÁFICO DE EVOLUÇÃO MENSAL (LINHA OU BARRA) */}
-                {dadosEvolucao.length > 0 && (
-                  <section className="rel-grafico-section">
-                    <div className="rel-section-header">
-                      <div>
-                        <h2>
-                          <LineChart size={18} />
-                          Evolução Mensal
-                        </h2>
-                        <p>Entradas e gastos mês a mês</p>
-                      </div>
-                    </div>
-                    <div className="rel-grafico-container" style={{ height: 350 }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        {tipoGrafico === "linha" ? (
-                          <ReLineChart data={dadosEvolucao} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.3)" />
-                            <XAxis dataKey="mes" stroke="#94a3b8" />
-                            <YAxis tickFormatter={(value) => formatMoney(value)} stroke="#94a3b8" />
-                            <Tooltip formatter={(value) => formatMoney(value)} contentStyle={{ backgroundColor: '#1e293b', borderColor: '#38bdf8' }} />
-                            <Legend wrapperStyle={{ color: '#94a3b8' }} />
-                            <Line 
-                              type="monotone" 
-                              dataKey="Entradas" 
-                              stroke="#10b981" 
-                              strokeWidth={3}
-                              dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                              activeDot={{ r: 6 }}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="Gastos" 
-                              stroke="#ef4444" 
-                              strokeWidth={3}
-                              dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
-                              activeDot={{ r: 6 }}
-                            />
-                          </ReLineChart>
-                        ) : (
-                          <BarChart data={dadosEvolucao} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.3)" />
-                            <XAxis dataKey="mes" stroke="#94a3b8" />
-                            <YAxis tickFormatter={(value) => formatMoney(value)} stroke="#94a3b8" />
-                            <Tooltip formatter={(value) => formatMoney(value)} contentStyle={{ backgroundColor: '#1e293b', borderColor: '#38bdf8' }} />
-                            <Legend wrapperStyle={{ color: '#94a3b8' }} />
-                            <Bar dataKey="Entradas" fill="#10b981" radius={[6, 6, 0, 0]} />
-                            <Bar dataKey="Gastos" fill="#ef4444" radius={[6, 6, 0, 0]} />
-                          </BarChart>
-                        )}
-                      </ResponsiveContainer>
-                    </div>
-                  </section>
-                )}
 
                 {/* INSIGHTS */}
                 <section className="rel-insights">
