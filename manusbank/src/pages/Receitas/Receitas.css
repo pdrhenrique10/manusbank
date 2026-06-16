@@ -1,10 +1,9 @@
 /* ==========================================================================
-   VARIÁVEIS E TEMAS (mesmas do sistema)
+   VARIÁVEIS E TEMAS (PADRONIZADO COM O DASHBOARD)
    ========================================================================== */
-
 :root {
   --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  --bg-card: rgba(30, 41, 59, 0.7);
+  --bg-card: rgba(30, 41, 59, 0.92);
   --bg-card-solid: #1e293b;
   --border-soft: rgba(71, 85, 105, 0.5);
   --border-glow: rgba(56, 189, 248, 0.3);
@@ -15,63 +14,37 @@
   --accent-red: #ef4444;
   --accent-purple: #8b5cf6;
   --accent-orange: #f97316;
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+  --accent-yellow: #eab308;
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 8px 25px rgba(56, 189, 248, 0.15);
 }
 
 /* ==========================================================================
-   Layout geral
+   LAYOUT GERAL
    ========================================================================== */
-
 .receitas-container {
-  width: 100%;
-  min-height: 100vh;
-  padding: 32px;
+  flex: 1;
+  padding: clamp(16px, 4vw, 48px) clamp(12px, 3vw, 32px);
   background: var(--bg-main);
-  color: var(--text-primary);
   position: relative;
-}
-
-.receitas-container::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
-  pointer-events: none;
+  z-index: 1;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .receitas-card {
   width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  position: relative;
-  z-index: 1;
 }
 
 /* ==========================================================================
-   Header
+   HEADER (Animação ultra-rápida e fluida)
    ========================================================================== */
-
 .receitas-header {
-  margin-bottom: 32px;
-  text-align: left;
-  animation: fadeInDown 0.6s ease-out;
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  margin-bottom: clamp(24px, 3vw, 32px);
+  animation: fadeInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
 }
 
 .receitas-header h1 {
@@ -84,60 +57,67 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-size: 32px;
+  font-size: clamp(20px, 3vw, 32px);
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .receitas-header h1 svg {
   color: var(--accent-blue);
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.3));
 }
 
 .subtitle {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: clamp(13px, 1.5vw, 15px);
   font-weight: 400;
-  text-align: left;
 }
 
 /* ==========================================================================
-   Resumo
+   RESUMO / PANÉIS (Layout e Comportamento Unificados)
    ========================================================================== */
+.resumo-card,
+.grafico-section,
+.lista-receitas {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  will-change: transform, opacity;
+  contain: layout style paint;
+}
 
 .resumo-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 24px;
-  padding: 24px 28px;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-soft);
+  margin-bottom: 28px;
+  padding: clamp(16px, 3vw, 28px) clamp(16px, 3vw, 32px);
+  border-radius: 24px;
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.grafico-section,
+.lista-receitas {
+  min-width: 0;
+  padding: clamp(16px, 2.5vw, 24px);
   border-radius: 20px;
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.6s ease-out;
+  margin-bottom: 24px;
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.resumo-card:hover {
+.resumo-card:hover,
+.grafico-section:hover,
+.lista-receitas:hover {
   border-color: var(--border-glow);
-  box-shadow: var(--shadow-glow);
   transform: translateY(-2px);
 }
 
+.resumo-card:hover { box-shadow: var(--shadow-glow); }
+.grafico-section:hover, .lista-receitas:hover { box-shadow: var(--shadow-md); }
+
+/* Conteúdo interno do Resumo */
 .resumo-item {
   display: flex;
   align-items: center;
@@ -145,31 +125,28 @@
 }
 
 .resumo-item svg {
-  color: var(--accent-green);
-  filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.3));
+color: var(--accent-green)
+fill: var(--accent-green) !important;
 }
 
 .resumo-label {
-  margin-bottom: 4px;
+  display: block;
+  margin-bottom: 8px;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: clamp(10px, 1vw, 11px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
 .resumo-valor {
-  color: var(--text-primary);
-  font-size: 28px;
+  /* Substitui o gradiente que pode causar bugs de compatibilidade em alguns navegadores */
+  color: var(--accent-green) !important; 
+  font-size: clamp(20px, 3vw, 28px);
   font-weight: 800;
   letter-spacing: -0.02em;
-}
-
-.resumo-valor {
-  background: linear-gradient(135deg, var(--accent-green), #059669);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-text-fill-color: initial !important; /* Limpa o override de preenchimento antigo */
+  background: none !important;                 /* Remove o fundo de gradiente conflitante */
 }
 
 .resumo-item-secundario {
@@ -178,101 +155,32 @@
   gap: 8px;
   color: var(--accent-orange);
   font-weight: 600;
+  font-size: 14px;
 }
 
 .resumo-secundario-label {
   color: var(--text-secondary);
   font-size: 13px;
+  font-weight: 500;
 }
 
-/* ==========================================================================
-   Botao principal
-   ========================================================================== */
-
-.btn-nova-receita {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: auto;
-  min-width: 180px;
-  height: 48px;
-  margin: 0 0 32px auto;
-  padding: 0 28px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  border: none;
-  border-radius: 40px;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-nova-receita::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-.btn-nova-receita:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.btn-nova-receita:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
-}
-
-.btn-nova-receita:active {
-  transform: translateY(0);
-}
-
-/* ==========================================================================
-   Grafico
-   ========================================================================== */
-
-.grafico-section {
-  margin-bottom: 32px;
-  animation: fadeInUp 0.6s ease-out;
-}
-
-.grafico-section h2 {
-  margin: 0 0 16px;
-  font-size: 20px;
+/* Títulos internos */
+.grafico-section h2,
+.lista-receitas h2 {
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-soft);
+  font-size: clamp(18px, 2vw, 20px);
   font-weight: 700;
-  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
 }
 
 .grafico-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 320px;
-  padding: 24px;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-soft);
-  border-radius: 20px;
-  transition: all 0.3s ease;
-}
-
-.grafico-container:hover {
-  border-color: var(--border-glow);
-  box-shadow: var(--shadow-glow);
+  min-height: clamp(240px, 30vw, 320px);
+  width: 100%;
 }
 
 .grafico-vazio {
@@ -282,48 +190,95 @@
 }
 
 /* ==========================================================================
-   Lista de receitas
+   BOTÕES DE GRANDE PORTE (DRY - Unificados)
    ========================================================================== */
-
-.lista-receitas {
-  animation: fadeInUp 0.6s ease-out 0.1s both;
+.btn-nova-receita,
+.btn-salvar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  border-radius: 40px;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
 }
 
-.lista-receitas h2 {
-  margin: 0 0 16px;
-  font-size: 20px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.btn-nova-receita {
+  min-width: 180px;
+  margin: 0 0 28px auto;
+  font-size: 14px;
 }
 
+.btn-salvar {
+  font-size: 15px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.btn-nova-receita::before,
+.btn-salvar::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-nova-receita:hover::before,
+.btn-salvar:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.btn-nova-receita:hover,
+.btn-salvar:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+}
+
+.btn-nova-receita:active,
+.btn-salvar:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   LISTA DE RECEITAS
+   ========================================================================== */
 .lista-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .lista-vazia {
-  padding: 48px 32px;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 2px dashed var(--border-soft);
-  border-radius: 20px;
-  text-align: center;
-  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+  padding: 20px;
+  background: rgba(148, 163, 184, 0.05);
+  border: 1px dashed var(--border-soft);
+  border-radius: 14px;
+  color: var(--text-secondary);
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .lista-vazia:hover {
   border-color: var(--accent-blue);
-  box-shadow: var(--shadow-glow);
-}
-
-.lista-vazia p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
+  background: rgba(56, 189, 248, 0.05);
 }
 
 .receita-item {
@@ -331,26 +286,24 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 24px;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-soft);
-  border-radius: 16px;
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.4s ease-out;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-soft);
+  background: transparent;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.receita-item:last-child {
+  border-bottom: none;
 }
 
 .receita-item:hover {
-  background: rgba(148, 163, 184, 0.08);
-  border-color: var(--border-glow);
   transform: translateX(4px);
-  box-shadow: var(--shadow-sm);
 }
 
 .receita-info h3 {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -365,77 +318,49 @@
 .receita-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .receita-valor {
-  color: var(--accent-green);
-  font-size: 18px;
-  font-weight: 800;
+  color: var(--accent-green) !important;
+  font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
-  text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
 }
 
-/* ==========================================================================
-   Botoes de acao
-   ========================================================================== */
-
-.btn-editar-receita {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  border-radius: 50%;
-  color: #3b82f6;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.btn-editar-receita:hover {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: #ffffff;
-  transform: scale(1.05);
-}
-
-.btn-editar-receita:active {
-  transform: translateY(1px);
-}
-
+/* Círculos de ação nos itens */
+.btn-editar-receita,
 .btn-remover-receita {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background: transparent;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  border: 1px solid var(--border-soft);
   border-radius: 50%;
-  color: #ef4444;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
 }
 
-.btn-remover-receita:hover {
-  background: #ef4444;
-  border-color: #ef4444;
-  color: #ffffff;
-  transform: scale(1.05);
+.btn-editar-receita { color: var(--accent-blue); }
+.btn-editar-receita:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent-blue);
+  transform: scale(1.08);
 }
 
-.btn-remover-receita:active {
-  transform: translateY(1px);
+.btn-remover-receita { color: var(--accent-red); }
+.btn-remover-receita:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--accent-red);
+  transform: scale(1.08);
 }
 
 /* ==========================================================================
-   Modal
+   ESTRUTURA DO MODAL
    ========================================================================== */
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -445,46 +370,26 @@
   justify-content: center;
   padding: 20px;
   background: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(4px);
   animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .modal-conteudo {
   position: relative;
   width: 100%;
   max-width: 500px;
-  padding: 32px;
+  padding: clamp(24px, 4vw, 32px);
   background: var(--bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--border-glow);
   border-radius: 24px;
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-  animation: slideUp 0.25s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  contain: layout style paint;
 }
 
 .modal-conteudo h2 {
   margin: 0 0 24px;
-  font-size: 22px;
+  font-size: clamp(20px, 2.5vw, 22px);
   font-weight: 700;
   background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
   -webkit-background-clip: text;
@@ -501,7 +406,6 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  padding: 0;
   background: transparent;
   border: 1px solid var(--border-soft);
   border-radius: 50%;
@@ -511,16 +415,15 @@
 }
 
 .modal-fechar:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: #ef4444;
-  color: #ef4444;
-  transform: rotate(90deg);
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+  transform: rotate(90deg) scale(1.05);
 }
 
 /* ==========================================================================
-   Formulario
+   FORMULÁRIOS INTELLIGENTES (MÚLTIPLOS TEMAS CONFORME DESIGN SISTEMA)
    ========================================================================== */
-
 .forma-receita {
   display: flex;
   flex-direction: column;
@@ -533,6 +436,7 @@
   gap: 8px;
 }
 
+/* Labels padrão */
 .form-group label {
   color: var(--text-secondary);
   font-size: 13px;
@@ -541,172 +445,122 @@
   letter-spacing: 0.05em;
 }
 
-.form-group input {
+/* Correção Universal de Inputs baseada no Light Mode com Fallback Dark */
+.form-group input,
+.modal-conteudo input {
   width: 100%;
   min-height: 48px;
   padding: 0 16px;
-  background: var(--bg-main);
-  border: 1px solid var(--border-soft);
   border-radius: 14px;
-  color: var(--text-primary);
   font-size: 14px;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  
+  /* Reset Forçado para Modo Claro (Garante visibilidade na caixinha branca) */
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
 .form-group input::placeholder {
-  color: #64748b;
+  color: #94a3b8 !important;
 }
 
 .form-group input:focus {
-  background: var(--bg-card);
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15) !important;
 }
 
-.form-group input[type="date"] {
-  color-scheme: dark;
-  padding: 0 16px;
+/* Reversão automática se o modal estiver envelopado em um escopo Dark (.dark) */
+.dark .form-group input,
+.dark .modal-conteudo input {
+  background: #0f172a !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-soft) !important;
 }
 
-.btn-salvar {
-  min-height: 48px;
-  margin-top: 8px;
-  padding: 0 24px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  border: none;
-  border-radius: 40px;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+.dark .form-group input::placeholder {
+  color: #64748b !important;
 }
 
-.btn-salvar::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+.dark .form-group input:focus {
+  background: var(--bg-card-solid) !important;
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15) !important;
 }
 
-.btn-salvar:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.btn-salvar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
-}
-
-.btn-salvar:active {
-  transform: translateY(0);
-}
+/* Controle dos calendários nativos */
+input[type="date"] { color-scheme: light; }
+.dark input[type="date"] { color-scheme: dark; }
 
 /* ==========================================================================
-   Feedback
+   FEEDBACKS, ANIMADORES E SCROLLBAR
    ========================================================================== */
-
-.erro-msg {
+.erro-msg, .sucesso-msg {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0;
   padding: 12px 16px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 12px;
-  color: #f87171;
   font-size: 13px;
   font-weight: 500;
-  animation: shake 0.3s ease-out;
+}
+
+.erro-msg {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  animation: shake 0.2s ease-out;
+}
+
+.sucesso-msg {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Scrollbars */
+.receitas-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.receitas-container::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 10px; }
+.receitas-container::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
+.receitas-container::-webkit-scrollbar-thumb:hover { background: var(--accent-purple); }
+
+/* Keyframes consolidados */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-.sucesso-msg {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 12px 16px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 12px;
-  color: #4ade80;
-  font-size: 13px;
-  font-weight: 500;
-  animation: fadeIn 0.3s ease-out;
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 /* ==========================================================================
-   Scrollbar personalizada
+   MEDIA QUERIES (Apenas para quebra de fluxos estruturais complexos)
    ========================================================================== */
-
-.receitas-container::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.receitas-container::-webkit-scrollbar-track {
-  background: var(--bg-card);
-  border-radius: 10px;
-}
-
-.receitas-container::-webkit-scrollbar-thumb {
-  background: var(--accent-blue);
-  border-radius: 10px;
-}
-
-.receitas-container::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-purple);
-}
-
-/* ==========================================================================
-   Responsivo
-   ========================================================================== */
-
-@media (max-width: 1024px) {
-  .receitas-container {
-    padding: 24px;
-  }
-}
-
 @media (max-width: 768px) {
-  .receitas-container {
-    padding: 20px 16px;
-  }
-
-  .receitas-header {
-    margin-bottom: 24px;
-  }
-
-  .receitas-header h1 {
-    font-size: 24px;
-  }
-  
-  .subtitle {
-    font-size: 13px;
-  }
-
   .resumo-card {
     flex-direction: column;
     align-items: stretch;
     gap: 20px;
-    padding: 20px;
   }
 
   .resumo-item {
@@ -720,95 +574,28 @@
     border-bottom: none;
   }
 
-  .resumo-item-secundario {
-    justify-content: space-between;
-  }
-
-  .resumo-valor {
-    font-size: 24px;
-  }
+  .resumo-item-secundario { justify-content: space-between; }
 
   .btn-nova-receita {
     width: 100%;
-    margin-left: 0;
     margin-bottom: 24px;
   }
 
-  .grafico-container {
-    min-height: 280px;
-    padding: 16px;
-  }
-
   .receita-item {
-    flex-direction: column;
     align-items: flex-start;
-    padding: 16px;
+    flex-direction: column;
+    gap: 8px;
   }
 
+  .receita-actions, .receita-info { 
+    width: 100%; 
+  }
+  
   .receita-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-  
-  .receita-info {
-    width: 100%;
-  }
-  
-  .receita-valor {
-    font-size: 16px;
+    justify-content: space-between;
   }
 
-  .modal-conteudo {
-    padding: 24px;
-    max-width: 90%;
-  }
-  
-  .modal-conteudo h2 {
-    font-size: 20px;
-  }
-  
-  .form-group input {
-    min-height: 44px;
-  }
-}
-
-@media (max-width: 480px) {
-  .receitas-container {
-    padding: 16px 12px;
-  }
-  
-  .receitas-header h1 {
-    font-size: 20px;
-  }
-  
-  .resumo-card {
-    padding: 16px;
-  }
-  
-  .resumo-valor {
-    font-size: 20px;
-  }
-  
-  .resumo-label {
-    font-size: 10px;
-  }
-  
-  .grafico-container {
-    min-height: 240px;
-  }
-  
-  .grafico-section h2,
-  .lista-receitas h2 {
-    font-size: 18px;
-  }
-  
-  .receita-item {
-    padding: 14px;
-  }
-  
-  .btn-editar-receita,
-  .btn-remover-receita {
-    width: 32px;
-    height: 32px;
+  .modal-conteudo { 
+    max-width: 95%; 
   }
 }

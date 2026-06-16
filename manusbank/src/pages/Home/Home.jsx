@@ -82,6 +82,7 @@ export default function Home() {
           <span className="logo">ManusFinance</span>
         </div>
         <nav className="navbar-links">
+          <a href="#">Introdução</a>
           <a href="#funcionalidades">Funcionalidades</a>
           <a href="#como-funciona">Como funciona</a>
           <a href="#sobre">Sobre</a>

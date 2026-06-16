@@ -1,7 +1,6 @@
 /* ==========================================================================
-   VARIÁVEIS E TEMAS (mesmas do sistema)
+   VARIÁVEIS E TEMAS (Alinhadas com o sistema)
    ========================================================================== */
-
 :root {
   --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   --bg-card: rgba(30, 41, 59, 0.7);
@@ -26,12 +25,11 @@
 }
 
 /* ==========================================================================
-   Layout principal
+   LAYOUT PRINCIPAL
    ========================================================================== */
-
 .config-main {
   flex: 1;
-  padding: 48px 32px;
+  padding: clamp(16px, 4vw, 48px) clamp(12px, 3vw, 32px);
   background: var(--bg-main);
   color: var(--text-primary);
   overflow-y: auto;
@@ -41,10 +39,7 @@
 .config-main::before {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
   pointer-events: none;
 }
@@ -57,23 +52,15 @@
 }
 
 /* ==========================================================================
-   Cabeçalho
+   CABEÇALHO
    ========================================================================== */
-
+/* ==========================================================================
+   CABEÇALHO
+   ========================================================================== */
 .config-header {
-  margin-bottom: 40px;
-  animation: fadeInDown 0.6s ease-out;
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  margin-bottom: clamp(24px, 4vw, 40px);
+  /* Acelerado de 0.6s para 0.35s com transição mais fluida */
+  animation: fadeInDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .config-header h1 {
@@ -85,7 +72,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-size: 32px;
+  font-size: clamp(20px, 3vw, 32px);
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -97,35 +84,24 @@
 
 .config-subtitle {
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: clamp(12px, 1.5vw, 15px);
   font-weight: 400;
   line-height: 1.5;
 }
 
 /* ==========================================================================
-   Cartão de seção
+   CARTÃO DE SEÇÃO (CARDS)
    ========================================================================== */
-
 .config-section {
   background: var(--bg-card);
   backdrop-filter: blur(10px);
-  border-radius: 24px;
-  padding: 28px 32px;
-  margin-bottom: 24px;
+  border-radius: clamp(16px, 2vw, 24px);
+  padding: clamp(16px, 3vw, 28px) clamp(16px, 3vw, 32px);
+  margin-bottom: clamp(16px, 2vw, 24px);
   border: 1px solid var(--border-soft);
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Acelerado de 0.6s para 0.4s e adicionado um delay sutil de 0.05s para efeito cascata */
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
 }
 
 .config-section:hover {
@@ -138,8 +114,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 24px;
-  font-size: 18px;
+  margin: 0 0 clamp(16px, 2vw, 24px);
+  font-size: clamp(15px, 2vw, 18px);
   font-weight: 700;
   background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
   -webkit-background-clip: text;
@@ -154,50 +130,41 @@
 }
 
 /* ==========================================================================
-   Avatar
+   AVATAR (AGRUPADO)
    ========================================================================== */
-
 .config-avatar-row {
   display: flex;
   justify-content: center;
-  margin-bottom: 28px;
+  margin-bottom: clamp(16px, 3vw, 28px);
 }
 
-.config-avatar-img {
-  width: 112px;
-  height: 112px;
+.config-avatar-img,
+.config-avatar {
+  width: clamp(72px, 10vw, 112px);
+  height: clamp(72px, 10vw, 112px);
   border-radius: 50%;
-  object-fit: cover;
   border: 3px solid var(--border-soft);
   box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15), var(--shadow-lg);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
 
-.config-avatar-img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), var(--shadow-lg);
-  border-color: var(--accent-blue);
+.config-avatar-img {
+  object-fit: cover;
 }
 
 .config-avatar {
-  width: 112px;
-  height: 112px;
-  border-radius: 50%;
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
+  font-size: clamp(28px, 4vw, 48px);
   font-weight: 700;
   color: white;
-  border: 3px solid var(--border-soft);
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15), var(--shadow-lg);
   user-select: none;
-  transition: all 0.3s ease;
-  cursor: pointer;
 }
 
+.config-avatar-img:hover,
 .config-avatar:hover {
   transform: scale(1.05);
   box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), var(--shadow-lg);
@@ -205,9 +172,8 @@
 }
 
 /* ==========================================================================
-   Linhas de informação
+   LINHAS DE INFORMAÇÃO
    ========================================================================== */
-
 .config-row {
   display: flex;
   align-items: center;
@@ -235,7 +201,7 @@
   align-items: center;
   gap: 12px;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: clamp(13px, 1.5vw, 14px);
   font-weight: 500;
 }
 
@@ -252,7 +218,7 @@
 .config-value {
   color: var(--text-primary);
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(13px, 1.5vw, 14px);
   text-align: right;
   background: rgba(56, 189, 248, 0.1);
   padding: 4px 12px;
@@ -260,73 +226,25 @@
 }
 
 /* ==========================================================================
-   Botões de ação
+   BOTÕES DE AÇÃO (DRY - Otimizado e Unificado)
    ========================================================================== */
-
-.config-btn-danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px 28px;
-  background: linear-gradient(135deg, var(--danger-bg), var(--danger-hover));
-  color: white;
-  border: none;
-  border-radius: 40px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.config-btn-danger::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-.config-btn-danger:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.config-btn-danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
-}
-
-.config-btn-danger:active {
-  transform: translateY(0);
-}
-
+.config-btn-danger,
 .config-btn-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   padding: 12px 28px;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  color: var(--text-primary);
-  border: 1px solid var(--toggle-border);
   border-radius: 40px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(12px, 1.5vw, 14px);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
+.config-btn-danger::before,
 .config-btn-toggle::before {
   content: '';
   position: absolute;
@@ -335,14 +253,47 @@
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(56, 189, 248, 0.2);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition: width 0.6s ease, height 0.6s ease;
 }
 
+.config-btn-danger:hover::before,
 .config-btn-toggle:hover::before {
   width: 300px;
   height: 300px;
+}
+
+.config-btn-danger:active,
+.config-btn-toggle:active {
+  transform: translateY(0);
+}
+
+/* Estilos específicos do Danger */
+.config-btn-danger {
+  background: linear-gradient(135deg, var(--danger-bg), var(--danger-hover));
+  color: white;
+  border: none;
+}
+
+.config-btn-danger::before {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.config-btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
+}
+
+/* Estilos específicos do Toggle */
+.config-btn-toggle {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  border: 1px solid var(--toggle-border);
+}
+
+.config-btn-toggle::before {
+  background: rgba(56, 189, 248, 0.2);
 }
 
 .config-btn-toggle:hover {
@@ -352,61 +303,9 @@
   box-shadow: var(--shadow-glow);
 }
 
-.config-btn-toggle:active {
-  transform: translateY(0);
-}
-
 /* ==========================================================================
-   Scrollbar personalizada
+   TOAST DE AVISO (MODAL / TOAST)
    ========================================================================== */
-
-.config-main::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.config-main::-webkit-scrollbar-track {
-  background: var(--bg-card);
-  border-radius: 10px;
-}
-
-.config-main::-webkit-scrollbar-thumb {
-  background: var(--accent-blue);
-  border-radius: 10px;
-}
-
-.config-main::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-purple);
-}
-
-/* ==========================================================================
-   Animações
-   ========================================================================== */
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
-/* Toast de aviso no topo */
 .toast-warning {
   position: fixed;
   top: 20px;
@@ -417,14 +316,13 @@
   align-items: center;
   gap: 16px;
   background-color: var(--bg-card);
-  border-left: 4px solid #f59e0b;
+  backdrop-filter: blur(10px);
   border-radius: 8px;
   padding: 12px 20px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  animation: slideDown 0.3s ease-out;
+  box-shadow: var(--shadow-md);
   border: 1px solid var(--border-soft);
-  border-left-width: 4px;
-  border-left-color: #f59e0b;
+  border-left: 4px solid #f59e0b;
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .toast-content {
@@ -472,13 +370,10 @@
   border: 1px solid var(--border-soft);
 }
 
-.toast-btn-cancel:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+.toast-btn-cancel:hover,
+.toast-close:hover {
+  background-color: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
-}
-
-.dark .toast-btn-cancel:hover {
-  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .toast-btn-confirm {
@@ -503,63 +398,47 @@
   transition: all 0.2s ease;
 }
 
-.toast-close:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
+/* ==========================================================================
+   SCROLLBAR E ANIMAÇÕES
+   ========================================================================== */
+.config-main::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.dark .toast-close:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.config-main::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: 10px;
+}
+
+.config-main::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 10px;
+}
+
+.config-main::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 /* ==========================================================================
-   Responsividade
+   MEDIA QUERIES (Apenas para ajustes críticos e quebras de fluxo layout)
    ========================================================================== */
-
-@media (max-width: 1024px) {
-  .config-main {
-    padding: 32px 24px;
-  }
-}
-
 @media (max-width: 768px) {
-  .config-main {
-    padding: 24px 20px;
-  }
-
-  .config-header {
-    margin-bottom: 32px;
-  }
-
-  .config-header h1 {
-    font-size: 24px;
-  }
-
-  .config-subtitle {
-    font-size: 13px;
-  }
-
-  .config-section {
-    padding: 20px;
-    border-radius: 20px;
-  }
-
-  .config-section h2 {
-    font-size: 16px;
-    margin-bottom: 20px;
-  }
-
   .config-row {
     flex-direction: column;
     align-items: flex-start;
@@ -575,91 +454,5 @@
   .config-btn-danger,
   .config-btn-toggle {
     width: 100%;
-    justify-content: center;
-    padding: 10px 20px;
-  }
-
-  .config-avatar-img,
-  .config-avatar {
-    width: 88px;
-    height: 88px;
-    font-size: 36px;
-  }
-
-  .config-avatar-row {
-    margin-bottom: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .config-main {
-    padding: 16px 12px;
-  }
-
-  .config-header h1 {
-    font-size: 20px;
-  }
-
-  .config-header h1 svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .config-subtitle {
-    font-size: 12px;
-  }
-
-  .config-section {
-    padding: 16px;
-    border-radius: 16px;
-    margin-bottom: 16px;
-  }
-
-  .config-section h2 {
-    font-size: 15px;
-    margin-bottom: 16px;
-  }
-
-  .config-section h2 svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .config-row {
-    padding: 12px 0;
-  }
-
-  .config-text {
-    font-size: 13px;
-    gap: 10px;
-  }
-
-  .config-icon {
-    width: 18px;
-    height: 18px;
-  }
-
-  .config-value {
-    font-size: 13px;
-    padding: 2px 10px;
-  }
-
-  .config-btn-danger,
-  .config-btn-toggle {
-    padding: 8px 16px;
-    font-size: 12px;
-  }
-
-  .config-btn-danger svg,
-  .config-btn-toggle svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .config-avatar-img,
-  .config-avatar {
-    width: 72px;
-    height: 72px;
-    font-size: 28px;
   }
 }

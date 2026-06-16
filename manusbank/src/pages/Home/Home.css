@@ -21,11 +21,12 @@ a {
   text-decoration: none;
 }
 
-/* ─── HOME ───────────────────────────────── */
+/* ─── HOME (CONTAINER GERAL) ────────────── */
 .home {
   width: 100%;
   min-height: 100vh;
   position: relative;
+  box-sizing: border-box;
 }
 
 .home::before {
@@ -39,20 +40,21 @@ a {
   z-index: 0;
 }
 
-/* ─── NAVBAR ─────────────────────────────── */
+/* ─── NAVBAR (FIXA NO TOPO DA TELA 1) ────── */
 .navbar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   z-index: 100;
   height: 66px;
   width: 100%;
-  margin: 0 auto;
   padding: 0 32px;
   display: flex;
   align-items: center;
+  justify-content: space-between; /* Distribui logo na esquerda e botão na direita */
   gap: 32px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  background: #060d28;
+  background: rgba(6, 13, 40, 0.5);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -115,17 +117,22 @@ a {
   border-color: #60a5fa;
 }
 
-/* ─── HERO ───────────────────────────────── */
+/* ─── HERO (TELA 1 CHEIA E CENTRALIZADA) ─── */
 .hero {
   position: relative;
   z-index: 1;
+  width: 100%;
+  min-height: 100vh; /* Ocupa a tela inteira */
   max-width: 1080px;
   margin: 0 auto;
-  padding: 100px 32px 108px;
+  padding: 100px 32px 40px; /* Desconto para não bater na navbar */
+  
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* Centraliza verticalmente */
   text-align: center;
+  box-sizing: border-box;
 }
 
 .title {
@@ -184,14 +191,29 @@ a {
   box-shadow: 0 14px 34px rgba(37, 99, 235, 0.42);
 }
 
-/* ─── SECTION ────────────────────────────── */
+/* ─── SEÇÕES MACRO (TELAS 2, 3 E 4 CHEIAS) ── */
 .section {
   position: relative;
   z-index: 1;
+  width: 100%;
+  min-height: 100vh; /* Faz cada seção herdar o recorte de tela cheia */
   max-width: 1080px;
   margin: 0 auto;
-  padding: 108px 32px;
+  padding: 80px 32px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centralização vertical do bloco de conteúdo */
+  align-items: center;
+}
+
+/* Garante que as estruturas internas ocupem a largura correta após o flexbox */
+.section-header, 
+.grid-3, 
+.steps {
+  width: 100%;
 }
 
 .section-header {
@@ -224,14 +246,14 @@ a {
   line-height: 1.7;
 }
 
-/* ─── GRID 3 ─────────────────────────────── */
+/* ─── GRID DE CARDS ──────────────────────── */
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 20px;
+  align-items: stretch; /* Deixa todos os cards com o mesmo tamanho vertical */
 }
 
-/* ─── CARD ───────────────────────────────── */
 .card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -274,7 +296,7 @@ a {
   line-height: 1.65;
 }
 
-/* ─── STEPS ──────────────────────────────── */
+/* ─── ETAPAS (STEPS) ─────────────────────── */
 .steps {
   display: flex;
   gap: 18px;
@@ -351,6 +373,7 @@ a {
   z-index: 1;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   max-width: 1080px;
+  width: 100%;
   margin: 0 auto;
   padding: 26px 32px;
   display: flex;
@@ -358,6 +381,7 @@ a {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  box-sizing: border-box;
 }
 
 .footer-brand {
@@ -374,8 +398,13 @@ a {
   color: #64748b;
 }
 
-/* ─── RESPONSIVE ─────────────────────────── */
+/* ─── RESPONSIVIDADE ADAPTATIVA ──────────── */
 @media (max-width: 860px) {
+  .section {
+    min-height: auto; /* Desativa obrigatoriedade de tela cheia em telas pequenas para evitar quebra de leitura */
+    padding: 64px 24px;
+  }
+
   .grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -401,7 +430,6 @@ a {
 
   .navbar {
     padding: 0 18px;
-    position: relative;
   }
 
   .navbar-links {
@@ -409,11 +437,7 @@ a {
   }
 
   .hero {
-    padding: 56px 18px 64px;
-  }
-
-  .section {
-    padding: 64px 18px;
+    padding: 120px 18px 64px;
   }
 
   .grid-3 {
@@ -425,8 +449,7 @@ a {
     width: 100%;
   }
 
-  .primary-btn,
-  .secondary-btn {
+  .primary-btn {
     width: 100%;
     justify-content: center;
   }

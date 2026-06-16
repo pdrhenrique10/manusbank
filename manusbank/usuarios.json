@@ -4,14 +4,31 @@
     "nome": "Pedro",
     "email": "pedro@email.com",
     "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
-    "saldo": 0,
-    "transacoes": [],
+    "saldo": 7700,
+    "transacoes": [
+      {
+        "id": 1781627566036,
+        "tipo": "deposito",
+        "valor": 8000,
+        "descricao": "salário",
+        "data": "2026-06-01",
+        "categoria": "salário"
+      },
+      {
+        "id": 1781627580588,
+        "tipo": "saque",
+        "valor": 300,
+        "descricao": "mercado",
+        "data": "2026-06-02",
+        "categoria": "mercado"
+      }
+    ],
     "contasReceber": [],
     "nextContaReceberId": 5,
     "contasPagar": [],
     "nextContaPagarId": 8,
     "metas": [],
-    "nextMetaId": 4,
+    "nextMetaId": 5,
     "criadoEm": "2026-06-02T17:40:15.077Z"
   },
   {

@@ -1,10 +1,10 @@
 /* ==========================================================================
-   VARIÁVEIS E TEMAS (mesmas do Relatórios)
+   VARIÁVEIS E TEMAS (OTIMIZADO - SEM BLUR E SHADOWS PESADOS)
    ========================================================================== */
 
 :root {
   --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  --bg-card: rgba(30, 41, 59, 0.7);
+  --bg-card: rgba(30, 41, 59, 0.92); /* Mais opaco, dispensa backdrop-filter */
   --bg-card-solid: #1e293b;
   --border-soft: rgba(71, 85, 105, 0.5);
   --border-glow: rgba(56, 189, 248, 0.3);
@@ -15,14 +15,14 @@
   --accent-red: #ef4444;
   --accent-purple: #8b5cf6;
   --accent-yellow: #eab308;
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 8px 25px rgba(56, 189, 248, 0.15);
 }
 
 /* ==========================================================================
-   Layout geral
+   LAYOUT GERAL (Removido pseudo-elemento pesado)
    ========================================================================== */
 
 .mainLayout {
@@ -31,17 +31,6 @@
   background: var(--bg-main);
   color: var(--text-primary);
   position: relative;
-}
-
-.mainLayout::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
-  pointer-events: none;
 }
 
 .dashboard {
@@ -64,18 +53,19 @@
 }
 
 /* ==========================================================================
-   Header
+   HEADER (Animação ultra-rápida com aceleração GPU)
    ========================================================================== */
 
 .top {
   margin-bottom: 32px;
-  animation: fadeInDown 0.6s ease-out;
+  animation: fadeInDown 0.2s ease-out both; /* REDUZIDO de 0.5s para 0.2s */
+  will-change: transform, opacity; /* Força GPU */
 }
 
 @keyframes fadeInDown {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-12px);
   }
   to {
     opacity: 1;
@@ -102,7 +92,7 @@
 }
 
 /* ==========================================================================
-   Painel principal
+   PAINEL PRINCIPAL (Sem backdrop-filter)
    ========================================================================== */
 
 .heroPanel {
@@ -113,17 +103,18 @@
   margin-bottom: 28px;
   padding: 28px 32px;
   background: var(--bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
   border-radius: 24px;
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.6s ease-out;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; /* Transição mais rápida */
+  animation: fadeInUp 0.2s ease-out both; /* REDUZIDO */
+  will-change: transform, opacity;
+  contain: layout style paint;
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -166,6 +157,7 @@
   margin-bottom: 8px;
 }
 
+/* BOTÃO COM RIPPLE OTIMIZADO VIA TRANSFORM (GPU) */
 .heroButton {
   display: inline-flex;
   align-items: center;
@@ -182,9 +174,10 @@
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
-  transition: all 0.3s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 
 .heroButton::before {
@@ -192,30 +185,29 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 0;
-  height: 0;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s ease;
 }
 
 .heroButton:hover::before {
-  width: 300px;
-  height: 300px;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .heroButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
 }
 
 .heroButton:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* ==========================================================================
-   Cards de resumo
+   CARDS DE RESUMO (Sem text-shadow, hover rapidíssimo)
    ========================================================================== */
 
 .cards {
@@ -230,13 +222,14 @@
   min-height: 160px;
   padding: 20px 24px;
   background: var(--bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
   border-radius: 20px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; /* Transição mais rápida */
   overflow: hidden;
   cursor: pointer;
-  animation: fadeInUp 0.6s ease-out;
+  animation: fadeInUp 0.2s ease-out both; /* REDUZIDO */
+  will-change: transform, opacity;
+  contain: layout style paint;
 }
 
 .card::before {
@@ -256,19 +249,17 @@
 }
 
 .card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   border-color: var(--border-glow);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  box-shadow: var(--shadow-lg);
 }
 
 .green {
   border-left: 3px solid var(--accent-green);
 }
-
 .red {
   border-left: 3px solid var(--accent-red);
 }
-
 .blue {
   border-left: 3px solid var(--accent-blue);
 }
@@ -281,7 +272,7 @@
   height: 48px;
   margin-bottom: 16px;
   border-radius: 14px;
-  transition: transform 0.2s ease;
+  transition: transform 0.15s ease;
 }
 
 .card:hover .iconBox {
@@ -291,25 +282,18 @@
 .greenBg {
   background: rgba(34, 197, 94, 0.15);
   color: var(--accent-green);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
 }
-
 .redBg {
   background: rgba(239, 68, 68, 0.15);
   color: var(--accent-red);
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);
 }
-
 .blueBg {
   background: rgba(56, 189, 248, 0.15);
   color: var(--accent-blue);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.1);
 }
-
 .yellowBg {
   background: rgba(234, 179, 8, 0.15);
   color: var(--accent-yellow);
-  box-shadow: 0 0 20px rgba(234, 179, 8, 0.1);
 }
 
 .card h2 {
@@ -319,19 +303,15 @@
   letter-spacing: -0.02em;
 }
 
+/* CORES SEM TEXT-SHADOW (pesado para pintura) */
 .green h2 {
   color: var(--accent-green);
-  text-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
 }
-
 .red h2 {
   color: var(--accent-red);
-  text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
 }
-
 .blue h2 {
   color: var(--accent-blue);
-  text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
 }
 
 .card span {
@@ -352,7 +332,7 @@
 }
 
 /* ==========================================================================
-   Ações rápidas
+   AÇÕES RÁPIDAS (Sem backdrop-filter, ripple com scale)
    ========================================================================== */
 
 .quickActions {
@@ -370,16 +350,16 @@
   min-height: 48px;
   padding: 0 16px;
   background: var(--bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
   border-radius: 40px;
   color: var(--text-primary);
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
+  contain: layout style paint;
 }
 
 .quickActions button::before {
@@ -387,17 +367,16 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 0;
-  height: 0;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
-  background: rgba(56, 189, 248, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s, height 0.4s;
+  background: rgba(56, 189, 248, 0.15);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s ease;
 }
 
 .quickActions button:hover::before {
-  width: 200px;
-  height: 200px;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .quickActions button:hover {
@@ -408,7 +387,7 @@
 }
 
 /* ==========================================================================
-   Painéis
+   PAINÉIS (Sem animação em tudo para não sobrecarregar)
    ========================================================================== */
 
 .dashboardGrid {
@@ -421,11 +400,12 @@
   min-width: 0;
   padding: 24px;
   background: var(--bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
   border-radius: 20px;
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.6s ease-out;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease; /* Transição mais rápida */
+  animation: fadeInUp 0.25s ease-out both; /* Um pouquinho mais lento que os cards, mas ainda rápido */
+  will-change: transform, opacity;
+  contain: layout style paint;
 }
 
 .panel.wide {
@@ -434,7 +414,7 @@
 
 .panel:hover {
   border-color: var(--border-glow);
-  box-shadow: var(--shadow-md), var(--shadow-glow);
+  box-shadow: var(--shadow-md);
 }
 
 .panelHeader {
@@ -451,10 +431,7 @@
   margin: 0 0 6px;
   font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary); /* Gradiente removido para performance */
 }
 
 .panelHeader p {
@@ -467,7 +444,7 @@
 .panelHeader svg {
   color: var(--accent-blue);
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  transition: transform 0.15s ease;
 }
 
 .panel:hover .panelHeader svg {
@@ -475,7 +452,7 @@
 }
 
 /* ==========================================================================
-   Pendências e movimentações
+   PENDÊNCIAS E MOVIMENTAÇÕES
    ========================================================================== */
 
 .taskList,
@@ -494,7 +471,7 @@
   gap: 16px;
   padding: 14px 0;
   border-bottom: 1px solid var(--border-soft);
-  transition: transform 0.2s ease;
+  transition: transform 0.12s ease; /* Hiper-rápido */
 }
 
 .taskItem:hover,
@@ -550,7 +527,7 @@
   border: 1px dashed var(--border-soft);
   border-radius: 14px;
   color: var(--text-secondary);
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .emptyState:hover {
@@ -567,22 +544,10 @@
 .emptyState svg {
   color: var(--accent-green);
   flex-shrink: 0;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-  }
 }
 
 /* ==========================================================================
-   Primeiros passos
+   PRIMEIROS PASSOS (Ripple com scale)
    ========================================================================== */
 
 .setupList button {
@@ -595,9 +560,10 @@
   color: inherit;
   cursor: pointer;
   text-align: left;
-  transition: all 0.3s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
+  contain: layout style paint;
 }
 
 .setupList button::before {
@@ -605,17 +571,16 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 0;
-  height: 0;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
-  background: rgba(56, 189, 248, 0.1);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s, height 0.4s;
+  background: rgba(56, 189, 248, 0.08);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s ease;
 }
 
 .setupList button:hover::before {
-  width: 300px;
-  height: 300px;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .setupList button:hover {
@@ -640,7 +605,7 @@
 }
 
 /* ==========================================================================
-   Scrollbar personalizada
+   SCROLLBAR PERSONALIZADA (Leve)
    ========================================================================== */
 
 .dashboard::-webkit-scrollbar {
@@ -663,22 +628,19 @@
 }
 
 /* ==========================================================================
-   Responsivo
+   RESPONSIVO (Mantido)
    ========================================================================== */
 
 @media (max-width: 1300px) {
   .dashboard {
     padding: 32px 24px;
   }
-  
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  
   .quickActions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  
   .dashboardGrid {
     gap: 20px;
   }
@@ -694,28 +656,22 @@
   .dashboard {
     padding: 24px 20px;
   }
-  
   .heroPanel {
     align-items: flex-start;
     flex-direction: column;
   }
-  
   .heroButton {
     width: 100%;
   }
-  
   .heroPanel h2 {
     font-size: 20px;
   }
-  
   .cards {
     gap: 16px;
   }
-  
   .quickActions {
     gap: 10px;
   }
-  
   .quickActions button {
     font-size: 12px;
     padding: 0 12px;
@@ -726,51 +682,40 @@
   .dashboard {
     padding: 20px 16px;
   }
-  
   .top h1 {
     font-size: 24px;
   }
-  
   .top p {
     font-size: 13px;
   }
-  
   .heroPanel {
     padding: 20px;
   }
-  
   .heroPanel h2 {
     font-size: 18px;
   }
-  
   .cards,
   .quickActions {
     grid-template-columns: 1fr;
   }
-  
   .cards {
     margin-bottom: 20px;
   }
-  
   .quickActions {
     margin-bottom: 24px;
   }
-  
   .card h2 {
     font-size: 24px;
   }
-  
   .panel {
     padding: 16px;
   }
-  
   .taskItem,
   .movementItem {
     align-items: flex-start;
     flex-direction: column;
     gap: 8px;
   }
-  
   .taskItem b,
   .movementItem b {
     align-self: flex-end;
@@ -781,43 +726,34 @@
   .dashboard {
     padding: 16px 12px;
   }
-  
   .top h1 {
     font-size: 20px;
   }
-  
   .heroPanel {
     padding: 16px;
   }
-  
   .heroPanel h2 {
     font-size: 16px;
   }
-  
   .heroPanel p {
     font-size: 12px;
   }
-  
   .card {
     padding: 16px;
     min-height: 140px;
   }
-  
   .card h2 {
     font-size: 20px;
   }
-  
   .iconBox {
     width: 40px;
     height: 40px;
     margin-bottom: 12px;
   }
-  
   .quickActions button {
     min-height: 44px;
     font-size: 11px;
   }
-  
   .panelHeader h3 {
     font-size: 18px;
   }

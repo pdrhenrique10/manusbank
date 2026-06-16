@@ -1,10 +1,10 @@
 /* ==========================================================================
-   VARIÁVEIS E TEMAS (mesmas do sistema)
+   VARIÁVEIS E TEMAS (PADRONIZADO COM O SISTEMA)
    ========================================================================== */
 
 :root {
   --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  --bg-card: rgba(30, 41, 59, 0.7);
+  --bg-card: rgba(30, 41, 59, 0.92); /* Ajustado para remover o blur pesado */
   --bg-card-solid: #1e293b;
   --border-soft: rgba(71, 85, 105, 0.5);
   --border-glow: rgba(34, 197, 94, 0.3);
@@ -16,58 +16,46 @@
   --accent-purple: #8b5cf6;
   --accent-yellow: #eab308;
   --accent-orange: #f59e0b;
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-glow-green: 0 0 20px rgba(34, 197, 94, 0.15);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  --shadow-glow-green: 0 8px 25px rgba(34, 197, 94, 0.15);
 }
 
 /* ==========================================================================
-   Layout geral
+   LAYOUT GERAL (Alinhamento milimétrico de padding)
    ========================================================================== */
 
 .cr-container {
-  width: 100%;
-  min-height: 100vh;
-  padding: 32px;
+  flex: 1;
+  padding: 48px 32px; /* Padronizado em 48px 32px para matar saltos na navegação */
   background: var(--bg-main);
-  color: var(--text-primary);
   position: relative;
+  z-index: 1;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.cr-container::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-}
+/* Removido o pseudo-elemento gigante ::before que criava repaint full-screen no scroll */
 
 .cr-card {
   width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  position: relative;
-  z-index: 1;
 }
 
 /* ==========================================================================
-   Header
+   HEADER (Animação sincronizada em 0.2s com trava de estado 'both')
    ========================================================================== */
 
 .cr-header {
   margin-bottom: 32px;
-  text-align: left;
-  animation: fadeInDown 0.6s ease-out;
+  animation: fadeInDown 0.2s ease-out both; /* Ajustado de 0.6s para 0.2s */
+  will-change: transform, opacity;
 }
 
 @keyframes fadeInDown {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-12px);
   }
   to {
     opacity: 1;
@@ -92,7 +80,6 @@
 
 .cr-header h1 svg {
   color: var(--accent-green);
-  filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.3));
 }
 
 .subtitle {
@@ -103,7 +90,7 @@
 }
 
 /* ==========================================================================
-   Resumo
+   RESUMO
    ========================================================================== */
 
 .cr-resumo-card {
@@ -111,20 +98,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 24px;
-  padding: 24px 28px;
+  margin-bottom: 28px;
+  padding: 28px 32px; /* Padronizado com os painéis principais do sistema */
   background: var(--bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--border-soft);
-  border-radius: 20px;
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.6s ease-out;
+  border-radius: 24px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  animation: fadeInUp 0.2s ease-out both; /* Ajustado de 0.6s para 0.2s */
+  will-change: transform, opacity;
+  contain: layout style paint;
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -146,11 +134,11 @@
 
 .cr-resumo-item svg {
   color: var(--accent-green);
-  filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.3));
 }
 
 .cr-resumo-label {
-  margin-bottom: 4px;
+  display: block;
+  margin-bottom: 8px;
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 700;
@@ -163,9 +151,6 @@
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.02em;
-}
-
-.cr-resumo-valor {
   background: linear-gradient(135deg, var(--accent-green), #059669);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -178,15 +163,17 @@
   gap: 8px;
   color: var(--accent-orange);
   font-weight: 600;
+  font-size: 14px;
 }
 
 .cr-resumo-secundario-label {
   color: var(--text-secondary);
   font-size: 13px;
+  font-weight: 500;
 }
 
 /* ==========================================================================
-   Botao principal
+   BOTÃO PRINCIPAL
    ========================================================================== */
 
 .cr-btn-nova {
@@ -194,11 +181,10 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  width: auto;
   min-width: 180px;
-  height: 48px;
-  margin: 0 0 32px auto;
-  padding: 0 28px;
+  min-height: 48px;
+  margin: 0 0 28px auto;
+  padding: 0 24px;
   background: linear-gradient(135deg, #16a34a, #15803d);
   border: none;
   border-radius: 40px;
@@ -206,9 +192,11 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.3s ease;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 
 .cr-btn-nova::before {
@@ -216,45 +204,59 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 0;
-  height: 0;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s ease;
 }
 
 .cr-btn-nova:hover::before {
-  width: 300px;
-  height: 300px;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .cr-btn-nova:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.3);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(22, 163, 74, 0.4);
 }
 
 .cr-btn-nova:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* ==========================================================================
-   Grafico
+   CONTEÚDO / PAINÉIS (Unificado e corrigido para 0.2s)
    ========================================================================== */
 
-.cr-grafico-section {
-  margin-bottom: 32px;
-  animation: fadeInUp 0.6s ease-out;
+.cr-grafico-section,
+.cr-lista {
+  min-width: 0;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  animation: fadeInUp 0.2s ease-out both; /* Ajustado para 0.2s sem delays extras */
+  will-change: transform, opacity;
+  contain: layout style paint;
+  margin-bottom: 24px;
 }
 
-.cr-grafico-section h2 {
-  margin: 0 0 16px;
+.cr-grafico-section:hover,
+.cr-lista:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-md);
+}
+
+.cr-grafico-section h2,
+.cr-lista h2 {
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-soft);
   font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
 }
 
 .cr-grafico-container {
@@ -262,17 +264,7 @@
   align-items: center;
   justify-content: center;
   min-height: 320px;
-  padding: 24px;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-soft);
-  border-radius: 20px;
-  transition: all 0.3s ease;
-}
-
-.cr-grafico-container:hover {
-  border-color: var(--border-glow);
-  box-shadow: var(--shadow-glow-green);
+  width: 100%;
 }
 
 .cr-grafico-vazio {
@@ -282,49 +274,31 @@
 }
 
 /* ==========================================================================
-   Lista de contas a receber
+   LISTA DE CONTAS A RECEBER (Estilo extrato simplificado)
    ========================================================================== */
-
-.cr-lista {
-  margin-top: 0;
-  animation: fadeInUp 0.6s ease-out 0.1s both;
-}
-
-.cr-lista h2 {
-  margin: 0 0 16px;
-  font-size: 20px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
 
 .cr-lista-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
 .cr-lista-vazia {
-  padding: 48px 32px;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 2px dashed var(--border-soft);
-  border-radius: 20px;
-  text-align: center;
-  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+  padding: 20px;
+  background: rgba(148, 163, 184, 0.05);
+  border: 1px dashed var(--border-soft);
+  border-radius: 14px;
+  color: var(--text-secondary);
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .cr-lista-vazia:hover {
   border-color: var(--accent-green);
-  box-shadow: var(--shadow-glow-green);
-}
-
-.cr-lista-vazia p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
+  background: rgba(34, 197, 94, 0.05);
 }
 
 .cr-item {
@@ -332,29 +306,32 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 24px;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-soft);
-  border-radius: 16px;
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.4s ease-out;
+  padding: 14px 0; /* Transformado em row leve, sem blocos cinzas flutuantes */
+  border-bottom: 1px solid var(--border-soft);
+  background: transparent;
+  border-radius: 0;
+  transition: transform 0.12s ease;
+  animation: none; /* Removido para otimizar renderização de listas longas */
+}
+
+.cr-item:last-child {
+  border-bottom: none;
 }
 
 .cr-item:hover {
-  background: rgba(148, 163, 184, 0.08);
-  border-color: var(--border-glow);
   transform: translateX(4px);
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--border-soft);
 }
 
 .cr-info h3 {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -369,39 +346,40 @@
 .cr-valor-e-remover {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .cr-valor {
   color: var(--accent-green);
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
-  text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
 }
 
 /* ==========================================================================
-   Acoes e status
+   AÇÕES E STATUS DOS ITENS
    ========================================================================== */
 
 .cr-acoes {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  align-items: center;
+  gap: 12px; /* Alinhado horizontalmente para casar com a estrutura de botões redondos */
 }
 
 .cr-btn-acao {
-  min-height: 32px;
-  padding: 0 16px;
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 14px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: 40px;
   color: #4ade80;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .cr-btn-acao:hover {
@@ -411,16 +389,12 @@
   transform: scale(1.05);
 }
 
-.cr-btn-acao:active {
-  transform: translateY(1px);
-}
-
 .cr-status {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 26px;
-  padding: 0 12px;
+  min-height: 24px;
+  padding: 0 10px;
   border-radius: 40px;
   font-size: 11px;
   font-weight: 700;
@@ -428,51 +402,47 @@
 }
 
 .cr-status.pago {
-  background: rgba(34, 197, 94, 0.15);
+  background: rgba(34, 197, 94, 0.12);
   color: #4ade80;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .cr-status.pendente {
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(245, 158, 11, 0.12);
   color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .cr-status.atrasado {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.12);
   color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .cr-btn-remover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background: transparent;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  border: 1px solid var(--border-soft);
   border-radius: 50%;
-  color: #ef4444;
+  color: var(--accent-red);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
   flex-shrink: 0;
 }
 
 .cr-btn-remover:hover {
-  background: #ef4444;
-  border-color: #ef4444;
-  color: #ffffff;
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
   transform: scale(1.05);
 }
 
-.cr-btn-remover:active {
-  transform: translateY(1px);
-}
-
 /* ==========================================================================
-   Modal
+   MODAL
    ========================================================================== */
 
 .modal-overlay {
@@ -484,17 +454,12 @@
   justify-content: center;
   padding: 20px;
   background: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(12px);
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.15s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-conteudo {
@@ -503,17 +468,17 @@
   max-width: 500px;
   padding: 32px;
   background: var(--bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--border-glow);
   border-radius: 24px;
-  box-shadow: var(--shadow-lg), var(--shadow-glow-green);
-  animation: slideUp 0.25s ease-out;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease-out;
+  contain: layout style paint;
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -546,18 +511,18 @@
   border-radius: 50%;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .modal-fechar:hover {
   background: rgba(239, 68, 68, 0.2);
-  border-color: #ef4444;
-  color: #ef4444;
-  transform: rotate(90deg);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+  transform: rotate(90deg) scale(1.05);
 }
 
 /* ==========================================================================
-   Formulario
+   FORMULÁRIO
    ========================================================================== */
 
 .cr-form {
@@ -584,13 +549,13 @@
   width: 100%;
   min-height: 48px;
   padding: 0 16px;
-  background: var(--bg-main);
+  background: #0f172a;
   border: 1px solid var(--border-soft);
   border-radius: 14px;
   color: var(--text-primary);
   font-size: 14px;
   outline: none;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .form-group input::placeholder {
@@ -598,14 +563,13 @@
 }
 
 .form-group input:focus {
-  background: var(--bg-card);
+  background: var(--bg-card-solid);
   border-color: #16a34a;
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
 }
 
 .form-group input[type="date"] {
   color-scheme: dark;
-  padding: 0 16px;
 }
 
 .btn-salvar {
@@ -619,9 +583,10 @@
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 
 .btn-salvar::before {
@@ -629,37 +594,35 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 0;
-  height: 0;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s ease;
 }
 
 .btn-salvar:hover::before {
-  width: 300px;
-  height: 300px;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .btn-salvar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.3);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(22, 163, 74, 0.4);
 }
 
 .btn-salvar:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* ==========================================================================
-   Feedback
+   FEEDBACKS E SCROLLBAR
    ========================================================================== */
 
 .erro-msg {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0;
   padding: 12px 16px;
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
@@ -667,20 +630,19 @@
   color: #f87171;
   font-size: 13px;
   font-weight: 500;
-  animation: shake 0.3s ease-out;
+  animation: shake 0.2s ease-out;
 }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 .sucesso-msg {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0;
   padding: 12px 16px;
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.3);
@@ -688,58 +650,27 @@
   color: #4ade80;
   font-size: 13px;
   font-weight: 500;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
+
+.cr-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.cr-container::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 10px; }
+.cr-container::-webkit-scrollbar-thumb { background: var(--accent-green); border-radius: 10px; }
+.cr-container::-webkit-scrollbar-thumb:hover { background: #059669; }
 
 /* ==========================================================================
-   Scrollbar personalizada
-   ========================================================================== */
-
-.cr-container::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.cr-container::-webkit-scrollbar-track {
-  background: var(--bg-card);
-  border-radius: 10px;
-}
-
-.cr-container::-webkit-scrollbar-thumb {
-  background: var(--accent-green);
-  border-radius: 10px;
-}
-
-.cr-container::-webkit-scrollbar-thumb:hover {
-  background: #059669;
-}
-
-/* ==========================================================================
-   Responsivo
+   RESPONSIVO
    ========================================================================== */
 
 @media (max-width: 1024px) {
-  .cr-container {
-    padding: 24px;
-  }
+  .cr-container { padding: 24px; }
 }
 
 @media (max-width: 768px) {
-  .cr-container {
-    padding: 20px 16px;
-  }
-
-  .cr-header {
-    margin-bottom: 24px;
-  }
-
-  .cr-header h1 {
-    font-size: 24px;
-  }
-  
-  .subtitle {
-    font-size: 13px;
-  }
+  .cr-container { padding: 20px 16px; }
+  .cr-header { margin-bottom: 24px; }
+  .cr-header h1 { font-size: 24px; }
+  .subtitle { font-size: 13px; }
 
   .cr-resumo-card {
     flex-direction: column;
@@ -759,13 +690,8 @@
     border-bottom: none;
   }
 
-  .cr-resumo-item-secundario {
-    justify-content: space-between;
-  }
-
-  .cr-resumo-valor {
-    font-size: 24px;
-  }
+  .cr-resumo-item-secundario { justify-content: space-between; }
+  .cr-resumo-valor { font-size: 24px; }
 
   .cr-btn-nova {
     width: 100%;
@@ -773,104 +699,43 @@
     margin-bottom: 24px;
   }
 
-  .cr-grafico-container {
-    min-height: 280px;
-    padding: 16px;
-  }
+  .cr-grafico-section, .cr-lista { padding: 16px; }
+  .cr-grafico-container { min-height: 280px; }
 
   .cr-item {
-    flex-direction: column;
     align-items: flex-start;
-    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 0;
+  }
+
+  .cr-info { width: 100%; }
+  
+  .cr-valor-e-remover {
+    width: 100%;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 8px;
   }
 
   .cr-acoes {
     width: 100%;
-    align-items: flex-start;
+    justify-content: space-between;
     flex-direction: row;
-    justify-content: space-between;
-  }
-
-  .cr-valor-e-remover {
-    width: 100%;
-    justify-content: space-between;
-    margin-bottom: 12px;
   }
   
-  .cr-info {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-  
-  .cr-valor {
-    font-size: 16px;
-  }
-
-  .modal-conteudo {
-    padding: 24px;
-    max-width: 90%;
-  }
-  
-  .modal-conteudo h2 {
-    font-size: 20px;
-  }
-  
-  .form-group input {
-    min-height: 44px;
-  }
-  
-  .cr-status {
-    font-size: 10px;
-    min-height: 24px;
-  }
-  
-  .cr-btn-acao {
-    min-height: 28px;
-    font-size: 11px;
-  }
+  .cr-valor { font-size: 14px; }
+  .modal-conteudo { padding: 24px; max-width: 95%; }
+  .modal-conteudo h2 { font-size: 20px; }
+  .form-group input { min-height: 44px; }
 }
 
 @media (max-width: 480px) {
-  .cr-container {
-    padding: 16px 12px;
-  }
-  
-  .cr-header h1 {
-    font-size: 20px;
-  }
-  
-  .cr-resumo-card {
-    padding: 16px;
-  }
-  
-  .cr-resumo-valor {
-    font-size: 20px;
-  }
-  
-  .cr-resumo-label {
-    font-size: 10px;
-  }
-  
-  .cr-grafico-container {
-    min-height: 240px;
-  }
-  
-  .cr-grafico-section h2,
-  .cr-lista h2 {
-    font-size: 18px;
-  }
-  
-  .cr-item {
-    padding: 14px;
-  }
-  
-  .cr-btn-remover {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .cr-btn-acao {
-    min-height: 26px;
-    padding: 0 12px;
-  }
+  .cr-container { padding: 16px 12px; }
+  .cr-header h1 { font-size: 20px; }
+  .cr-resumo-card { padding: 16px; }
+  .cr-resumo-valor { font-size: 20px; }
+  .cr-resumo-label { font-size: 10px; }
+  .cr-grafico-container { min-height: 240px; }
+  .cr-grafico-section h2, .cr-lista h2 { font-size: 18px; }
 }
