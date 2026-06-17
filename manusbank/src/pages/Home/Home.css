@@ -461,11 +461,12 @@ a {
     padding: 10px 16px;
     flex-direction: column;
     gap: 10px;
-    align-items: center;
+    align-items: center;          /* centraliza logo + tudo */
   }
 
   .navbar-brand {
     font-size: 16px;
+    justify-content: center;
   }
 
   .navbar-links {
@@ -474,6 +475,7 @@ a {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 16px;
+    justify-content: center;      /* centraliza os links na linha */
   }
 
   .navbar-links a {
@@ -482,9 +484,9 @@ a {
   }
 
   .nav-cta {
-    align-self: stretch;        /* botão ocupa a largura */
+    width: auto;                  /* botão fica do tamanho do conteúdo */
+    align-self: center;           /* centraliza o botão */
     text-align: center;
-    width: 100%;
     margin-top: 4px;
   }
 
@@ -503,4 +505,3 @@ a {
     font-size: 15px;
   }
 }
-
