@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 const PORT = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://manusfinance.vercel.app";
 const JWT_SECRET = process.env.JWT_SECRET || "troque-esta-chave-em-producao";
 
 if (!fs.existsSync(USUARIOS_FILE)) {
@@ -19,9 +19,23 @@ if (!fs.existsSync(USUARIOS_FILE)) {
 
 const app = express();
 app.use(express.json());
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  FRONTEND_URL, // em produção, será https://SEU-FRONT.vercel.app
+];
+
 app.use(
   cors({
-    origin: FRONTEND_URL,
+    origin: function (origin, callback) {
+      // Permite requests sem origin (Postman, etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
