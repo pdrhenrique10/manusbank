@@ -43,9 +43,6 @@ app.use(
   })
 );
 
-// garante que o OPTIONS sempre responda
-app.options("*", cors());
-
 // ===== FUNÇÕES AUXILIARES =====
 function criptografarSenha(senha) {
   return crypto.createHash("sha256").update(senha).digest("hex");
