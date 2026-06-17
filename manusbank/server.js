@@ -22,23 +22,29 @@ app.use(express.json());
 
 const allowedOrigins = [
   "http://localhost:5173",
-  FRONTEND_URL, // em produção, será https://SEU-FRONT.vercel.app
+  FRONTEND_URL,
 ];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Permite requests sem origin (Postman, etc.)
+    origin(origin, callback) {
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      return callback(new Error("Not allowed by CORS"));
+
+      // em vez de jogar Error (que quebra o preflight), só nega
+      return callback(null, false);
     },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+// garante que o OPTIONS sempre responda
+app.options("*", cors());
 
 // ===== FUNÇÕES AUXILIARES =====
 function criptografarSenha(senha) {
