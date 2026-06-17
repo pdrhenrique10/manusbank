@@ -19,6 +19,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { API_URL } from "../../config/api";
 
 function ContasReceber() {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ function ContasReceber() {
       setErro("");
       setSucesso("");
 
-      const resp = await fetch("http://localhost:3000/api/contas-receber", {
+      const resp = await fetch(`${API_URL}/api/contas-receber`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -148,7 +149,7 @@ function ContasReceber() {
         descricao: novaConta.descricao,
       };
 
-      const resp = await fetch("http://localhost:3000/api/contas-receber", {
+      const resp = await fetch(`${API_URL}/api/contas-receber`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +196,7 @@ function ContasReceber() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:3000/api/contas-receber/${id}/pagar`, {
+      const resp = await fetch(`${API_URL}/api/contas-receber/${id}/pagar`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -242,7 +243,7 @@ function ContasReceber() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:3000/api/contas-receber/${id}`, {
+      const resp = await fetch(`${API_URL}/api/contas-receber/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

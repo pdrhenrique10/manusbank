@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import Sidebar from "../../components/Sidebar/Sidebar";
+import { API_URL } from "../../config/api";
 
 import {
   ArrowDownRight,
@@ -42,7 +43,7 @@ export default function Dashboard() {
 
     const fetchDashboard = async () => {
       try {
-        const resp = await fetch("http://localhost:3000/api/dashboard", {
+        const resp = await fetch(`${API_URL}/api/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -68,7 +69,7 @@ export default function Dashboard() {
 
     const fetchContasReceber = async () => {
       try {
-        const resp = await fetch("http://localhost:3000/api/contas-receber", {
+        const resp = await fetch(`${API_URL}/api/contas-receber`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

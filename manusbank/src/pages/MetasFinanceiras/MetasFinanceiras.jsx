@@ -12,6 +12,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { API_URL } from "../../config/api";
 
 function MetasFinanceiras() {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ function MetasFinanceiras() {
       setErro("");
       setSucesso("");
 
-      const resp = await fetch("http://localhost:3000/api/metas", {
+      const resp = await fetch(`${API_URL}/api/metas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -144,7 +145,7 @@ function MetasFinanceiras() {
         descricao: novaMeta.descricao,
       };
 
-      const resp = await fetch("http://localhost:3000/api/metas", {
+      const resp = await fetch(`${API_URL}/api/metas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -201,7 +202,7 @@ function MetasFinanceiras() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:3000/api/metas/${metaId}/aportar`, {
+      const resp = await fetch(`${API_URL}/api/metas/${metaId}/aportar`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -255,7 +256,7 @@ function MetasFinanceiras() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:3000/api/metas/${metaId}/desaportar`, {
+      const resp = await fetch(`${API_URL}/api/metas/${metaId}/desaportar`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -303,7 +304,7 @@ function MetasFinanceiras() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:3000/api/metas/${id}`, {
+      const resp = await fetch(`${API_URL}/api/metas/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

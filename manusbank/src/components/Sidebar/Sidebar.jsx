@@ -12,11 +12,11 @@ import {
   PanelLeftOpen,
   Settings
 } from "lucide-react";
+import { API_URL } from "../../config/api";
 
 const SIDEBAR_KEY = "sidebarCollapsed";
 
 export default function Sidebar() {
-  // Lê o valor inicial do localStorage
   const [isCollapsed, setIsCollapsed] = useState(() => {
     try {
       const saved = localStorage.getItem(SIDEBAR_KEY);
@@ -28,12 +28,11 @@ export default function Sidebar() {
 
   const navigate = useNavigate();
 
-  // Toda vez que mudar, salva no localStorage
   useEffect(() => {
     try {
       localStorage.setItem(SIDEBAR_KEY, String(isCollapsed));
     } catch {
-      // se der erro (modo privado, etc.), só ignora
+      // ignora erro de storage
     }
   }, [isCollapsed]);
 
@@ -43,13 +42,24 @@ export default function Sidebar() {
 
   async function handleLogout() {
     try {
-      await fetch("http://localhost:3000/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        await fetch(`${API_URL}/api/logout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
     } catch (e) {
       console.error("Erro ao deslogar:", e);
     }
+
+    // limpa dados de autenticação no frontend
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
     navigate("/login");
   }
@@ -122,11 +132,6 @@ export default function Sidebar() {
           <Settings size={19} />
           <span>Configurações</span>
         </NavLink>
-
-        {/* se quiser usar o botão sair visível na sidebar */}
-        {/* <button className="sidebar-logout-btn" onClick={handleLogout}>
-          Sair
-        </button> */}
       </nav>
     </aside>
   );

@@ -20,6 +20,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { API_URL } from "../../config/api";
 
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
@@ -72,7 +73,7 @@ function Despesas() {
       setErro("");
       setSucesso("");
 
-      const resp = await fetch("http://localhost:3000/api/dashboard", {
+      const resp = await fetch(`${API_URL}/api/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -177,7 +178,7 @@ function Despesas() {
     };
 
     try {
-      const resp = await fetch("http://localhost:3000/api/transacao", {
+      const resp = await fetch(`${API_URL}/api/transacao`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -235,7 +236,7 @@ function Despesas() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:3000/api/transacao/${id}`, {
+      const resp = await fetch(`${API_URL}/api/transacao/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -283,7 +284,7 @@ function Despesas() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:3000/api/transacao/${despesaEditando.id}`, {
+      const resp = await fetch(`${API_URL}/api/transacao/${despesaEditando.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

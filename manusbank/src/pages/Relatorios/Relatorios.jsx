@@ -25,8 +25,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { API_URL } from "../../config/api";
 
 const CORES_DESPESAS = ["#38bdf8", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#ec4899"];
 

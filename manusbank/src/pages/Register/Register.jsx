@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
+import { API_URL } from "../../config/api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function Register() {
     setCarregando(true);
 
     try {
-      const resp = await fetch("http://localhost:3000/api/registro", {
+      const resp = await fetch(`${API_URL}/api/registro`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, email, senha }),
