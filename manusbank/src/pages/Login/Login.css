@@ -263,76 +263,183 @@ body {
    RESPONSIVIDADE
    ========================================================================== */
 
+/* ==========================================================================
+   RESPONSIVO (ATRATIVO E ORGANIZADO)
+   ========================================================================== */
+
 @media (max-width: 850px) {
   .login-container {
     flex-direction: column;
-    padding: 16px;
-  }
-  
-  .left-panel, .right-panel {
+    align-items: center;
+    padding: 0 16px;
+    margin-top: 70px;           /* espaço para o botão "Voltar" */
+    max-width: 420px;
     width: 100%;
-    max-width: 400px;
-    min-height: auto;
-    border-radius: 20px;
-    border: 1px solid #334155;
   }
-  
-  .left-panel {
-    padding: 32px 24px;
-  }
-  
+
+  .left-panel,
   .right-panel {
-    margin-top: 16px;
-    padding: 32px 24px;
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    border-radius: 24px;
+    border: 1px solid rgba(71, 85, 105, 0.4);
+    backdrop-filter: blur(12px);
   }
-  
-  .destaque {
-    font-size: 36px;
+
+  /* Painel esquerdo – sem borda inferior */
+  .left-panel {
+    padding: 32px 24px 24px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: none;
+    background: rgba(30, 41, 59, 0.9);
+    text-align: center;
   }
-  
+
+  .left-panel h2 {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .left-panel p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 22px;
+    color: #cbd5e1;
+  }
+
+  /* Painel direito – sem borda superior */
+  .right-panel {
+    padding: 24px 24px 32px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-top: 0;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
   .right-panel h1 {
     font-size: 24px;
-    margin-bottom: 24px;
+    margin-bottom: 4px;
   }
-  
+
+  .login-subtitle {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
   .right-panel form {
     max-width: 100%;
+    gap: 14px;
+  }
+
+  /* Inputs maiores e mais elegantes */
+  .right-panel input {
+    height: 48px;
+    font-size: 15px;
+    border-radius: 12px;
+    background: #0f172a;
+    border-color: #334155;
+  }
+
+  .right-panel input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  }
+
+  /* Botões */
+  .signin-btn {
+    width: 100%;
+    max-width: 260px;
+    height: 46px;
+    font-size: 15px;
+    margin: 0 auto;
+    border: 2px solid #38bdf8;
+  }
+
+  .signup-btn {
+    height: 48px;
+    font-size: 16px;
+    margin-top: 4px;
+  }
+
+  /* Mensagem de erro */
+  .error-msg {
+    font-size: 12px;
+    padding: 8px 14px;
+    margin-bottom: 8px;
+  }
+
+  /* Botão "Voltar" reposicionado */
+  .back-home-btn {
+    top: 16px;
+    left: 16px;
+    padding: 8px 18px;
+    font-size: 13px;
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(56, 189, 248, 0.3);
+  }
+
+  .back-home-btn:hover {
+    background: rgba(30, 41, 59, 0.9);
   }
 }
 
 @media (max-width: 480px) {
   .login-container {
-    padding: 12px;
+    margin-top: 60px;
+    padding: 0 12px;
   }
-  
-  .left-panel, .right-panel {
+
+  .left-panel,
+  .right-panel {
     padding: 24px 20px;
+    border-radius: 20px;
   }
-  
-  .destaque {
-    font-size: 28px;
+
+  .left-panel {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
-  
-  .left-panel h1 {
+
+  .right-panel {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    padding-top: 20px;
+  }
+
+  .left-panel h2 {
     font-size: 20px;
   }
-  
+
   .right-panel h1 {
     font-size: 22px;
   }
-  
+
   .right-panel input {
-    height: 44px;
+    height: 46px;
+    font-size: 14px;
   }
-  
-  .signup-btn, .signin-btn {
-    height: 44px;
+
+  .signup-btn,
+  .signin-btn {
+    height: 46px;
+    font-size: 15px;
   }
-  
+
+  .signin-btn {
+    max-width: 100%;
+  }
+
   .back-home-btn {
-    top: 12px;
-    left: 12px;
+    top: 10px;
+    left: 10px;
     padding: 6px 14px;
     font-size: 12px;
+  }
+
+  .login-subtitle {
+    font-size: 12px;
+    margin-bottom: 16px;
   }
 }
