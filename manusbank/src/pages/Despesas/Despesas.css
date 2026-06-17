@@ -147,7 +147,7 @@
 }
 
 .resumo-valor {
-  color: var(--text-primary);
+  color: var(--accent-red);
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.02em;

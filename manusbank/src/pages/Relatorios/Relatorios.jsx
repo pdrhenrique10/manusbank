@@ -19,7 +19,7 @@ import {
   CartesianGrid,
   Cell,
   Line,
-  LineChart as ReLineChart,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -27,7 +27,14 @@ import {
 } from "recharts";
 import { API_URL } from "../../config/api";
 
-const CORES_DESPESAS = ["#38bdf8", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#ec4899"];
+const CORES_DESPESAS = [
+  "#38bdf8",
+  "#22c55e",
+  "#f59e0b",
+  "#ef4444",
+  "#a855f7",
+  "#ec4899",
+];
 
 const PERIODOS = [
   { label: "Este mês", value: "mes" },
@@ -54,7 +61,11 @@ const CustomTooltip = ({ active, payload, label }) => {
     <div className="rel-custom-tooltip">
       <p className="tooltip-label">{label}</p>
       {payload.map((entry) => (
-        <p key={entry.dataKey || entry.name} className="tooltip-value" style={{ color: entry.fill || entry.color }}>
+        <p
+          key={entry.dataKey || entry.name}
+          className="tooltip-value"
+          style={{ color: entry.fill || entry.color }}
+        >
           {entry.name}: {formatMoney(entry.value)}
         </p>
       ))}
@@ -68,7 +79,7 @@ function Relatorios() {
   const [periodo, setPeriodo] = useState("mes");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [tipoGrafico, setTipoGrafico] = useState("linha");
+  const [tipoGrafico, setTipoGrafico] = useState("linha"); // "linha" ou "barra"
 
   useEffect(() => {
     const controller = new AbortController();
@@ -84,13 +95,16 @@ function Relatorios() {
           return;
         }
 
-        const resp = await fetch(`${API_URL}/api/relatorios?periodo=${periodo}`, {
-          signal: controller.signal,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const resp = await fetch(
+          `${API_URL}/api/relatorios?periodo=${periodo}`,
+          {
+            signal: controller.signal,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (resp.status === 401) {
           localStorage.removeItem("token");
@@ -126,13 +140,27 @@ function Relatorios() {
     return () => controller.abort();
   }, [navigate, periodo]);
 
-  const receitas = Number(dados?.totalEntradas || dados?.totalReceitas || 0);
-  const despesas = Number(dados?.totalGastos || dados?.totalDespesas || 0);
-  const saldo = Number(dados?.saldoAtual !== undefined ? dados.saldoAtual : receitas - despesas);
-  const resultado = Number(dados?.sobra !== undefined ? dados.sobra : receitas - despesas);
-  const taxaEconomia = dados?.taxaEconomia !== undefined ? Number(dados.taxaEconomia) : receitas > 0 ? (resultado / receitas) * 100 : 0;
+  const receitas = Number(
+    dados?.totalEntradas || dados?.totalReceitas || 0
+  );
+  const despesas = Number(
+    dados?.totalGastos || dados?.totalDespesas || 0
+  );
+  const saldo = Number(
+    dados?.saldoAtual !== undefined ? dados.saldoAtual : receitas - despesas
+  );
+  const resultado = Number(
+    dados?.sobra !== undefined ? dados.sobra : receitas - despesas
+  );
+  const taxaEconomia =
+    dados?.taxaEconomia !== undefined
+      ? Number(dados.taxaEconomia)
+      : receitas > 0
+      ? (resultado / receitas) * 100
+      : 0;
 
-  const categories = dados?.gastosPorCategoria || dados?.despesasPorCategoria || [];
+  const categories =
+    dados?.gastosPorCategoria || dados?.despesasPorCategoria || [];
   const temDados = dados?.temDados ?? (receitas > 0 || despesas > 0);
 
   const dadosEvolucao = useMemo(() => {
@@ -140,8 +168,20 @@ function Relatorios() {
 
     return evolucaoMensal.map((item) => ({
       mes: item.mes || item.nomeFormatado || "N/A",
-      Entradas: Number(item.Entradas ?? item.entradas ?? item.receitas ?? item.totalEntradas ?? 0),
-      Gastos: Number(item.Gastos ?? item.gastos ?? item.despesas ?? item.totalGastos ?? 0),
+      Entradas: Number(
+        item.Entradas ??
+          item.entradas ??
+          item.receitas ??
+          item.totalEntradas ??
+          0
+      ),
+      Gastos: Number(
+        item.Gastos ??
+          item.gastos ??
+          item.despesas ??
+          item.totalGastos ??
+          0
+      ),
     }));
   }, [dados]);
 
@@ -165,10 +205,14 @@ function Relatorios() {
   const insights = useMemo(() => {
     return [
       maiorCategoria
-        ? `Sua maior categoria de gasto foi ${maiorCategoria.nome}, com ${formatMoney(maiorCategoria.valor)}.`
+        ? `Sua maior categoria de gasto foi ${maiorCategoria.nome}, com ${formatMoney(
+            maiorCategoria.valor
+          )}.`
         : "Ainda não há categorias suficientes para identificar o maior peso nos gastos.",
       receitas > 0
-        ? `Sua taxa de economia no período está em ${formatPercent(taxaEconomia)}.`
+        ? `Sua taxa de economia no período está em ${formatPercent(
+            taxaEconomia
+          )}.`
         : "Cadastre receitas para calcular sua taxa de economia.",
       resultado >= 0
         ? "O período fechou positivo: suas entradas cobriram os gastos."
@@ -177,17 +221,18 @@ function Relatorios() {
   }, [maiorCategoria, receitas, taxaEconomia, resultado]);
 
   const totalCategorias = categoriasOrdenadas.reduce(
-  (acc, item) => acc + item.valor,
-  0
-);
+    (acc, item) => acc + item.valor,
+    0
+  );
 
-const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
-  ...item,
-  percentual:
-    totalCategorias > 0
-      ? ((item.valor / totalCategorias) * 100).toFixed(1)
-      : 0,
-}));
+  const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
+    ...item,
+    percentual:
+      totalCategorias > 0
+        ? ((item.valor / totalCategorias) * 100).toFixed(1)
+        : 0,
+  }));
+
   return (
     <div className="rel-wrapper">
       <Sidebar />
@@ -195,10 +240,10 @@ const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
         <div className="rel-container">
           <header className="rel-header">
             <div>
-              <h1>
-                Relatórios Financeiros
-              </h1>
-              <p className="subtitle">Análise de entradas, gastos, evolução e categorias</p>
+              <h1>Relatórios Financeiros</h1>
+              <p className="subtitle">
+                Análise de entradas, gastos, evolução e categorias
+              </p>
             </div>
           </header>
 
@@ -209,7 +254,11 @@ const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
               <CalendarDays size={16} />
               <span>Período</span>
             </div>
-            <div className="rel-periodos" role="group" aria-label="Selecionar período">
+            <div
+              className="rel-periodos"
+              role="group"
+              aria-label="Selecionar período"
+            >
               {PERIODOS.map((item) => (
                 <button
                   key={item.value}
@@ -244,7 +293,9 @@ const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
                     <ArrowUpCircle size={14} />
                     Entradas
                   </div>
-                  <p className="rel-resumo-valor">{formatMoney(receitas)}</p>
+                  <p className="rel-resumo-valor">
+                    {formatMoney(receitas)}
+                  </p>
                 </div>
 
                 <div className="rel-resumo-card despesa">
@@ -252,26 +303,39 @@ const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
                     <ArrowDownCircle size={14} />
                     Gastos
                   </div>
-                  <p className="rel-resumo-valor">{formatMoney(despesas)}</p>
+                  <p className="rel-resumo-valor">
+                    {formatMoney(despesas)}
+                  </p>
                 </div>
 
-                <div className={`rel-resumo-card ${resultado >= 0 ? "positivo" : "negativo"}`}>
+                <div
+                  className={`rel-resumo-card ${
+                    resultado >= 0 ? "positivo" : "negativo"
+                  }`}
+                >
                   <div className="rel-resumo-label">
                     <PiggyBank size={14} />
                     Sobra
                   </div>
-                  <p className="rel-resumo-valor">{formatMoney(resultado)}</p>
+                  <p className="rel-resumo-valor">
+                    {formatMoney(resultado)}
+                  </p>
                 </div>
               </section>
 
               {!temDados ? (
                 <section className="rel-empty">
                   <CircleDollarSign size={44} />
-                  <h2>{dados?.mensagem || "Nenhuma transação encontrada"}</h2>
-                  <p>Registre novas transações para ver seus relatórios aqui.</p>
+                  <h2>
+                    {dados?.mensagem || "Nenhuma transação encontrada"}
+                  </h2>
+                  <p>
+                    Registre novas transações para ver seus relatórios aqui.
+                  </p>
                 </section>
               ) : (
                 <div className="rel-dashboard-grid">
+                  {/* Comparativo total */}
                   <section className="rel-grafico-section">
                     <div className="rel-section-header">
                       <div>
@@ -281,18 +345,62 @@ const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
                         </h2>
                         <p>Comparativo total do período selecionado</p>
                       </div>
-                      {resultado >= 0 ? <TrendingUp size={18} className="rel-positive-icon" /> : <TrendingDown size={18} className="rel-negative-icon" />}
+                      {resultado >= 0 ? (
+                        <TrendingUp
+                          size={18}
+                          className="rel-positive-icon"
+                        />
+                      ) : (
+                        <TrendingDown
+                          size={18}
+                          className="rel-negative-icon"
+                        />
+                      )}
                     </div>
+
                     <div className="rel-grafico-container">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={comparativo} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} className="rel-chart-grid" />
-                          <XAxis dataKey="name" className="rel-chart-axis" axisLine={false} tickLine={false} />
-                          <YAxis tickFormatter={(value) => formatMoney(value)} className="rel-chart-axis" axisLine={false} tickLine={false} width={88} />
-                          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(148, 163, 184, 0.08)" }} />
-                          <Bar dataKey="valor" radius={[8, 8, 0, 0]} barSize={52}>
+                        <BarChart
+                          data={comparativo}
+                          margin={{
+                            top: 10,
+                            right: 10,
+                            left: 10,
+                            bottom: 0,
+                          }}
+                        >
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            vertical={false}
+                            className="rel-chart-grid"
+                          />
+                          <XAxis
+                            dataKey="name"
+                            className="rel-chart-axis"
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <YAxis
+                            tickFormatter={(value) => formatMoney(value)}
+                            className="rel-chart-axis"
+                            axisLine={false}
+                            tickLine={false}
+                            width={88}
+                          />
+                          <Tooltip
+                            content={<CustomTooltip />}
+                            cursor={false}
+                          />
+                          <Bar
+                            dataKey="valor"
+                            radius={[8, 8, 0, 0]}
+                            barSize={52}
+                          >
                             {comparativo.map((entry) => (
-                              <Cell key={entry.name} fill={entry.fill} />
+                              <Cell
+                                key={entry.name}
+                                fill={entry.fill}
+                              />
                             ))}
                           </Bar>
                         </BarChart>
@@ -300,33 +408,117 @@ const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
                     </div>
                   </section>
 
+                  {/* Histórico temporal */}
                   {dadosEvolucao.length > 0 && (
                     <section className="rel-grafico-section">
                       <div className="rel-section-header">
                         <div>
                           <h2>Histórico temporal</h2>
-                          <p>Evolução de ganhos e gastos no tempo</p>
+                          <p>
+                            Evolução de ganhos e gastos no tempo
+                          </p>
                         </div>
                       </div>
+
                       <div className="rel-grafico-container">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer
+                          width="100%"
+                          height="100%"
+                        >
                           {tipoGrafico === "bar" ? (
-                            <ReLineChart data={dadosEvolucao} margin={{ top: 20, right: 24, left: 10, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} className="rel-chart-grid" />
-                              <XAxis dataKey="mes" className="rel-chart-axis" axisLine={false} tickLine={false} />
-                              <YAxis tickFormatter={(value) => formatMoney(value)} className="rel-chart-axis" axisLine={false} tickLine={false} width={88} />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Line type="monotone" dataKey="Entradas" stroke="#22c55e" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                              <Line type="monotone" dataKey="Gastos" stroke="#ef4444" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                            </ReLineChart>
+                            <LineChart
+                              data={dadosEvolucao}
+                              margin={{
+                                top: 20,
+                                right: 24,
+                                left: 10,
+                                bottom: 5,
+                              }}
+                            >
+                              <CartesianGrid
+                                strokeDasharray="3 3"
+                                vertical={false}
+                                className="rel-chart-grid"
+                              />
+                              <XAxis
+                                dataKey="mes"
+                                className="rel-chart-axis"
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis
+                                tickFormatter={(value) =>
+                                  formatMoney(value)
+                                }
+                                className="rel-chart-axis"
+                                axisLine={false}
+                                tickLine={false}
+                                width={88}
+                              />
+                              <Tooltip
+                                content={<CustomTooltip />}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="Entradas"
+                                stroke="#22c55e"
+                                strokeWidth={3}
+                                dot={{ r: 3 }}
+                                activeDot={{ r: 5 }}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="Gastos"
+                                stroke="#ef4444"
+                                strokeWidth={3}
+                                dot={{ r: 3 }}
+                                activeDot={{ r: 5 }}
+                              />
+                            </LineChart>
                           ) : (
-                            <BarChart data={dadosEvolucao} margin={{ top: 20, right: 24, left: 10, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} className="rel-chart-grid" />
-                              <XAxis dataKey="mes" className="rel-chart-axis" axisLine={false} tickLine={false} />
-                              <YAxis tickFormatter={(value) => formatMoney(value)} className="rel-chart-axis" axisLine={false} tickLine={false} width={88} />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Bar dataKey="Entradas" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                              <Bar dataKey="Gastos" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                            <BarChart
+                              data={dadosEvolucao}
+                              margin={{
+                                top: 20,
+                                right: 24,
+                                left: 10,
+                                bottom: 5,
+                              }}
+                            >
+                              <CartesianGrid
+                                strokeDasharray="3 3"
+                                vertical={false}
+                                className="rel-chart-grid"
+                              />
+                              <XAxis
+                                dataKey="mes"
+                                className="rel-chart-axis"
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis
+                                tickFormatter={(value) =>
+                                  formatMoney(value)
+                                }
+                                className="rel-chart-axis"
+                                axisLine={false}
+                                tickLine={false}
+                                width={88}
+                              />
+                              <Tooltip
+                                content={<CustomTooltip />}
+                                cursor={false}
+                              />
+                              <Bar
+                                dataKey="Entradas"
+                                fill="#22c55e"
+                                radius={[4, 4, 0, 0]}
+                              />
+                              <Bar
+                                dataKey="Gastos"
+                                fill="#ef4444"
+                                radius={[4, 4, 0, 0]}
+                              />
                             </BarChart>
                           )}
                         </ResponsiveContainer>
@@ -334,16 +526,23 @@ const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
                     </section>
                   )}
 
+                  {/* Insights */}
                   <section className="rel-insights">
                     <div className="rel-section-header">
                       <div>
                         <h2>Insights automatizados</h2>
-                        <p>O que os dados sugerem sobre sua saúde financeira</p>
+                        <p>
+                          O que os dados sugerem sobre sua saúde
+                          financeira
+                        </p>
                       </div>
                     </div>
                     <div className="rel-insights-lista">
                       {insights.map((insight) => (
-                        <div className="rel-insight-item" key={insight}>
+                        <div
+                          className="rel-insight-item"
+                          key={insight}
+                        >
                           <span className="dot-indicador" />
                           <p>{insight}</p>
                         </div>
@@ -351,103 +550,110 @@ const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
                     </div>
                   </section>
 
-                  {categoriasOrdenadas.length > 0 && (
-<section className="rel-grafico-section rel-categoria-secao">
-  <div className="rel-section-header">
-    <div>
-      <h2>
-        <PieIcon size={18} />
-        Divisão por categorias
-      </h2>
-      <p>Ranking dos maiores pesos orçamentários</p>
-    </div>
-  </div>
+                  {/* Categorias */}
+                  {categoriasComPercentual.length > 0 && (
+                    <section className="rel-grafico-section rel-categoria-secao">
+                      <div className="rel-section-header">
+                        <div>
+                          <h2>
+                            <PieIcon size={18} />
+                            Divisão por categorias
+                          </h2>
+                          <p>
+                            Ranking dos maiores pesos orçamentários
+                          </p>
+                        </div>
+                      </div>
 
-  <div className="rel-grafico-container rel-categorias-chart">
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart
-        data={categoriasComPercentual}
-        layout="vertical"
-        margin={{
-          top: 10,
-          right: 50,
-          left: 20,
-          bottom: 10,
-        }}
-      >
-        <CartesianGrid
-          strokeDasharray="3 3"
-          horizontal={false}
-          className="rel-chart-grid"
-        />
+                      <div className="rel-grafico-container rel-categorias-chart">
+                        <ResponsiveContainer
+                          width="100%"
+                          height="100%"
+                        >
+                          <BarChart
+                            data={categoriasComPercentual}
+                            layout="vertical"
+                            margin={{
+                              top: 10,
+                              right: 50,
+                              left: 20,
+                              bottom: 10,
+                            }}
+                          >
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              horizontal={false}
+                              className="rel-chart-grid"
+                            />
+                            <XAxis type="number" hide />
+                            <YAxis
+                              dataKey="nome"
+                              type="category"
+                              width={120}
+                              axisLine={false}
+                              tickLine={false}
+                              className="rel-chart-axis"
+                            />
+                            <Tooltip
+                              formatter={(value) =>
+                                formatMoney(value)
+                              }
+                              cursor={false}
+                            />
+                            <Bar
+                              dataKey="valor"
+                              radius={[0, 10, 10, 0]}
+                              barSize={26}
+                            >
+                              {categoriasComPercentual.map(
+                                (item, index) => (
+                                  <Cell
+                                    key={item.nome}
+                                    fill={
+                                      CORES_DESPESAS[
+                                        index %
+                                          CORES_DESPESAS.length
+                                      ]
+                                    }
+                                  />
+                                )
+                              )}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
 
-        <XAxis
-          type="number"
-          hide
-        />
-
-        <YAxis
-          dataKey="nome"
-          type="category"
-          width={120}
-          axisLine={false}
-          tickLine={false}
-          className="rel-chart-axis"
-        />
-
-        <Tooltip
-          formatter={(value) => formatMoney(value)}
-        />
-
-        <Bar
-          dataKey="valor"
-          radius={[0, 10, 10, 0]}
-          barSize={26}
-        >
-          {categoriasComPercentual.map((item, index) => (
-            <Cell
-              key={item.nome}
-              fill={
-                CORES_DESPESAS[
-                  index % CORES_DESPESAS.length
-                ]
-              }
-            />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-
-  <div className="rel-categorias-legenda">
-    {categoriasComPercentual.map((item, index) => (
-      <div
-        key={item.nome}
-        className="rel-categoria-item"
-      >
-        <div className="rel-categoria-info">
-          <span
-            className="rel-categoria-cor"
-            style={{
-              background:
-                CORES_DESPESAS[
-                  index % CORES_DESPESAS.length
-                ],
-            }}
-          />
-
-          <span>{item.nome}</span>
-        </div>
-
-        <div className="rel-categoria-valores">
-          <strong>{formatMoney(item.valor)}</strong>
-
-          <span>{item.percentual}%</span>
-        </div>
-      </div>
-    ))}
-  </div>
-</section>
+                      <div className="rel-categorias-legenda">
+                        {categoriasComPercentual.map(
+                          (item, index) => (
+                            <div
+                              key={item.nome}
+                              className="rel-categoria-item"
+                            >
+                              <div className="rel-categoria-info">
+                                <span
+                                  className="rel-categoria-cor"
+                                  style={{
+                                    background:
+                                      CORES_DESPESAS[
+                                        index %
+                                          CORES_DESPESAS.length
+                                      ],
+                                  }}
+                                />
+                                <span>{item.nome}</span>
+                              </div>
+                              <div className="rel-categoria-valores">
+                                <strong>
+                                  {formatMoney(item.valor)}
+                                </strong>
+                                <span>{item.percentual}%</span>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </section>
                   )}
                 </div>
               )}

@@ -390,6 +390,7 @@ function MetasFinanceiras() {
                         contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
                         labelStyle={{ color: "#f8fafc" }}
                         formatter={(value) => [Number(value).toFixed(1) + "%", "Progresso"]}
+                        cursor={false}
                       />
                       <Bar dataKey="progresso" fill="#3b82f6" radius={[8, 8, 0, 0]} />
                     </BarChart>

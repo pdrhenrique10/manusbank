@@ -145,28 +145,6 @@ function Configuracoes() {
               </button>
             </div>
           </section>
-
-          {/* Seção Aparência */}
-          <section className="config-section">
-            <h2>
-              <Palette size={18} />
-              Aparência
-            </h2>
-            <div className="config-row">
-              <div className="config-text">
-                {isDark ? (
-                  <MoonStar size={16} className="config-icon" />
-                ) : (
-                  <SunMedium size={16} className="config-icon" />
-                )}
-                Modo de exibição
-              </div>
-              <button className="config-btn-toggle" onClick={toggleTheme}>
-                {isDark ? <MoonStar size={18} /> : <SunMedium size={18} />}
-                <span>{isDark ? "Modo escuro" : "Modo claro"}</span>
-              </button>
-            </div>
-          </section>
         </div>
       </main>
 

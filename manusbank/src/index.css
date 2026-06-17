@@ -1,10 +1,11 @@
 :root {
-  /* Tema claro - padrão */
-  --bg-main: #f1f5f9;          /* fundo principal claro */
-  --bg-card: #ffffff;          /* cards brancos */
-  --text-primary: #0f172a;     /* texto principal escuro */
-  --text-secondary: #64748b;   /* texto secundário */
-  --border-soft: rgba(148, 163, 184, 0.4);
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --border-soft: #e2e8f0;
+  --chart-grid: #cbd5e1;
+  --tooltip-bg: #ffffff;
 }
 
 /* Tema escuro - ativado quando body tiver a classe .dark */

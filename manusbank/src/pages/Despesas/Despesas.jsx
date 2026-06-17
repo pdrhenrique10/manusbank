@@ -407,6 +407,7 @@ function Despesas() {
                         contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
                         labelStyle={{ color: "#f8fafc" }}
                         formatter={(value) => ["R$ " + Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 }), "Valor"]}
+                        cursor={false}
                       />
                       <Bar dataKey="valor" fill="#ef4444" radius={[8, 8, 0, 0]} />
                     </BarChart>
@@ -431,9 +432,6 @@ function Despesas() {
                         <p className="despesa-valor">
                           R$ {Number(despesa.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                         </p>
-                        <button className="btn-editar-despesa" onClick={() => abrirModalEdicao(despesa)} title="Editar despesa">
-                          <Pencil size={16} />
-                        </button>
                         <button className="btn-remover-despesa" onClick={() => handleRemoverDespesa(despesa.id)} title="Remover despesa">
                           <Trash2 size={16} />
                         </button>
@@ -472,30 +470,6 @@ function Despesas() {
             </div>
           )}
 
-          {/* Modal de edição */}
-          {modalEdicaoAberto && despesaEditando && (
-            <div className="modal-overlay" onClick={fecharModalEdicao}>
-              <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
-                <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
-                <h2>Editar Despesa</h2>
-                <form className="forma-despesa" onSubmit={handleEditarDespesa}>
-                  <div className="form-group">
-                    <label>Nome</label>
-                    <input type="text" value={despesaEditando.nome} disabled className="campo-desabilitado" />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="valor-edicao">Valor (R$)</label>
-                    <input type="number" id="valor-edicao" name="valor" step="0.01" min="0" value={despesaEditando.valor} onChange={handleEdicaoChange} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="data-edicao">Data</label>
-                    <input type="date" id="data-edicao" name="data" value={despesaEditando.data} onChange={handleEdicaoChange} />
-                  </div>
-                  <button type="submit" className="btn-salvar">Atualizar Despesa</button>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>

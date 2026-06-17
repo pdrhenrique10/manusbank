@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Receitas.css";
-import { Plus, X, Wallet, TrendingUp, DollarSign, Trash2, Pencil } from "lucide-react";
+import { Plus, X, DollarSign, Trash2, Pencil, TrendingUp } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -65,6 +65,7 @@ function Receitas() {
 
   const carregarReceitas = useCallback(
     async (token) => {
+      console.log("carregarReceitas chamado com token:", token);
       try {
         setCarregando(true);
         setErro("");
@@ -73,6 +74,7 @@ function Receitas() {
         const resp = await fetch(`${API_URL}/api/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("resposta /api/dashboard status:", resp.status);
 
         if (!resp.ok) {
           if (resp.status === 401) {
@@ -80,13 +82,17 @@ function Receitas() {
             navigate("/login");
             return;
           }
-          const receitasLocal = JSON.parse(localStorage.getItem("receitas") || "[]");
+          const receitasLocal = JSON.parse(
+            localStorage.getItem("receitas") || "[]"
+          );
           setReceitas(receitasLocal);
           setCarregando(false);
           return;
         }
 
         const dados = await resp.json();
+        console.log("DADOS DASHBOARD RECEITAS:", dados);
+
         const receitasBackend = (dados.transacoes || [])
           .filter(
             (t) => t.tipo === "deposito" || t.tipo === "transferenciaEntrada"
@@ -102,7 +108,9 @@ function Receitas() {
         localStorage.setItem("receitas", JSON.stringify(receitasBackend));
       } catch (e) {
         console.error("Erro ao carregar receitas:", e);
-        const receitasLocal = JSON.parse(localStorage.getItem("receitas") || "[]");
+        const receitasLocal = JSON.parse(
+          localStorage.getItem("receitas") || "[]"
+        );
         setReceitas(receitasLocal);
         setErro("Erro ao carregar receitas. Usando dados locais.");
       } finally {
@@ -113,8 +121,11 @@ function Receitas() {
   );
 
   useEffect(() => {
+    console.log("useEffect RECEITAS rodou");
     const token = localStorage.getItem("token");
+    console.log("TOKEN EM RECEITAS:", token);
     if (!token) {
+      console.log("SEM TOKEN, REDIRECIONANDO PRA LOGIN");
       navigate("/login");
       return;
     }
@@ -366,7 +377,208 @@ function Receitas() {
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
-        {/* resto do JSX igual ao seu */}
+        <div className="receitas-container">
+          <div className="receitas-card">
+            <header className="receitas-header">
+              <h1>Rendas Fixas</h1>
+              <p className="substring">
+                Gerencie suas rendas fixas de dinheiro.
+              </p>
+            </header>
+
+            {erro && <p className="erro-msg">{erro}</p>}
+            {sucesso && <p className="sucesso-msg">{sucesso}</p>}
+
+            <div className="resumo-card">
+              <div className="resumo-item">
+                <DollarSign size={24} />
+                <div>
+                  <p className="resumo-label">Total de Receitas</p>
+                  <p className="resumo-valor">
+                    R{" "}
+                    {totalReceitas.toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="resumo-item-secundario">
+                <TrendingUp size={20} />
+                <p className="resumo-secundario-label">
+                  {receitas.length} receitas cadastradas
+                </p>
+              </div>
+            </div>
+
+            <button
+              className="btn-nova-receita"
+              onClick={() => setModalAberto(true)}
+            >
+              <Plus size={20} /> Nova Renda
+            </button>
+
+            <section className="grafico-section">
+              <h2>Receitas por Categoria</h2>
+              <div className="grafico-container">
+                {receitas.length > 0 ? (
+<ResponsiveContainer width="100%" height={250}>
+  <BarChart
+    data={dadosGrafico}
+    margin={{
+      top: 10,
+      right: 10,
+      left: 0,
+      bottom: 0,
+    }}
+  >
+    <CartesianGrid
+      vertical={false}
+      stroke="rgba(148, 163, 184, 0.12)"
+      strokeDasharray="3 3"
+    />
+
+    <XAxis
+      dataKey="nome"
+      stroke="#94a3b8"
+      tickLine={false}
+      axisLine={false}
+    />
+
+    <YAxis
+      stroke="#94a3b8"
+      tickLine={false}
+      axisLine={false}
+    />
+
+    <Tooltip
+      cursor={false}
+      contentStyle={{
+        backgroundColor: "#0f172a",
+        border: "1px solid #334155",
+        borderRadius: "12px",
+        boxShadow: "0 10px 20px rgba(0,0,0,.25)",
+      }}
+      labelStyle={{
+        color: "#f8fafc",
+      }}
+      formatter={(value) => [
+        `R$ ${Number(value).toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+        })}`,
+        "Valor",
+      ]}
+    />
+
+    <Bar
+      dataKey="valor"
+      fill="#3b82f6"
+      radius={[8, 8, 0, 0]}
+    />
+  </BarChart>
+</ResponsiveContainer>
+                ) : (
+                  <div className="grafico-vazio">
+                    <p>Não há receitas cadastradas ainda</p>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="lista-receitas">
+              <h2>Lista de Receitas</h2>
+              <div className="lista-container">
+                {receitas.length > 0 ? (
+                  receitas.map((receita) => (
+                    <div key={receita.id} className="receita-item">
+                      <div className="receita-info">
+                        <h3>{receita.nome}</h3>
+                        <p className="receita-data">
+                          {formatarData(receita.data)}
+                        </p>
+                      </div>
+                      <div className="receita-actions">
+                        <p className="receita-valor">
+                          R{" "}
+                          {Number(receita.valor).toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </p>
+                        <button
+                          className="btn-remover-receita"
+                          onClick={() => handleRemoverReceita(receita.id)}
+                          title="Remover receita"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="lista-vazia">
+                    <p>Nenhuma receita cadastrada</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+
+          {/* Modal de criação */}
+          {modalAberto && (
+            <div className="modal-overlay" onClick={fecharModal}>
+              <div
+                className="modal-conteudo"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button className="modal-fechar" onClick={fecharModal}>
+                  <X size={24} />
+                </button>
+                <h2>Nova Renda</h2>
+                <form className="forma-receita" onSubmit={handleAdicionarReceita}>
+                  <div className="form-group">
+                    <label htmlFor="nome">Nome</label>
+                    <input
+                      type="text"
+                      id="nome"
+                      name="nome"
+                      placeholder="Ex: Salário, Freelance..."
+                      autoComplete="off"
+                      value={novaReceita.nome}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="valor">Valor (R)</label>
+                    <input
+                      type="number"
+                      id="valor"
+                      name="valor"
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0"
+                      autoComplete="off"
+                      value={novaReceita.valor}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="data">Data</label>
+                    <input
+                      type="date"
+                      id="data"
+                      name="data"
+                      autoComplete="off"
+                      value={novaReceita.data}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <button type="submit" className="btn-salvar">
+                    Salvar Receita
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
