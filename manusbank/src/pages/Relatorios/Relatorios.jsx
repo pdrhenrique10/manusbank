@@ -7,7 +7,6 @@ import {
   ArrowUpCircle,
   CalendarDays,
   CircleDollarSign,
-  LineChart,
   PieChart as PieIcon,
   PiggyBank,
   TrendingDown,
@@ -135,7 +134,7 @@ function Relatorios() {
   const taxaEconomia = dados?.taxaEconomia !== undefined ? Number(dados.taxaEconomia) : receitas > 0 ? (resultado / receitas) * 100 : 0;
 
   const categories = dados?.gastosPorCategoria || dados?.despesasPorCategoria || [];
-  const temDados = dados?.temDados ?? receitas > 0 || despesas > 0;
+  const temDados = dados?.temDados ?? (receitas > 0 || despesas > 0);
 
   const dadosEvolucao = useMemo(() => {
     const evolucaoMensal = dados?.comparativoMensal || [];
@@ -178,6 +177,18 @@ function Relatorios() {
     ];
   }, [maiorCategoria, receitas, taxaEconomia, resultado]);
 
+  const totalCategorias = categoriasOrdenadas.reduce(
+  (acc, item) => acc + item.valor,
+  0
+);
+
+const categoriasComPercentual = categoriasOrdenadas.map((item) => ({
+  ...item,
+  percentual:
+    totalCategorias > 0
+      ? ((item.valor / totalCategorias) * 100).toFixed(1)
+      : 0,
+}));
   return (
     <div className="rel-wrapper">
       <Sidebar />
@@ -186,7 +197,6 @@ function Relatorios() {
           <header className="rel-header">
             <div>
               <h1>
-                <LineChart size={30} />
                 Relatórios Financeiros
               </h1>
               <p className="subtitle">Análise de entradas, gastos, evolução e categorias</p>
@@ -298,18 +308,10 @@ function Relatorios() {
                           <h2>Histórico temporal</h2>
                           <p>Evolução de ganhos e gastos no tempo</p>
                         </div>
-                        <div className="rel-toggle-botoes" role="group" aria-label="Tipo de gráfico">
-                          <button type="button" className={tipoGrafico === "linha" ? "ativo" : ""} onClick={() => setTipoGrafico("linha")}>
-                            Linha
-                          </button>
-                          <button type="button" className={tipoGrafico === "barra" ? "ativo" : ""} onClick={() => setTipoGrafico("barra")}>
-                            Barras
-                          </button>
-                        </div>
                       </div>
                       <div className="rel-grafico-container">
                         <ResponsiveContainer width="100%" height="100%">
-                          {tipoGrafico === "linha" ? (
+                          {tipoGrafico === "bar" ? (
                             <ReLineChart data={dadosEvolucao} margin={{ top: 20, right: 24, left: 10, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" vertical={false} className="rel-chart-grid" />
                               <XAxis dataKey="mes" className="rel-chart-axis" axisLine={false} tickLine={false} />
@@ -351,32 +353,102 @@ function Relatorios() {
                   </section>
 
                   {categoriasOrdenadas.length > 0 && (
-                    <section className="rel-grafico-section rel-categoria-secao">
-                      <div className="rel-section-header">
-                        <div>
-                          <h2>
-                            <PieIcon size={18} />
-                            Divisão por categorias
-                          </h2>
-                          <p>Ranking dos maiores pesos orçamentários</p>
-                        </div>
-                      </div>
-                      <div className="rel-grafico-container rel-categorias-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={categoriasOrdenadas} layout="vertical" margin={{ top: 10, right: 10, left: 12, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} className="rel-chart-grid" />
-                            <XAxis type="number" tickFormatter={(value) => formatMoney(value)} className="rel-chart-axis" axisLine={false} tickLine={false} />
-                            <YAxis dataKey="nome" type="category" className="rel-chart-axis" axisLine={false} tickLine={false} width={96} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar dataKey="valor" radius={[0, 6, 6, 0]} barSize={18}>
-                              {categoriasOrdenadas.map((item, index) => (
-                                <Cell key={item.nome} fill={CORES_DESPESAS[index % CORES_DESPESAS.length]} />
-                              ))}
-                            </Bar>
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </section>
+<section className="rel-grafico-section rel-categoria-secao">
+  <div className="rel-section-header">
+    <div>
+      <h2>
+        <PieIcon size={18} />
+        Divisão por categorias
+      </h2>
+      <p>Ranking dos maiores pesos orçamentários</p>
+    </div>
+  </div>
+
+  <div className="rel-grafico-container rel-categorias-chart">
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart
+        data={categoriasComPercentual}
+        layout="vertical"
+        margin={{
+          top: 10,
+          right: 50,
+          left: 20,
+          bottom: 10,
+        }}
+      >
+        <CartesianGrid
+          strokeDasharray="3 3"
+          horizontal={false}
+          className="rel-chart-grid"
+        />
+
+        <XAxis
+          type="number"
+          hide
+        />
+
+        <YAxis
+          dataKey="nome"
+          type="category"
+          width={120}
+          axisLine={false}
+          tickLine={false}
+          className="rel-chart-axis"
+        />
+
+        <Tooltip
+          formatter={(value) => formatMoney(value)}
+        />
+
+        <Bar
+          dataKey="valor"
+          radius={[0, 10, 10, 0]}
+          barSize={26}
+        >
+          {categoriasComPercentual.map((item, index) => (
+            <Cell
+              key={item.nome}
+              fill={
+                CORES_DESPESAS[
+                  index % CORES_DESPESAS.length
+                ]
+              }
+            />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+
+  <div className="rel-categorias-legenda">
+    {categoriasComPercentual.map((item, index) => (
+      <div
+        key={item.nome}
+        className="rel-categoria-item"
+      >
+        <div className="rel-categoria-info">
+          <span
+            className="rel-categoria-cor"
+            style={{
+              background:
+                CORES_DESPESAS[
+                  index % CORES_DESPESAS.length
+                ],
+            }}
+          />
+
+          <span>{item.nome}</span>
+        </div>
+
+        <div className="rel-categoria-valores">
+          <strong>{formatMoney(item.valor)}</strong>
+
+          <span>{item.percentual}%</span>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
                   )}
                 </div>
               )}
