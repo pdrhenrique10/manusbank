@@ -300,7 +300,6 @@ function Despesas() {
       });
 
       if (!resp.ok) {
-        // Fallback local
         const despesasAtualizadas = despesas.map(d =>
           d.id === despesaEditando.id
             ? { ...d, valor: valorNumero, data: dataFormatada }
@@ -360,8 +359,14 @@ function Despesas() {
     );
   }
 
+  // Variável para controlar se qualquer modal está aberto
+  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div
+      style={{ display: "flex", minHeight: "100vh" }}
+      className={modalAbertoOuEditando ? "modo-modal" : ""}
+    >
       <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="despesas-container">

@@ -280,8 +280,14 @@ function ContasReceber() {
     );
   }
 
+  // Controle para esconder sidebar no mobile quando o modal estiver aberto
+  const modalAbertoOuEditando = modalAberto;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div
+      style={{ display: "flex", minHeight: "100vh" }}
+      className={modalAbertoOuEditando ? "modo-modal" : ""}
+    >
       <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="cr-container">
@@ -421,19 +427,19 @@ function ContasReceber() {
                 <form className="cr-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
                     <label htmlFor="cliente">Nome</label>
-                    <input type="text" id="cliente" name="cliente" placeholder="Ex: Alguém devendo, venda de algo, etc." autocomplete="off" value={novaConta.cliente} onChange={handleInputChange} />
+                    <input type="text" id="cliente" name="cliente" placeholder="Ex: Alguém devendo, venda de algo, etc." autoComplete="off" value={novaConta.cliente} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
-                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaConta.valor} onChange={handleInputChange} />
+                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaConta.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="vencimento">Vencimento</label>
-                    <input type="date" id="vencimento" name="vencimento" autocomplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
+                    <input type="date" id="vencimento" name="vencimento" autoComplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Empréstimo para amigo X" autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
+                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Empréstimo para amigo X" autoComplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar Ganho</button>
                 </form>
