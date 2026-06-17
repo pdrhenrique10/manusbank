@@ -373,8 +373,14 @@ function Receitas() {
     );
   }
 
+  // Verifica se algum modal está aberto para esconder a sidebar no mobile
+  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div
+      style={{ display: "flex", minHeight: "100vh" }}
+      className={modalAbertoOuEditando ? "modo-modal" : ""}
+    >
       <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="receitas-container">
@@ -421,61 +427,61 @@ function Receitas() {
               <h2>Receitas por Categoria</h2>
               <div className="grafico-container">
                 {receitas.length > 0 ? (
-<ResponsiveContainer width="100%" height={250}>
-  <BarChart
-    data={dadosGrafico}
-    margin={{
-      top: 10,
-      right: 10,
-      left: 0,
-      bottom: 0,
-    }}
-  >
-    <CartesianGrid
-      vertical={false}
-      stroke="rgba(148, 163, 184, 0.12)"
-      strokeDasharray="3 3"
-    />
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart
+                      data={dadosGrafico}
+                      margin={{
+                        top: 10,
+                        right: 10,
+                        left: 0,
+                        bottom: 0,
+                      }}
+                    >
+                      <CartesianGrid
+                        vertical={false}
+                        stroke="rgba(148, 163, 184, 0.12)"
+                        strokeDasharray="3 3"
+                      />
 
-    <XAxis
-      dataKey="nome"
-      stroke="#94a3b8"
-      tickLine={false}
-      axisLine={false}
-    />
+                      <XAxis
+                        dataKey="nome"
+                        stroke="#94a3b8"
+                        tickLine={false}
+                        axisLine={false}
+                      />
 
-    <YAxis
-      stroke="#94a3b8"
-      tickLine={false}
-      axisLine={false}
-    />
+                      <YAxis
+                        stroke="#94a3b8"
+                        tickLine={false}
+                        axisLine={false}
+                      />
 
-    <Tooltip
-      cursor={false}
-      contentStyle={{
-        backgroundColor: "#0f172a",
-        border: "1px solid #334155",
-        borderRadius: "12px",
-        boxShadow: "0 10px 20px rgba(0,0,0,.25)",
-      }}
-      labelStyle={{
-        color: "#f8fafc",
-      }}
-      formatter={(value) => [
-        `R$ ${Number(value).toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-        })}`,
-        "Valor",
-      ]}
-    />
+                      <Tooltip
+                        cursor={false}
+                        contentStyle={{
+                          backgroundColor: "#0f172a",
+                          border: "1px solid #334155",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 20px rgba(0,0,0,.25)",
+                        }}
+                        labelStyle={{
+                          color: "#f8fafc",
+                        }}
+                        formatter={(value) => [
+                          `R$ ${Number(value).toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2,
+                          })}`,
+                          "Valor",
+                        ]}
+                      />
 
-    <Bar
-      dataKey="valor"
-      fill="#3b82f6"
-      radius={[8, 8, 0, 0]}
-    />
-  </BarChart>
-</ResponsiveContainer>
+                      <Bar
+                        dataKey="valor"
+                        fill="#3b82f6"
+                        radius={[8, 8, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
                 ) : (
                   <div className="grafico-vazio">
                     <p>Não há receitas cadastradas ainda</p>
@@ -573,6 +579,61 @@ function Receitas() {
                   </div>
                   <button type="submit" className="btn-salvar">
                     Salvar Receita
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de edição (exemplo, caso você tenha um) */}
+          {modalEdicaoAberto && receitaEditando && (
+            <div className="modal-overlay" onClick={fecharModalEdicao}>
+              <div
+                className="modal-conteudo"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button className="modal-fechar" onClick={fecharModalEdicao}>
+                  <X size={24} />
+                </button>
+                <h2>Editar Renda</h2>
+                <form className="forma-receita" onSubmit={handleEditarReceita}>
+                  <div className="form-group">
+                    <label htmlFor="edit-nome">Nome</label>
+                    <input
+                      type="text"
+                      id="edit-nome"
+                      name="nome"
+                      autoComplete="off"
+                      value={receitaEditando.nome}
+                      onChange={handleEdicaoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-valor">Valor (R)</label>
+                    <input
+                      type="number"
+                      id="edit-valor"
+                      name="valor"
+                      step="0.01"
+                      min="0"
+                      autoComplete="off"
+                      value={receitaEditando.valor}
+                      onChange={handleEdicaoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-data">Data</label>
+                    <input
+                      type="date"
+                      id="edit-data"
+                      name="data"
+                      autoComplete="off"
+                      value={receitaEditando.data}
+                      onChange={handleEdicaoChange}
+                    />
+                  </div>
+                  <button type="submit" className="btn-salvar">
+                    Salvar Alterações
                   </button>
                 </form>
               </div>
