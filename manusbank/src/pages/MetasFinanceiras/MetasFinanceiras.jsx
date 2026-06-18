@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./MetasFinanceiras.css";
-import { Plus, X, Target, CalendarClock, TrendingUp, Trash2 } from "lucide-react";
+import { Plus, X, CalendarClock, TrendingUp, Trash2 } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -46,7 +46,7 @@ function MetasFinanceiras() {
       setSucesso("");
 
       const resp = await fetch(`${API_URL}/api/metas`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (resp.status === 401) {
@@ -57,7 +57,9 @@ function MetasFinanceiras() {
 
       if (!resp.ok) {
         // Fallback: carregar do localStorage
-        const metasLocal = JSON.parse(localStorage.getItem('metasFinanceiras') || '[]');
+        const metasLocal = JSON.parse(
+          localStorage.getItem("metasFinanceiras") || "[]"
+        );
         setMetas(metasLocal);
         setCarregando(false);
         return;
@@ -65,10 +67,12 @@ function MetasFinanceiras() {
 
       const dados = await resp.json();
       setMetas(dados || []);
-      localStorage.setItem('metasFinanceiras', JSON.stringify(dados || []));
+      localStorage.setItem("metasFinanceiras", JSON.stringify(dados || []));
     } catch (e) {
       console.error("Erro ao carregar metas:", e);
-      const metasLocal = JSON.parse(localStorage.getItem('metasFinanceiras') || '[]');
+      const metasLocal = JSON.parse(
+        localStorage.getItem("metasFinanceiras") || "[]"
+      );
       setMetas(metasLocal);
       setErro("Erro ao carregar metas. Usando dados locais.");
     } finally {
@@ -84,14 +88,21 @@ function MetasFinanceiras() {
     }
   }, [sucesso]);
 
-  // Dados do gráfico: progresso em %
+  // Dados do gráfico: progresso em % + % faltando
   const dadosGrafico = metas.map((m) => {
     const objetivo = Number(m.valorAlvo) || 0;
     const atual = Number(m.valorAtual) || 0;
-    const progresso = objetivo > 0 ? Math.min(100, (atual / objetivo) * 100) : 0;
+    const progresso =
+      objetivo > 0 ? Math.min(100, (atual / objetivo) * 100) : 0;
+    const falta = 100 - progresso;
+
     return {
-      nome: m.titulo.length > 15 ? m.titulo.substring(0, 15) + "..." : m.titulo,
+      nome:
+        m.titulo.length > 15
+          ? m.titulo.substring(0, 15) + "..."
+          : m.titulo,
       progresso,
+      falta,
     };
   });
 
@@ -103,7 +114,7 @@ function MetasFinanceiras() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNovaMeta(prev => ({ ...prev, [name]: value }));
+    setNovaMeta((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAdicionarMeta = async (e) => {
@@ -116,7 +127,9 @@ function MetasFinanceiras() {
       return;
     }
 
-    const valorNumero = parseFloat(String(novaMeta.valorAlvo).replace(",", "."));
+    const valorNumero = parseFloat(
+      String(novaMeta.valorAlvo).replace(",", ".")
+    );
     if (isNaN(valorNumero) || valorNumero <= 0) {
       setErro("Informe um valor válido maior que zero.");
       return;
@@ -149,37 +162,61 @@ function MetasFinanceiras() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
 
       if (!resp.ok) {
         // Fallback local
-        setMetas(prev => [...prev, novaMetaObj]);
+        setMetas((prev) => [...prev, novaMetaObj]);
         const metasAtualizadas = [...metas, novaMetaObj];
-        localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
+        localStorage.setItem(
+          "metasFinanceiras",
+          JSON.stringify(metasAtualizadas)
+        );
         setSucesso("Meta salva localmente!");
         setModalAberto(false);
-        setNovaMeta({ titulo: "", valorAlvo: "", dataMeta: "", descricao: "" });
+        setNovaMeta({
+          titulo: "",
+          valorAlvo: "",
+          dataMeta: "",
+          descricao: "",
+        });
         return;
       }
 
       const criada = await resp.json();
-      setMetas(prev => [...prev, criada]);
+      setMetas((prev) => [...prev, criada]);
       const metasAtualizadas = [...metas, criada];
-      localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
-      setNovaMeta({ titulo: "", valorAlvo: "", dataMeta: "", descricao: "" });
+      localStorage.setItem(
+        "metasFinanceiras",
+        JSON.stringify(metasAtualizadas)
+      );
+      setNovaMeta({
+        titulo: "",
+        valorAlvo: "",
+        dataMeta: "",
+        descricao: "",
+      });
       setModalAberto(false);
       setSucesso("Meta adicionada com sucesso!");
     } catch (e) {
       console.error("Erro ao salvar meta:", e);
-      setMetas(prev => [...prev, novaMetaObj]);
+      setMetas((prev) => [...prev, novaMetaObj]);
       const metasAtualizadas = [...metas, novaMetaObj];
-      localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
+      localStorage.setItem(
+        "metasFinanceiras",
+        JSON.stringify(metasAtualizadas)
+      );
       setSucesso("Meta salva localmente (offline)!");
       setModalAberto(false);
-      setNovaMeta({ titulo: "", valorAlvo: "", dataMeta: "", descricao: "" });
+      setNovaMeta({
+        titulo: "",
+        valorAlvo: "",
+        dataMeta: "",
+        descricao: "",
+      });
     }
   };
 
@@ -206,29 +243,45 @@ function MetasFinanceiras() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ valor: valorNumero }),
       });
 
       if (!resp.ok) {
         // Fallback local
-        setMetas(prev =>
-          prev.map(m => m.id === metaId ? { ...m, valorAtual: (m.valorAtual || 0) + valorNumero } : m)
+        setMetas((prev) =>
+          prev.map((m) =>
+            m.id === metaId
+              ? { ...m, valorAtual: (m.valorAtual || 0) + valorNumero }
+              : m
+          )
         );
-        const metasAtualizadas = metas.map(m =>
-          m.id === metaId ? { ...m, valorAtual: (m.valorAtual || 0) + valorNumero } : m
+        const metasAtualizadas = metas.map((m) =>
+          m.id === metaId
+            ? { ...m, valorAtual: (m.valorAtual || 0) + valorNumero }
+            : m
         );
-        localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
-        setSucesso(`Aporte de R$ ${valorNumero.toFixed(2)} realizado localmente!`);
+        localStorage.setItem(
+          "metasFinanceiras",
+          JSON.stringify(metasAtualizadas)
+        );
+        setSucesso(
+          `Aporte de R$ ${valorNumero.toFixed(2)} realizado localmente!`
+        );
         setValorAporte("");
         return;
       }
 
       const { meta } = await resp.json();
-      setMetas(prev => prev.map(m => (m.id === meta.id ? meta : m)));
-      const metasAtualizadas = metas.map(m => (m.id === meta.id ? meta : m));
-      localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
+      setMetas((prev) => prev.map((m) => (m.id === meta.id ? meta : m)));
+      const metasAtualizadas = metas.map((m) =>
+        m.id === meta.id ? meta : m
+      );
+      localStorage.setItem(
+        "metasFinanceiras",
+        JSON.stringify(metasAtualizadas)
+      );
       setSucesso(`Aporte de R$ ${valorNumero.toFixed(2)} realizado!`);
       setValorAporte("");
     } catch (e) {
@@ -260,31 +313,57 @@ function MetasFinanceiras() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ valor: valorNumero }),
       });
 
       if (!resp.ok) {
         // Fallback local
-        setMetas(prev =>
-          prev.map(m =>
-            m.id === metaId ? { ...m, valorAtual: Math.max(0, (m.valorAtual || 0) - valorNumero) } : m
+        setMetas((prev) =>
+          prev.map((m) =>
+            m.id === metaId
+              ? {
+                  ...m,
+                  valorAtual: Math.max(
+                    0,
+                    (m.valorAtual || 0) - valorNumero
+                  ),
+                }
+              : m
           )
         );
-        const metasAtualizadas = metas.map(m =>
-          m.id === metaId ? { ...m, valorAtual: Math.max(0, (m.valorAtual || 0) - valorNumero) } : m
+        const metasAtualizadas = metas.map((m) =>
+          m.id === metaId
+            ? {
+                ...m,
+                valorAtual: Math.max(
+                  0,
+                  (m.valorAtual || 0) - valorNumero
+                ),
+              }
+            : m
         );
-        localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
-        setSucesso(`R$ ${valorNumero.toFixed(2)} retirado da meta localmente!`);
+        localStorage.setItem(
+          "metasFinanceiras",
+          JSON.stringify(metasAtualizadas)
+        );
+        setSucesso(
+          `R$ ${valorNumero.toFixed(2)} retirado da meta localmente!`
+        );
         setValorAporte("");
         return;
       }
 
       const { meta } = await resp.json();
-      setMetas(prev => prev.map(m => (m.id === meta.id ? meta : m)));
-      const metasAtualizadas = metas.map(m => (m.id === meta.id ? meta : m));
-      localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
+      setMetas((prev) => prev.map((m) => (m.id === meta.id ? meta : m)));
+      const metasAtualizadas = metas.map((m) =>
+        m.id === meta.id ? meta : m
+      );
+      localStorage.setItem(
+        "metasFinanceiras",
+        JSON.stringify(metasAtualizadas)
+      );
       setSucesso(`R$ ${valorNumero.toFixed(2)} retirado da meta!`);
       setValorAporte("");
     } catch (e) {
@@ -294,7 +373,9 @@ function MetasFinanceiras() {
   };
 
   const handleRemoverMeta = async (id) => {
-    const confirmar = window.confirm("Tem certeza que deseja remover esta meta financeira?");
+    const confirmar = window.confirm(
+      "Tem certeza que deseja remover esta meta financeira?"
+    );
     if (!confirmar) return;
 
     const token = localStorage.getItem("token");
@@ -306,28 +387,37 @@ function MetasFinanceiras() {
     try {
       const resp = await fetch(`${API_URL}/api/metas/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const dados = await resp.json();
 
       if (!resp.ok || !dados.sucesso) {
         // Fallback local
-        setMetas(prev => prev.filter(m => m.id !== id));
-        const metasAtualizadas = metas.filter(m => m.id !== id);
-        localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
+        setMetas((prev) => prev.filter((m) => m.id !== id));
+        const metasAtualizadas = metas.filter((m) => m.id !== id);
+        localStorage.setItem(
+          "metasFinanceiras",
+          JSON.stringify(metasAtualizadas)
+        );
         setSucesso("Meta removida localmente!");
         return;
       }
 
-      setMetas(prev => prev.filter(m => m.id !== id));
-      const metasAtualizadas = metas.filter(m => m.id !== id);
-      localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
+      setMetas((prev) => prev.filter((m) => m.id !== id));
+      const metasAtualizadas = metas.filter((m) => m.id !== id);
+      localStorage.setItem(
+        "metasFinanceiras",
+        JSON.stringify(metasAtualizadas)
+      );
       setSucesso("Meta removida com sucesso!");
     } catch (e) {
       console.error("Erro ao remover meta:", e);
-      setMetas(prev => prev.filter(m => m.id !== id));
-      const metasAtualizadas = metas.filter(m => m.id !== id);
-      localStorage.setItem('metasFinanceiras', JSON.stringify(metasAtualizadas));
+      setMetas((prev) => prev.filter((m) => m.id !== id));
+      const metasAtualizadas = metas.filter((m) => m.id !== id);
+      localStorage.setItem(
+        "metasFinanceiras",
+        JSON.stringify(metasAtualizadas)
+      );
       setSucesso("Meta removida localmente!");
     }
   };
@@ -348,10 +438,10 @@ function MetasFinanceiras() {
         <div className="mf-container">
           <div className="mf-card">
             <header className="mf-header">
-              <h1>
-                Metas Financeiras
-              </h1>
-              <p className="subtitle">Defina e acompanhe suas metas materiais.</p>
+              <h1>Metas Financeiras</h1>
+              <p className="subtitle">
+                Defina e acompanhe suas metas materiais.
+              </p>
             </header>
 
             {erro && <p className="erro-msg">{erro}</p>}
@@ -367,11 +457,16 @@ function MetasFinanceiras() {
               </div>
               <div className="mf-resumo-item-secundario">
                 <CalendarClock size={20} />
-                <p className="mf-resumo-secundario-label">{metasConcluidas} metas concluídas</p>
+                <p className="mf-resumo-secundario-label">
+                  {metasConcluidas} metas concluídas
+                </p>
               </div>
             </div>
 
-            <button className="mf-btn-nova" onClick={() => setModalAberto(true)}>
+            <button
+              className="mf-btn-nova"
+              onClick={() => setModalAberto(true)}
+            >
               <Plus size={20} /> Nova Meta
             </button>
 
@@ -379,24 +474,62 @@ function MetasFinanceiras() {
               <h2>Progresso das Metas (%)</h2>
               <div className="mf-grafico-container">
                 {carregando ? (
-                  <div className="mf-grafico-vazio"><p>Carregando metas...</p></div>
+                  <div className="mf-grafico-vazio">
+                    <p>Carregando metas...</p>
+                  </div>
                 ) : metas.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={dadosGrafico}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="#334155"
+                      />
                       <XAxis dataKey="nome" stroke="#94a3b8" />
                       <YAxis stroke="#94a3b8" domain={[0, 100]} />
                       <Tooltip
-                        contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                        contentStyle={{
+                          background: "#1e293b",
+                          border: "1px solid #334155",
+                          borderRadius: "8px",
+                        }}
                         labelStyle={{ color: "#f8fafc" }}
-                        formatter={(value) => [Number(value).toFixed(1) + "%", "Progresso"]}
+                        formatter={(value, name) => {
+                          if (name === "progresso") {
+                            return [
+                              Number(value).toFixed(1) + "%",
+                              "Evolução",
+                            ];
+                          }
+                          if (name === "falta") {
+                            return [
+                              Number(value).toFixed(1) + "%",
+                              "Quanto falta",
+                            ];
+                          }
+                          return [value, name];
+                        }}
                         cursor={false}
                       />
-                      <Bar dataKey="progresso" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                      {/* Evolução (progresso) */}
+                      <Bar
+                        dataKey="progresso"
+                        name="Evolução"
+                        fill="#22c55e" // verde
+                        radius={[8, 8, 0, 0]}
+                      />
+                      {/* Quanto falta */}
+                      <Bar
+                        dataKey="falta"
+                        name="Quanto falta"
+                        fill="#ef4444" // vermelho
+                        radius={[8, 8, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="mf-grafico-vazio"><p>Não há metas cadastradas ainda</p></div>
+                  <div className="mf-grafico-vazio">
+                    <p>Não há metas cadastradas ainda</p>
+                  </div>
                 )}
               </div>
             </section>
@@ -405,18 +538,48 @@ function MetasFinanceiras() {
               <h2>Lista de Metas</h2>
               <div className="mf-lista-container">
                 {carregando ? (
-                  <div className="mf-lista-vazia"><p>Carregando metas...</p></div>
+                  <div className="mf-lista-vazia">
+                    <p>Carregando metas...</p>
+                  </div>
                 ) : metas.length > 0 ? (
                   metas.map((meta) => {
                     const objetivo = Number(meta.valorAlvo) || 0;
                     const atual = Number(meta.valorAtual) || 0;
-                    const progresso = objetivo > 0 ? Math.min(100, (atual / objetivo) * 100) : 0;
+                    const progresso =
+                      objetivo > 0
+                        ? Math.min(100, (atual / objetivo) * 100)
+                        : 0;
+
+                    // cor dinâmica da barra de progresso da lista
+                    let corBarra;
+                    if (progresso >= 100) {
+                      corBarra =
+                        "linear-gradient(90deg, #16a34a, #22c55e)";
+                    } else if (progresso >= 66) {
+                      corBarra =
+                        "linear-gradient(90deg, #16a34a, #22c55e)";
+                    } else if (progresso >= 33) {
+                      corBarra =
+                        "linear-gradient(90deg, #f59e0b, #f97316)";
+                    } else {
+                      corBarra =
+                        "linear-gradient(90deg, #ef4444, #f97373)";
+                    }
 
                     const hoje = new Date();
-                    const dataMetaDate = meta.dataMeta ? new Date(meta.dataMeta + "T00:00:00") : null;
-                    const hojeSoData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+                    const dataMetaDate = meta.dataMeta
+                      ? new Date(meta.dataMeta + "T00:00:00")
+                      : null;
+                    const hojeSoData = new Date(
+                      hoje.getFullYear(),
+                      hoje.getMonth(),
+                      hoje.getDate()
+                    );
                     const metaAlcancada = progresso >= 100;
-                    const metaAtrasada = !metaAlcancada && dataMetaDate && dataMetaDate < hojeSoData;
+                    const metaAtrasada =
+                      !metaAlcancada &&
+                      dataMetaDate &&
+                      dataMetaDate < hojeSoData;
 
                     let statusLabel = "";
                     let statusClass = "meta-status";
@@ -436,14 +599,36 @@ function MetasFinanceiras() {
                         <div className="mf-info">
                           <h3>{meta.titulo}</h3>
                           <p className="mf-data">
-                            Data da meta: {meta.dataMeta ? new Date(meta.dataMeta + "T00:00:00").toLocaleDateString("pt-BR") : "-"}
+                            Data da meta:{" "}
+                            {meta.dataMeta
+                              ? new Date(
+                                  meta.dataMeta + "T00:00:00"
+                                ).toLocaleDateString("pt-BR")
+                              : "-"}
                           </p>
-                          {meta.descricao && <p className="mf-descricao">{meta.descricao}</p>}
+                          {meta.descricao && (
+                            <p className="mf-descricao">
+                              {meta.descricao}
+                            </p>
+                          )}
                           <p className="mf-valores">
-                            R$ {atual.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} de R$ {objetivo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                            R{"$ "}
+                            {atual.toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                            })}{" "}
+                            de R{"$ "}
+                            {objetivo.toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                            })}
                           </p>
                           <div className="meta-progress">
-                            <div className="meta-progress-bar" style={{ width: `${progresso}%` }} />
+                            <div
+                              className="meta-progress-bar"
+                              style={{
+                                width: `${progresso}%`,
+                                background: corBarra,
+                              }}
+                            />
                           </div>
                           <p className={statusClass}>{statusLabel}</p>
                         </div>
@@ -454,14 +639,36 @@ function MetasFinanceiras() {
                               placeholder="Valor do aporte"
                               className="mf-input-aporte"
                               value={valorAporte}
-                              onChange={(e) => setValorAporte(e.target.value)}
+                              onChange={(e) =>
+                                setValorAporte(e.target.value)
+                              }
                               min="0"
                               step="0.01"
                             />
                             <div className="mf-botoes-aporte">
-                              <button className="mf-btn-aporte" onClick={() => handleAportar(meta.id)}>Aportar</button>
-                              <button className="mf-btn-tirar" onClick={() => handleTirarAporte(meta.id)}>Tirar aporte</button>
-                              <button className="mf-btn-remover" onClick={() => handleRemoverMeta(meta.id)} title="Remover meta">
+                              <button
+                                className="mf-btn-aporte"
+                                onClick={() =>
+                                  handleAportar(meta.id)
+                                }
+                              >
+                                Aportar
+                              </button>
+                              <button
+                                className="mf-btn-tirar"
+                                onClick={() =>
+                                  handleTirarAporte(meta.id)
+                                }
+                              >
+                                Tirar aporte
+                              </button>
+                              <button
+                                className="mf-btn-remover"
+                                onClick={() =>
+                                  handleRemoverMeta(meta.id)
+                                }
+                                title="Remover meta"
+                              >
                                 <Trash2 size={16} />
                               </button>
                             </div>
@@ -471,35 +678,89 @@ function MetasFinanceiras() {
                     );
                   })
                 ) : (
-                  <div className="mf-lista-vazia"><p>Nenhuma meta cadastrada</p></div>
+                  <div className="mf-lista-vazia">
+                    <p>Nenhuma meta cadastrada</p>
+                  </div>
                 )}
               </div>
             </section>
           </div>
 
           {modalAberto && (
-            <div className="modal-overlay" onClick={() => setModalAberto(false)}>
-              <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
-                <button className="modal-fechar" onClick={() => setModalAberto(false)}><X size={24} /></button>
+            <div
+              className="modal-overlay"
+              onClick={() => setModalAberto(false)}
+            >
+              <div
+                className="modal-conteudo"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="modal-fechar"
+                  onClick={() => setModalAberto(false)}
+                >
+                  <X size={24} />
+                </button>
                 <h2>Nova Meta Financeira</h2>
                 <form className="mf-form" onSubmit={handleAdicionarMeta}>
                   <div className="form-group">
                     <label htmlFor="titulo">Nome da Meta</label>
-                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Carro, PC gamer, Casa..." autocomplete="off" value={novaMeta.titulo} onChange={handleInputChange} />
+                    <input
+                      type="text"
+                      id="titulo"
+                      name="titulo"
+                      placeholder="Ex: Carro, PC gamer, Casa..."
+                      autoComplete="off"
+                      value={novaMeta.titulo}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="valorAlvo">Valor objetivo (R$)</label>
-                    <input type="number" id="valorAlvo" name="valorAlvo" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaMeta.valorAlvo} onChange={handleInputChange} />
+                    <label htmlFor="valorAlvo">
+                      Valor objetivo (R$)
+                    </label>
+                    <input
+                      type="number"
+                      id="valorAlvo"
+                      name="valorAlvo"
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0"
+                      autoComplete="off"
+                      value={novaMeta.valorAlvo}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="dataMeta">Data para bater a meta</label>
-                    <input type="date" id="dataMeta" name="dataMeta" autocomplete="off" value={novaMeta.dataMeta} onChange={handleInputChange} />
+                    <label htmlFor="dataMeta">
+                      Data para bater a meta
+                    </label>
+                    <input
+                      type="date"
+                      id="dataMeta"
+                      name="dataMeta"
+                      autoComplete="off"
+                      value={novaMeta.dataMeta}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Meu primeiro carro, upgrade de celular..." autocomplete="off" value={novaMeta.descricao} onChange={handleInputChange} />
+                    <label htmlFor="descricao">
+                      Descrição (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      id="descricao"
+                      name="descricao"
+                      placeholder="Ex: Meu primeiro carro, upgrade de celular..."
+                      autoComplete="off"
+                      value={novaMeta.descricao}
+                      onChange={handleInputChange}
+                    />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar Meta</button>
+                  <button type="submit" className="btn-salvar">
+                    Salvar Meta
+                  </button>
                 </form>
               </div>
             </div>

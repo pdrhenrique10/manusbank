@@ -454,7 +454,7 @@ function Despesas() {
                 <form className="forma-despesa" onSubmit={handleAdicionarDespesa}>
                   <div className="form-group">
                     <label htmlFor="nome">Nome</label>
-                    <input type="text" id="nome" name="nome" placeholder="Ex: Mercado, Aluguel..." autoComplete="off" value={novaDespesa.nome} onChange={handleInputChange} />
+                    <input type="text" id="nome" name="nome" placeholder="Ex: Mercado, aluguel, contas de casa..." autoComplete="off" value={novaDespesa.nome} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
@@ -464,7 +464,7 @@ function Despesas() {
                     <label htmlFor="data">Data</label>
                     <input type="date" id="data" name="data" autoComplete="off" value={novaDespesa.data} onChange={handleInputChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar Despesa</button>
+                  <button type="submit" className="btn-salvar">Salvar</button>
                 </form>
               </div>
             </div>

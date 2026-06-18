@@ -540,7 +540,7 @@ function Receitas() {
                       type="text"
                       id="nome"
                       name="nome"
-                      placeholder="Ex: Salário, Freelance..."
+                      placeholder="Ex: Salário, aposentadoria, pensão..."
                       autoComplete="off"
                       value={novaReceita.nome}
                       onChange={handleInputChange}

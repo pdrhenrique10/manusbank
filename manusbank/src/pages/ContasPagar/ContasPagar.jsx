@@ -459,7 +459,7 @@ function ContasPagar() {
                   </div>
                   <div className="form-group">
                     <label htmlFor="tipo">Tipo (opcional)</label>
-                    <input type="text" id="tipo" name="tipo" placeholder="Ex: fixa, variável, empréstimo..." autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
+                    <input type="text" id="tipo" name="tipo" placeholder="Ex: lanche na rua, compra de algo..." autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
@@ -471,9 +471,9 @@ function ContasPagar() {
                   </div>
                   <div className="form-group">
                     <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Pix de alguém, lanche/compra na rua, etc." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
+                    <input type="text" id="descricao" name="descricao" placeholder="Ex: mandei um pix para o meu pai, comprei um livro..." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar Gasto</button>
+                  <button type="submit" className="btn-salvar">Salvar</button>
                 </form>
               </div>
             </div>
