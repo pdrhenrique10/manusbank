@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
-import Sidebar from "../../components/Sidebar/Sidebar";
 import { API_URL } from "../../config/api";
 
 import {
@@ -164,8 +163,6 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="mainLayout">
-      <Sidebar />
       <main className="dashboard">
         <div className="top">
           <div>
@@ -325,6 +322,5 @@ export default function Dashboard() {
           </div>
         </section>
       </main>
-    </div>
   );
 }

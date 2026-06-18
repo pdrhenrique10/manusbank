@@ -13,27 +13,34 @@ import Relatorios from "./pages/Relatorios/Relatorios";
 import Configuracoes from "./pages/Configuracoes/Configuracoes";
 import { useTheme } from "./hooks/useTheme";
 
+// IMPORTE O SEU LAYOUT AQUI
+import MobileLayout from "./components/MobileLayout"; 
+
 export default function App() {
-  // isso já lê o tema salvo e aplica no body assim que o App monta
   const { theme } = useTheme();
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* Páginas sem sidebar */}
+        
+        {/* 1. Páginas SEM Sidebar/Navbar (Ficam soltas) */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Páginas com sidebar */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/receitas" element={<Receitas />} />
-        <Route path="/despesas" element={<Despesas />} />
-        <Route path="/contas-a-receber" element={<ContasReceber />} />
-        <Route path="/contas-a-pagar" element={<ContasPagar />} />
-        <Route path="/metasfinanceiras" element={<MetasFinanceiras />} />
-        <Route path="/relatorios" element={<Relatorios />} />
-        <Route path="/configuracoes" element={<Configuracoes />} />
+        {/* 2. Páginas COM Sidebar/Navbar (Envolvidas pelo MobileLayout) */}
+        {/* O segredo é colocar a rota pai assim: */}
+        <Route element={<MobileLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/receitas" element={<Receitas />} />
+          <Route path="/despesas" element={<Despesas />} />
+          <Route path="/contas-a-receber" element={<ContasReceber />} />
+          <Route path="/contas-a-pagar" element={<ContasPagar />} />
+          <Route path="/metasfinanceiras" element={<MetasFinanceiras />} />
+          <Route path="/relatorios" element={<Relatorios />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
+        </Route>
+
       </Routes>
     </BrowserRouter>
   );
