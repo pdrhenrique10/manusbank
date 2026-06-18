@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://manusfinance.vercel.app";
-// 🔒 ATENÇÃO: Configure essa variável no painel do Render!
+// 🔒 Configure essa variável no painel do Render!
 const JWT_SECRET = process.env.JWT_SECRET || "troque-esta-chave-em-producao";
 
 if (!fs.existsSync(USUARIOS_FILE)) {
@@ -18,33 +18,33 @@ if (!fs.existsSync(USUARIOS_FILE)) {
 }
 
 const app = express();
-app.use(express.json());
 
-// ===== CORS INFALÍVEL E SEGURO =====
+// ===== CORS INFALÍVEL (RESPOSTA GARANTIDA AO OPTIONS) =====
 const allowedOrigins = [
-  'http://localhost:5173',         // Seu PC
-  FRONTEND_URL                     // Seu site no Vercel
+  'http://localhost:5173',
+  FRONTEND_URL
 ];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
   // 1. Responde IMEDIATAMENTE à requisição de teste (OPTIONS)
-  // Isso mata o erro "Failed to load resource"
   if (req.method === 'OPTIONS') {
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     
-    // Permite a origem se ela for conhecida, ou permite ferramentas (Postman) sem origin
+    // ⚠️ CORREÇÃO AQUI: Se a origem não estiver na lista, libera '*'
+    // Isso garante que o navegador NUNCA veja um OPTIONS sem cabeçalho CORS.
     if (origin && allowedOrigins.includes(origin)) {
       res.header('Access-Control-Allow-Origin', origin);
-    } else if (!origin) {
+    } else {
       res.header('Access-Control-Allow-Origin', '*');
     }
+    
     return res.sendStatus(200);
   }
 
-  // 2. Para requisições reais (POST, GET, etc), só libera se for autorizado
+  // 2. Para requisições reais (POST, GET, etc), mantém a segurança
   if (origin && allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -54,6 +54,8 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use(express.json());
 
 // ===== FUNÇÕES AUXILIARES =====
 function criptografarSenha(senha) {
@@ -116,7 +118,6 @@ function gerarToken(usuario) {
   );
 }
 
-// Middleware de autenticação
 function autenticar(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
