@@ -15,10 +15,8 @@ import {
   Settings,
   Palette,
 } from "lucide-react";
-import { useTheme } from "../../hooks/useTheme";
 
 function Configuracoes() {
-  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
@@ -178,30 +176,6 @@ function Configuracoes() {
                 onClick={showLogoutWarning}
               >
                 <LogOut size={18} /> Sair
-              </button>
-            </div>
-          </section>
-
-          {/* Tema (exemplo simples) */}
-          <section className="config-section">
-            <h2>
-              <Settings size={18} />
-              Aparência
-            </h2>
-            <div className="config-row">
-              <div className="config-text">
-                <Palette size={16} className="config-icon" /> Tema:
-              </div>
-              <button className="config-btn" onClick={toggleTheme}>
-                {isDark ? (
-                  <>
-                    <SunMedium size={16} /> Modo claro
-                  </>
-                ) : (
-                  <>
-                    <MoonStar size={16} /> Modo escuro
-                  </>
-                )}
               </button>
             </div>
           </section>
