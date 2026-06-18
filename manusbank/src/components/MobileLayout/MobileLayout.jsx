@@ -1,7 +1,7 @@
 // src/components/MobileLayout.jsx
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "./Sidebar/Sidebar"; // Certifique-se que o caminho está certo
+import Sidebar from "./Sidebar/Sidebar.jsx";// Certifique-se que o caminho está certo
 import "./MobileLayout.css";
 
 function MobileLayout() {
