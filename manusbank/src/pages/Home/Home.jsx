@@ -85,6 +85,7 @@ export default function Home() {
           <a href="#">Introdução</a>
           <a href="#funcionalidades">Funcionalidades</a>
           <a href="#como-funciona">Como funciona</a>
+          <a href="#curiosidade">Curiosidade</a>
           <a href="#sobre">Sobre</a>
         </nav>
       </header>
@@ -96,9 +97,7 @@ export default function Home() {
           <span>organizadas de verdade.</span>
         </h1>
         <p className="description">
-          O ManusFinance reúne contas, cartões, investimentos e metas
-          em uma única plataforma moderna. Tome decisões com clareza —
-          sem planilhas, sem complicação.
+Saiba exatamente para onde seu dinheiro está indo. Registre receitas, controle despesas e acompanhe suas metas financeiras em um só lugar.
         </p>
         <div className="buttons">
           <button className="primary-btn" onClick={() => navigate("/login")}>
@@ -144,6 +143,27 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+            <section className="section" id="curiosidade">
+  <div className="curiosity-card">
+    <p className="section-tag">A realidade financeira</p>
+
+    <h2 className="curiosity-number">
+      81,6%
+    </h2>
+
+    <h3 className="curiosity-title">
+      das famílias brasileiras possuem dívidas
+    </h3>
+
+    <p className="curiosity-text">
+      Controlar o dinheiro nunca foi tão importante. Enquanto milhões de
+      brasileiros enfrentam dificuldades para organizar suas finanças,
+      o ManusFinance ajuda você a acompanhar gastos, receitas e metas,
+      transformando informações em decisões mais inteligentes.
+    </p>
+  </div>
+</section>
 
       {/* SOBRE */}
       <section className="section" id="sobre">

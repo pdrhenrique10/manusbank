@@ -665,6 +665,50 @@ app.delete("/api/metas/:id", autenticar, (req, res) => {
   res.json({ sucesso: true });
 });
 
+// ===== APORTAR NA META =====
+app.patch("/api/metas/:id/aportar", autenticar, (req, res) => {
+  const id = Number(req.params.id);
+  const { valor } = req.body;
+  const valorNumero = Number(valor);
+
+  if (!Number.isFinite(valorNumero) || valorNumero <= 0) {
+    return res.status(400).json({ erro: "Valor inválido" });
+  }
+
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  const meta = usuarios[index].metas?.find((m) => m.id === id);
+  if (!meta) return res.status(404).json({ erro: "Meta não encontrada" });
+
+  meta.valorAtual = (meta.valorAtual || 0) + valorNumero;
+
+  salvarUsuarios(usuarios);
+  res.json({ meta });
+});
+
+// ===== DESAPORTAR DA META =====
+app.patch("/api/metas/:id/desaportar", autenticar, (req, res) => {
+  const id = Number(req.params.id);
+  const { valor } = req.body;
+  const valorNumero = Number(valor);
+
+  if (!Number.isFinite(valorNumero) || valorNumero <= 0) {
+    return res.status(400).json({ erro: "Valor inválido" });
+  }
+
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  const meta = usuarios[index].metas?.find((m) => m.id === id);
+  if (!meta) return res.status(404).json({ erro: "Meta não encontrada" });
+
+  meta.valorAtual = Math.max(0, (meta.valorAtual || 0) - valorNumero);
+
+  salvarUsuarios(usuarios);
+  res.json({ meta });
+});
+
 // ===== INICIALIZAÇÃO DO SERVIDOR =====
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
