@@ -14,7 +14,7 @@ import Configuracoes from "./pages/Configuracoes/Configuracoes";
 import { useTheme } from "./hooks/useTheme";
 
 // IMPORTE O SEU LAYOUT AQUI
-import MobileLayout from "./components/MobileLayout"; 
+import MobileLayout from "./components/MobileLayout/MobileLayout.jsx"; 
 
 export default function App() {
   const { theme } = useTheme();
