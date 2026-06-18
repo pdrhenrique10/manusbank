@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://manusfinance.vercel.app";
+// 🔒 ATENÇÃO: Configure essa variável no painel do Render!
 const JWT_SECRET = process.env.JWT_SECRET || "troque-esta-chave-em-producao";
 
 if (!fs.existsSync(USUARIOS_FILE)) {
@@ -19,27 +20,36 @@ if (!fs.existsSync(USUARIOS_FILE)) {
 const app = express();
 app.use(express.json());
 
-// ===== CORS MANUAL (INFALÍVEL E SEGURO) =====
+// ===== CORS INFALÍVEL E SEGURO =====
+const allowedOrigins = [
+  'http://localhost:5173',         // Seu PC
+  FRONTEND_URL                     // Seu site no Vercel
+];
+
 app.use((req, res, next) => {
-  const allowedOrigins = [
-    'http://localhost:5173',
-    FRONTEND_URL
-  ];
   const origin = req.headers.origin;
 
-  // Permite apenas as origens autorizadas
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
+  // 1. Responde IMEDIATAMENTE à requisição de teste (OPTIONS)
+  // Isso mata o erro "Failed to load resource"
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    // Permite a origem se ela for conhecida, ou permite ferramentas (Postman) sem origin
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    } else if (!origin) {
+      res.header('Access-Control-Allow-Origin', '*');
+    }
+    return res.sendStatus(200);
   }
 
-  // Libera os métodos e cabeçalhos necessários (incluindo Authorization para o JWT)
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-
-  // Responde imediatamente à requisição OPTIONS (Preflight)
-  // Isso impede o navegador de dar timeout e gerar o ERR_FAILED
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
+  // 2. Para requisições reais (POST, GET, etc), só libera se for autorizado
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   }
 
   next();
@@ -132,7 +142,6 @@ function autenticar(req, res, next) {
 }
 
 // ===== ROTAS PÚBLICAS =====
-// 👇 CORRIGIDO: Agora é "/api/register" para bater com o frontend
 app.post("/api/register", (req, res) => {
   const { nome, email, senha } = req.body;
 
@@ -205,7 +214,7 @@ app.post("/api/logout", (req, res) => {
   res.json({ sucesso: true });
 });
 
-// ===== ROTAS PROTEGIDAS BÁSICAS =====
+// ===== ROTAS PROTEGIDAS =====
 app.get("/api/dashboard", autenticar, (req, res) => {
   res.json({
     usuario: { nome: req.usuario.nome, email: req.usuario.email },
@@ -214,7 +223,6 @@ app.get("/api/dashboard", autenticar, (req, res) => {
   });
 });
 
-// ===== RELATÓRIOS =====
 app.get("/api/relatorios", autenticar, (req, res) => {
   const transacoes = req.usuario.transacoes || [];
   const saldo = req.usuario.saldo || 0;
