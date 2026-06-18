@@ -1,34 +1,30 @@
-import "./Login.css"
-import { useNavigate } from "react-router-dom"
-import { Eye, EyeOff, ArrowLeft } from "lucide-react"
-import { useState } from "react"
-import { API_URL } from "../../config/api"; // Importe sua URL base
+import "./Login.css";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { API_URL } from "../../config/api";
 
 export default function Login() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const togglePasswordVisibility = () => setShowPassword(!showPassword)
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  // Transformei em função assíncrona
   const handleLogin = async (e) => {
-    e.preventDefault() 
+    e.preventDefault();
 
-    // 1. VALIDAÇÃO CAMPOS OBRIGATÓRIOS
     if (!email.trim() || !password.trim()) {
-      alert("Por favor, preencha o e-mail e a senha para continuar.")
-      return
+      alert("Por favor, preencha o e-mail e a senha para continuar.");
+      return;
     }
 
-    // 2. INICIA O CARREGAMENTO
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      // 3. REQUISIÇÃO REAL PARA O BACK-END
       const response = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: {
@@ -36,43 +32,38 @@ export default function Login() {
         },
         body: JSON.stringify({
           email: email.trim(),
-          password: password.trim()
-        })
-      })
+          // backend espera "senha"
+          senha: password.trim(),
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        // Se o servidor retornar erro (401, 400, etc)
-        alert(data.msg || data.error || "E-mail ou senha incorretos.")
-        setIsLoading(false)
-        return
+        // backend manda { erro: "..." }
+        alert(data.erro || data.msg || data.error || "E-mail ou senha incorretos.");
+        setIsLoading(false);
+        return;
       }
 
-      // 4. SUCESSO! Salva o Token Real no navegador
       if (data.token) {
-        localStorage.setItem("token", data.token)
-        // A flag 'isAuthenticated' não é mais necessária, o token real já basta.
-        
-        setIsLoading(false)
-        navigate("/dashboard") // Vai para o Dashboard com o token real
+        localStorage.setItem("token", data.token);
+        setIsLoading(false);
+        navigate("/dashboard");
       } else {
-        alert("Erro inesperado: Token não recebido do servidor.")
-        setIsLoading(false)
+        alert("Erro inesperado: Token não recebido do servidor.");
+        setIsLoading(false);
       }
-
     } catch (error) {
-      console.error("Erro de conexão com a API:", error)
-      alert("Não foi possível conectar ao servidor. Verifique sua internet.")
-      setIsLoading(false)
+      console.error("Erro de conexão com a API:", error);
+      alert("Não foi possível conectar ao servidor. Verifique sua internet.");
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="login-page-container">
       <div className="login-card">
-        
-        {/* Lado Esquerdo: Formulário */}
         <div className="login-form-panel">
           <h1 className="login-title">
             Faça seu login<span className="login-dot">.</span>
@@ -80,11 +71,11 @@ export default function Login() {
 
           <div className="form-group">
             <label htmlFor="email">E-mail</label>
-            <input 
-              type="email" 
-              id="email" 
-              placeholder="E-mail" 
-              className="input-field" 
+            <input
+              type="email"
+              id="email"
+              placeholder="E-mail"
+              className="input-field"
               autoComplete="off"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -113,11 +104,11 @@ export default function Login() {
             </div>
           </div>
 
-          <button 
-            type="button" 
-            className="login-button" 
+          <button
+            type="button"
+            className="login-button"
             onClick={handleLogin}
-            disabled={isLoading} 
+            disabled={isLoading}
           >
             {isLoading ? "Entrando..." : "Login"}
           </button>
@@ -129,18 +120,15 @@ export default function Login() {
           <button className="back-home-button" onClick={() => navigate("/")}>
             <ArrowLeft size={16} /> Voltar à tela inicial
           </button>
-
         </div>
 
-        {/* Lado Direito: Logo do Site */}
         <div className="login-image-panel">
           <div className="brand-display">
             <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="login-logo" />
             <span className="login-brand-name">ManusFinance</span>
           </div>
         </div>
-
       </div>
     </div>
-  )
+  );
 }
