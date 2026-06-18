@@ -16,8 +16,7 @@ import { API_URL } from "../../config/api";
 
 const SIDEBAR_KEY = "sidebarCollapsed";
 
-// AQUI RECEBEMOS A PROP closeMenu
-export default function Sidebar({ closeMenu }) { 
+export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(() => {
     try {
       const saved = localStorage.getItem(SIDEBAR_KEY);
@@ -58,8 +57,10 @@ export default function Sidebar({ closeMenu }) {
       console.error("Erro ao deslogar:", e);
     }
 
+    // limpa dados de autenticação no frontend
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     navigate("/login");
   }
 
@@ -77,43 +78,57 @@ export default function Sidebar({ closeMenu }) {
       </div>
 
       <nav className="sidebarMenu">
-        {/* ADICIONAMOS O onClick={closeMenu} EM TODOS OS LINKS */}
-        <NavLink to="/dashboard" onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
           <LayoutDashboard size={19} />
           <span>Página inicial</span>
         </NavLink>
 
-        <NavLink to="/receitas" onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/receitas" className={({ isActive }) => (isActive ? "active" : "")}>
           <TrendingUp size={19} />
           <span>Rendas Fixas</span>
         </NavLink>
 
-        <NavLink to="/despesas" onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/despesas" className={({ isActive }) => (isActive ? "active" : "")}>
           <TrendingDown size={19} />
           <span>Despesas Fixas</span>
         </NavLink>
 
-        <NavLink to="/contas-a-receber" onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink
+          to="/contas-a-receber"
+          className={({ isActive }) => (isActive ? "active" : "")}
+        >
           <WalletCards size={19} />
           <span>Ganhos</span>
         </NavLink>
 
-        <NavLink to="/contas-a-pagar" onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink
+          to="/contas-a-pagar"
+          className={({ isActive }) => (isActive ? "active" : "")}
+        >
           <WalletCards size={19} />
           <span>Gastos</span>
         </NavLink>
 
-        <NavLink to="/metasfinanceiras" onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink
+          to="/metasfinanceiras"
+          className={({ isActive }) => (isActive ? "active" : "")}
+        >
           <Target size={19} />
           <span>Metas Financeiras</span>
         </NavLink>
 
-        <NavLink to="/relatorios" onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink
+          to="/relatorios"
+          className={({ isActive }) => (isActive ? "active" : "")}
+        >
           <BarChart3 size={19} />
           <span>Relatórios</span>
         </NavLink>
 
-        <NavLink to="/configuracoes" onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink
+          to="/configuracoes"
+          className={({ isActive }) => (isActive ? "active" : "")}
+        >
           <Settings size={19} />
           <span>Configurações</span>
         </NavLink>
