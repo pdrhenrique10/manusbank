@@ -9,8 +9,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 const PORT = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://manusfinance.vercel.app";
-// 🔒 Configure essa variável no painel do Render!
 const JWT_SECRET = process.env.JWT_SECRET || "troque-esta-chave-em-producao";
 
 if (!fs.existsSync(USUARIOS_FILE)) {
@@ -19,39 +17,17 @@ if (!fs.existsSync(USUARIOS_FILE)) {
 
 const app = express();
 
-// ===== CORS INFALÍVEL (RESPOSTA GARANTIDA AO OPTIONS) =====
-const allowedOrigins = [
-  'http://localhost:5173',
-  FRONTEND_URL
-];
-
+// ===== CORS SIMPLIFICADO (PARA TESTES) =====
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
+  // Permite qualquer origem
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
 
-  // 1. Responde IMEDIATAMENTE à requisição de teste (OPTIONS)
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    
-    // ⚠️ CORREÇÃO AQUI: Se a origem não estiver na lista, libera '*'
-    // Isso garante que o navegador NUNCA veja um OPTIONS sem cabeçalho CORS.
-    if (origin && allowedOrigins.includes(origin)) {
-      res.header('Access-Control-Allow-Origin', origin);
-    } else {
-      res.header('Access-Control-Allow-Origin', '*');
-    }
-    
+  // Resposta imediata para o OPTIONS (isso mata o erro)
+  if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
-
-  // 2. Para requisições reais (POST, GET, etc), mantém a segurança
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  }
-
   next();
 });
 
