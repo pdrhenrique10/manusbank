@@ -12,6 +12,8 @@ import {
   ShieldCheck,
   AlertTriangle,
   X,
+  Settings,
+  Palette,
 } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 
