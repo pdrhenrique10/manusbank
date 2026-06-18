@@ -2,7 +2,7 @@ import "./Register.css"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { useState } from "react"
-import { API_URL } from "../../config/api"; // Importação da sua URL base
+import { API_URL } from "../../config/api"
 
 export default function Register() {
   const navigate = useNavigate()
@@ -21,7 +21,7 @@ export default function Register() {
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword)
 
   const handleRegister = async (e) => {
-    e.preventDefault() // Impede recarregamento da página
+    e.preventDefault() 
 
     // 1. VALIDAÇÕES
     if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
@@ -45,8 +45,6 @@ export default function Register() {
     try {
       // 3. REQUISIÇÃO PARA O BACK-END NO RENDER
       const response = await fetch(`${API_URL}/api/register`, { 
-        // Nota: Verifique se a sua rota no server.js é exatamente "/api/register". 
-        // Se não for, ajuste aqui! (Ex: "/api/users/register")
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,23 +52,28 @@ export default function Register() {
         body: JSON.stringify({
           nome: name.trim(),
           email: email.trim(),
-          senha: password.trim() // Verifique se seu back-end espera 'senha' ou 'password'
+          senha: password.trim()
         })
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        // Se o servidor retornar um erro (ex: email já existe)
         alert(data.msg || data.error || "Erro ao cadastrar. Tente novamente.")
         setIsLoading(false)
         return
       }
 
       // 4. SUCESSO!
-      alert("Conta criada com sucesso! Faça login para continuar.")
-      setIsLoading(false)
-      navigate("/login") // Redireciona para a tela de login
+      // O Back-end retorna um token JWT real. Vamos salvá-lo e ir direto para o Dashboard.
+      if (data.token) {
+        localStorage.setItem("token", data.token) // Salva o token real
+        setIsLoading(false)
+        navigate("/dashboard") // Vai direto para o sistema
+      } else {
+        alert("Erro inesperado: Token não recebido do servidor.")
+        setIsLoading(false)
+      }
 
     } catch (error) {
       console.error("Erro de conexão com a API:", error)
@@ -98,7 +101,7 @@ export default function Register() {
               className="input-field"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              autoComplete="off" // Corrigido de "none" para "off"
+              autoComplete="off"
             />
           </div>
 
