@@ -9,8 +9,6 @@ import {
   User,
   Mail,
   LogIn,
-  Settings,
-  Palette,
   ShieldCheck,
   AlertTriangle,
   X,
@@ -20,6 +18,7 @@ import { useTheme } from "../../hooks/useTheme";
 function Configuracoes() {
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
@@ -27,19 +26,32 @@ function Configuracoes() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-    if (!token || !userData) {
+
+    // Se não tiver token, manda pro login
+    if (!token) {
       navigate("/login");
       return;
     }
-    try {
-      setUser(JSON.parse(userData));
-    } catch (e) {
-      console.error(e);
-      navigate("/login");
-    } finally {
-      setLoading(false);
+
+    // Se mais tarde você quiser salvar user no localStorage,
+    // pode reaproveitar aqui. Por enquanto, cria um placeholder simples.
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Erro ao parsear user:", e);
+        setUser(null);
+      }
+    } else {
+      // fallback: usa só email como "desconhecido" ou deixa null
+      setUser({
+        name: "",
+        email: "Usuário autenticado",
+      });
     }
+
+    setLoading(false);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -50,17 +62,15 @@ function Configuracoes() {
 
   const showLogoutWarning = () => {
     setShowToast(true);
-    
-    // Timer para esconder o toast após 5 segundos
+
     const timer = setTimeout(() => {
       setShowToast(false);
     }, 5000);
-    
+
     setLogoutTimer(timer);
   };
 
   const confirmLogout = () => {
-    // Limpa o timer do toast se existir
     if (logoutTimer) {
       clearTimeout(logoutTimer);
     }
@@ -84,23 +94,36 @@ function Configuracoes() {
     );
   }
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div style={{ display: "flex", minHeight: "100vh" }}>
+        <Sidebar />
+        <main className="config-main">
+          Não foi possível carregar os dados do usuário.
+        </main>
+      </div>
+    );
+  }
 
   const avatarInitial =
-    user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase();
+    user.name?.charAt(0)?.toUpperCase() ||
+    user.email?.charAt(0)?.toUpperCase() ||
+    "?";
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
       <Sidebar />
+
       <main className="config-main">
         <div className="config-container">
-          {/* Título da página com ícone */}
           <header className="config-header">
             <h1>Configurações</h1>
-            <p className="config-subtitle">Ajuste preferências da sua conta e do sistema.</p>
+            <p className="config-subtitle">
+              Ajuste preferências da sua conta e do sistema.
+            </p>
           </header>
 
-          {/* Seção Conta */}
+          {/* Conta */}
           <section className="config-section">
             <h2>
               <ShieldCheck size={18} />
@@ -109,7 +132,11 @@ function Configuracoes() {
 
             <div className="config-avatar-row">
               {user.photo ? (
-                <img src={user.photo} alt="Foto" className="config-avatar-img" />
+                <img
+                  src={user.photo}
+                  alt="Foto"
+                  className="config-avatar-img"
+                />
               ) : (
                 <div className="config-avatar">{avatarInitial}</div>
               )}
@@ -119,14 +146,18 @@ function Configuracoes() {
               <div className="config-text">
                 <User size={16} className="config-icon" /> Nome:
               </div>
-              <span className="config-value">{user.name || "Não informado"}</span>
+              <span className="config-value">
+                {user.name || "Não informado"}
+              </span>
             </div>
 
             <div className="config-row">
               <div className="config-text">
                 <Mail size={16} className="config-icon" /> Email:
               </div>
-              <span className="config-value">{user.email}</span>
+              <span className="config-value">
+                {user.email || "Não informado"}
+              </span>
             </div>
 
             <div className="config-row">
@@ -140,22 +171,49 @@ function Configuracoes() {
               <div className="config-text">
                 <LogOut size={16} className="config-icon" /> Sair da conta:
               </div>
-              <button className="config-btn-danger" onClick={showLogoutWarning}>
+              <button
+                className="config-btn-danger"
+                onClick={showLogoutWarning}
+              >
                 <LogOut size={18} /> Sair
+              </button>
+            </div>
+          </section>
+
+          {/* Tema (exemplo simples) */}
+          <section className="config-section">
+            <h2>
+              <Settings size={18} />
+              Aparência
+            </h2>
+            <div className="config-row">
+              <div className="config-text">
+                <Palette size={16} className="config-icon" /> Tema:
+              </div>
+              <button className="config-btn" onClick={toggleTheme}>
+                {isDark ? (
+                  <>
+                    <SunMedium size={16} /> Modo claro
+                  </>
+                ) : (
+                  <>
+                    <MoonStar size={16} /> Modo escuro
+                  </>
+                )}
               </button>
             </div>
           </section>
         </div>
       </main>
 
-      {/* Toast de aviso no topo */}
       {showToast && (
         <div className="toast-warning">
           <div className="toast-content">
             <AlertTriangle size={20} className="toast-icon" />
             <div className="toast-message">
-              <strong>Atenção!</strong> Você tem certeza que deseja sair da conta? 
-              Você precisará fazer login novamente para acessar o sistema.
+              <strong>Atenção!</strong> Você tem certeza que deseja sair da
+              conta? Você precisará fazer login novamente para acessar o
+              sistema.
             </div>
           </div>
           <div className="toast-actions">

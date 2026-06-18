@@ -71,10 +71,15 @@ export default function Register() {
       }
 
       if (data.token) {
-        localStorage.setItem("token", data.token);
-        setIsLoading(false);
-        navigate("/dashboard");
-      } else {
+  localStorage.setItem("token", data.token);
+
+  if (data.user) {
+    localStorage.setItem("user", JSON.stringify(data.user));
+  }
+
+  setIsLoading(false);
+  navigate("/dashboard");
+} else {
         alert("Erro inesperado: Token não recebido do servidor.");
         setIsLoading(false);
       }

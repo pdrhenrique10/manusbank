@@ -46,11 +46,17 @@ export default function Login() {
         return;
       }
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        setIsLoading(false);
-        navigate("/dashboard");
-      } else {
+if (data.token) {
+  localStorage.setItem("token", data.token);
+
+  // guarda também os dados básicos do usuário
+  if (data.user) {
+    localStorage.setItem("user", JSON.stringify(data.user));
+  }
+
+  setIsLoading(false);
+  navigate("/dashboard");
+} else {
         alert("Erro inesperado: Token não recebido do servidor.");
         setIsLoading(false);
       }
