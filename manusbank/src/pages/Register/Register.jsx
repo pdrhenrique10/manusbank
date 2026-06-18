@@ -1,161 +1,192 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./Register.css";
-import { API_URL } from "../../config/api";
+import "./Register.css"
+import { useNavigate } from "react-router-dom"
+import { Eye, EyeOff, ArrowLeft } from "lucide-react"
+import { useState } from "react"
+import { API_URL } from "../../config/api"; // Importação da sua URL base
 
 export default function Register() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
-  const [erro, setErro] = useState("");
-  const [sucesso, setSucesso] = useState("");
-  const [carregando, setCarregando] = useState(false);
+  // Estados para os inputs
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  async function handleRegister(e) {
-    e.preventDefault();
-    setErro("");
-    setSucesso("");
+  const togglePasswordVisibility = () => setShowPassword(!showPassword)
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword)
 
-    if (
-      !nome.trim() ||
-      !email.trim() ||
-      !senha.trim() ||
-      !confirmarSenha.trim()
-    ) {
-      setErro("Preencha todos os campos.");
-      return;
+  const handleRegister = async (e) => {
+    e.preventDefault() // Impede recarregamento da página
+
+    // 1. VALIDAÇÕES
+    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      alert("Por favor, preencha todos os campos.")
+      return
     }
 
-    if (senha !== confirmarSenha) {
-      setErro("As senhas não coincidem.");
-      return;
+    if (password !== confirmPassword) {
+      alert("As senhas não coincidem. Digite novamente.")
+      return
     }
 
-    setCarregando(true);
+    if (password.length < 6) {
+      alert("A senha deve ter pelo menos 6 caracteres.")
+      return
+    }
+
+    // 2. INICIA O CARREGAMENTO
+    setIsLoading(true)
 
     try {
-      const resp = await fetch(`${API_URL}/api/registro`, {
+      // 3. REQUISIÇÃO PARA O BACK-END NO RENDER
+      const response = await fetch(`${API_URL}/api/register`, { 
+        // Nota: Verifique se a sua rota no server.js é exatamente "/api/register". 
+        // Se não for, ajuste aqui! (Ex: "/api/users/register")
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, email, senha }),
-      });
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome: name.trim(),
+          email: email.trim(),
+          senha: password.trim() // Verifique se seu back-end espera 'senha' ou 'password'
+        })
+      })
 
-      const dados = await resp.json();
+      const data = await response.json()
 
-      if (!resp.ok) {
-        setErro(dados.erro || "Erro ao registrar. Tente novamente.");
-        setCarregando(false);
-        return;
+      if (!response.ok) {
+        // Se o servidor retornar um erro (ex: email já existe)
+        alert(data.msg || data.error || "Erro ao cadastrar. Tente novamente.")
+        setIsLoading(false)
+        return
       }
 
-      localStorage.setItem("token", dados.token);
+      // 4. SUCESSO!
+      alert("Conta criada com sucesso! Faça login para continuar.")
+      setIsLoading(false)
+      navigate("/login") // Redireciona para a tela de login
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          uid: dados.user?.id || Date.now().toString(),
-          email,
-          name: nome,
-        })
-      );
-
-      setSucesso("Conta criada com sucesso! Redirecionando...");
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1500);
     } catch (error) {
-      console.error("Erro na conexão:", error);
-      setErro(
-        "Não foi possível conectar ao servidor. Verifique se o backend está rodando."
-      );
-      setCarregando(false);
+      console.error("Erro de conexão com a API:", error)
+      alert("Não foi possível conectar ao servidor. Verifique sua internet.")
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="register-container">
-      {/* Botão Home */}
-      <button
-        className="back-home-btn"
-        onClick={() => navigate("/")}
-      >
-        ← 
-      </button>
+    <div className="login-page-container">
+      <div className="login-card">
+        
+        {/* Lado Esquerdo: Formulário */}
+        <div className="login-form-panel">
+          <h1 className="login-title">
+            Crie sua conta<span className="login-dot">.</span>
+          </h1>
 
-      <div className="left-panel">
-        <h1>Já possui conta?</h1>
+          <div className="form-group">
+            <label htmlFor="name">Nome completo</label>
+            <input 
+              type="text" 
+              id="name" 
+              placeholder="Digite seu nome" 
+              className="input-field"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="off" // Corrigido de "none" para "off"
+            />
+          </div>
 
-        <p>
-          Entre agora para{" "}
-          <span className="destaque2">
-            desfrutar dos seus benefícios
-          </span>.
-        </p>
+          <div className="form-group">
+            <label htmlFor="email">E-mail</label>
+            <input 
+              type="email" 
+              id="email" 
+              placeholder="Digite seu e-mail" 
+              className="input-field"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
 
-        <button
-          className="signin-btn"
-          onClick={() => navigate("/login")}
-        >
-          Entre na sua conta
-        </button>
-      </div>
+          <div className="form-group">
+            <label htmlFor="password">Senha</label>
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="Crie uma senha"
+                className="input-field input-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={togglePasswordVisibility}
+                aria-label="Alternar visibilidade da senha"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
 
-      <div className="right-panel">
-        <h1>Crie sua conta</h1>
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirmar senha</label>
+            <div className="password-wrapper">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                placeholder="Confirme sua senha"
+                className="input-field input-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={toggleConfirmPasswordVisibility}
+                aria-label="Alternar visibilidade da senha"
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
 
-        {erro && <p className="error-msg">{erro}</p>}
-        {sucesso && <p className="success-msg">{sucesso}</p>}
-
-        <form onSubmit={handleRegister}>
-          <input
-            type="text"
-            placeholder="Nome"
-            value={nome}
-            autoComplete="off"
-            onChange={(e) => setNome(e.target.value)}
-            required
-          />
-
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            autoComplete="off"
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <input
-            type="password"
-            placeholder="Senha"
-            value={senha}
-            autoComplete="off"
-            onChange={(e) => setSenha(e.target.value)}
-            required
-          />
-
-          <input
-            type="password"
-            placeholder="Confirmar senha"
-            value={confirmarSenha}
-            autoComplete="off"
-            onChange={(e) => setConfirmarSenha(e.target.value)}
-            required
-          />
-
-          <button
-            type="submit"
-            className="signup-btn"
-            disabled={carregando}
+          <button 
+            className="login-button" 
+            onClick={handleRegister}
+            disabled={isLoading}
           >
-            {carregando ? "Registrando..." : "Registrar"}
+            {isLoading ? "Cadastrando..." : "Registrar"}
           </button>
-        </form>
+
+          <div className="register-link" onClick={() => navigate("/login")}>
+            Já tem uma conta? <span>Faça login</span>
+          </div>
+
+          {/* Botão para voltar à Home */}
+          <button className="back-home-button" onClick={() => navigate("/")}>
+            <ArrowLeft size={16} /> Voltar à tela inicial
+          </button>
+
+        </div>
+
+        {/* Lado Direito: Logo do Site */}
+        <div className="login-image-panel">
+          <div className="brand-display">
+            <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="login-logo" />
+            <span className="login-brand-name">ManusFinance</span>
+          </div>
+        </div>
+
       </div>
     </div>
-  );
+  )
 }

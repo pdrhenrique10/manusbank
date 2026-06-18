@@ -36,11 +36,34 @@ export default function Dashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    
+    // 1. Verifica se está logado
     if (!token) {
       navigate("/login");
       return;
     }
 
+    // ==========================================
+    // 🔥 CORREÇÃO PARA TESTE SEM BACKEND 🔥
+    // Se for o nosso token mockado, usamos dados de exemplo e pulamos a API
+    // ==========================================
+    if (token === "mock-token") {
+      setUsuario({ nome: "Usuário Teste", email: "teste@mock.com" });
+      setSaldo(3250.00);
+      setTransacoes([
+        { id: 1, descricao: "Salário Fixo", tipo: "deposito", valor: 5000, data: "2026-06-01" },
+        { id: 2, descricao: "Aluguel", tipo: "saque", valor: 1200, data: "2026-06-05" },
+        { id: 3, descricao: "Mercado", tipo: "saque", valor: 550, data: "2026-06-10" }
+      ]);
+      setContasReceber([
+        { id: 1, descricao: "Cliente A", valor: 1500, status: "pendente", data: "2026-06-20" }
+      ]);
+      setLoading(false);
+      return; // Para a execução aqui
+    }
+    // ==========================================
+
+    // 2. Lógica REAL do Backend (Executada apenas se o token não for mockado)
     const fetchDashboard = async () => {
       try {
         const resp = await fetch(`${API_URL}/api/dashboard`, {
@@ -257,7 +280,6 @@ export default function Dashboard() {
                   <div className="taskItem" key={conta.id || conta._id || conta.descricao}>
                     <div>
                       <strong>{conta.descricao || conta.nome || "Recebimento pendente"}</strong>
-                      {/* ✅ Formatação segura da data */}
                       <span>{formatarDataString(conta.data)}</span>
                     </div>
                     <b>{formatMoney(conta.valor)}</b>
@@ -307,7 +329,6 @@ export default function Dashboard() {
                     <div className="movementItem" key={t.id || t._id || `${t.data}-${t.valor}`}>
                       <div>
                         <strong>{t.descricao || t.categoria || "Movimentação"}</strong>
-                        {/* ✅ Formatação segura da data */}
                         <span>{formatarDataString(t.data)}</span>
                       </div>
                       <b className={entrada ? "positiveValue" : "negativeValue"}>

@@ -71,9 +71,7 @@ a {
   justify-content: space-between;
   gap: 32px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(6, 13, 40, 0.5);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgb(6, 13, 40);
 }
 
 .navbar-brand {
@@ -99,39 +97,45 @@ a {
   height: 22px;
 }
 
+/* ─── LINKS DO NAVBAR (ESTILIZADOS) ──────── */
 .navbar-links {
   display: flex;
-  gap: 26px;
+  gap: 8px; /* Reduzimos o gap pois o padding dos links fará o espaçamento */
   margin-left: auto;
 }
 
 .navbar-links a {
-  font-size: 14px;
-  color: #94a3b8;
-  transition: color 0.2s;
-}
-
-.navbar-links a:hover {
-  color: #f1f5f9;
-}
-
-.nav-cta {
-  background: transparent;
-  border: 1px solid rgba(96, 165, 250, 0.32);
-  border-radius: 10px;
-  color: #60a5fa;
-  font-family: "DM Sans", sans-serif;
+  padding: 8px 16px; /* Área de clique muito maior e confortável */
+  border-radius: 10px; /* Cantos arredondados para parecer um botão */
   font-size: 14px;
   font-weight: 500;
-  padding: 7px 18px;
+  color: #94a3b8;
+  transition: all 0.3s ease;
+  position: relative; /* Necessário para o efeito de linha */
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-  white-space: nowrap;
 }
 
-.nav-cta:hover {
-  background: rgba(37, 99, 235, 0.12);
-  border-color: #60a5fa;
+/* Efeito de fundo sutil e mudança de cor ao passar o mouse */
+.navbar-links a:hover {
+  color: #ffffff;
+}
+
+/* Efeito de linha inferior estilizada (degradê azul) */
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 0%; /* A linha começa invisível */
+  height: 2px;
+  background: linear-gradient(90deg, #1d4ed8, #2563eb);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+  border-radius: 4px;
+}
+
+.navbar-links a:hover::after {
+  width: 60%; /* A linha aparece preenchendo o centro */
 }
 
 /* ─── HERO (TELA 1 CHEIA E CENTRALIZADA) ─── */
@@ -475,7 +479,8 @@ a {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 16px;
-    justify-content: center;      /* centraliza os links na linha */
+    justify-content: center;     
+    
   }
 
   .navbar-links a {

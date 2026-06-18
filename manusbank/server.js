@@ -27,7 +27,14 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: "*",
+    origin: function (origin, callback) {
+      // Se a origem estiver na lista permitida ou não houver origem (ex: Postman/Insomnia), permite
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Origem não permitida pelo CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

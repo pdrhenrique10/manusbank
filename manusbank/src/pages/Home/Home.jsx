@@ -79,7 +79,7 @@ export default function Home() {
       <header className="navbar">
         <div className="navbar-brand">
           <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="logo-image" />
-          <span className="logo">ManusFinance</span>
+          <span className="logo"> <a href="#">ManusFinance</a></span>
         </div>
         <nav className="navbar-links">
           <a href="#">Introdução</a>
@@ -87,9 +87,6 @@ export default function Home() {
           <a href="#como-funciona">Como funciona</a>
           <a href="#sobre">Sobre</a>
         </nav>
-        <button className="nav-cta" onClick={() => navigate("/login")}>
-          Entrar
-        </button>
       </header>
 
       {/* HERO */}

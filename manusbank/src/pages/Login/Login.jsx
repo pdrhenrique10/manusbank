@@ -1,119 +1,146 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./Login.css";
-import { API_URL } from "../../config/api";
+import "./Login.css"
+import { useNavigate } from "react-router-dom"
+import { Eye, EyeOff, ArrowLeft } from "lucide-react"
+import { useState } from "react"
+import { API_URL } from "../../config/api"; // Importe sua URL base
 
 export default function Login() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
-  const [carregando, setCarregando] = useState(false);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setErro("");
+  const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
-    if (!email.trim() || !senha.trim()) {
-      setErro("Preencha email e senha.");
-      return;
+  // Transformei em função assíncrona
+  const handleLogin = async (e) => {
+    e.preventDefault() 
+
+    // 1. VALIDAÇÃO CAMPOS OBRIGATÓRIOS
+    if (!email.trim() || !password.trim()) {
+      alert("Por favor, preencha o e-mail e a senha para continuar.")
+      return
     }
 
-    setCarregando(true);
+    // 2. INICIA O CARREGAMENTO
+    setIsLoading(true)
 
     try {
-      const resp = await fetch(`${API_URL}/api/login`, {
+      // 3. REQUISIÇÃO REAL PARA O BACK-END
+      const response = await fetch(`${API_URL}/api/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
-      });
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password.trim()
+        })
+      })
 
-      const dados = await resp.json();
+      const data = await response.json()
 
-      if (!resp.ok) {
-        setErro(dados.erro || "Erro ao fazer login. Tente novamente.");
-        setCarregando(false);
-        return;
+      if (!response.ok) {
+        // Se o servidor retornar erro (401, 400, etc)
+        alert(data.msg || data.error || "E-mail ou senha incorretos.")
+        setIsLoading(false)
+        return
       }
 
-      localStorage.setItem("token", dados.token);
+      // 4. SUCESSO! Salva o Token Real no navegador
+      if (data.token) {
+        localStorage.setItem("token", data.token)
+        // A flag 'isAuthenticated' não é mais necessária, o token real já basta.
+        
+        setIsLoading(false)
+        navigate("/dashboard") // Vai para o Dashboard com o token real
+      } else {
+        alert("Erro inesperado: Token não recebido do servidor.")
+        setIsLoading(false)
+      }
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          uid: dados.user?.id || Date.now().toString(),
-          email,
-          name: dados.user?.nome || email.split("@")[0],
-        })
-      );
-
-      navigate("/dashboard");
     } catch (error) {
-      console.error("Erro na conexão:", error);
-      setErro(
-        "Não foi possível conectar ao servidor. Verifique se o backend está rodando."
-      );
-      setCarregando(false);
+      console.error("Erro de conexão com a API:", error)
+      alert("Não foi possível conectar ao servidor. Verifique sua internet.")
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="login-container">
-      {/* Botão para voltar à Home */}
-      <button
-        className="back-home-btn"
-        onClick={() => navigate("/")}
-      >
-        ← 
-      </button>
+    <div className="login-page-container">
+      <div className="login-card">
+        
+        {/* Lado Esquerdo: Formulário */}
+        <div className="login-form-panel">
+          <h1 className="login-title">
+            Faça seu login<span className="login-dot">.</span>
+          </h1>
 
-      <div className="left-panel">
-        <h1>
-          Novo usuário? <span className="destaque">Cadastre-se</span> aqui.
-        </h1>
+          <div className="form-group">
+            <label htmlFor="email">E-mail</label>
+            <input 
+              type="email" 
+              id="email" 
+              placeholder="E-mail" 
+              className="input-field" 
+              autoComplete="off"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-        <button
-          className="signin-btn"
-          onClick={() => navigate("/register")}
-        >
-          Criar conta
-        </button>
-      </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="Senha"
+                className="input-field input-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={togglePasswordVisibility}
+                aria-label="Alternar visibilidade da senha"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
 
-      <div className="right-panel">
-        <h1>Faça login na sua conta</h1>
-
-        {erro && <p className="error-msg">{erro}</p>}
-
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            autoComplete="off"
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <input
-            type="password"
-            placeholder="Senha"
-            value={senha}
-            autoComplete="off"
-            onChange={(e) => setSenha(e.target.value)}
-            required
-          />
-
-          <button
-            type="submit"
-            className="signup-btn"
-            disabled={carregando}
+          <button 
+            type="button" 
+            className="login-button" 
+            onClick={handleLogin}
+            disabled={isLoading} 
           >
-            {carregando ? "Entrando..." : "Entrar"}
+            {isLoading ? "Entrando..." : "Login"}
           </button>
-        </form>
+
+          <div className="register-link" onClick={() => navigate("/register")}>
+            Ainda não tem uma conta? <span>Registre-se</span>
+          </div>
+
+          <button className="back-home-button" onClick={() => navigate("/")}>
+            <ArrowLeft size={16} /> Voltar à tela inicial
+          </button>
+
+        </div>
+
+        {/* Lado Direito: Logo do Site */}
+        <div className="login-image-panel">
+          <div className="brand-display">
+            <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="login-logo" />
+            <span className="login-brand-name">ManusFinance</span>
+          </div>
+        </div>
+
       </div>
     </div>
-  );
+  )
 }

@@ -1,6 +1,5 @@
-/* ==========================================================================
-   LOGIN - ESTILO LEVE E PROFISSIONAL
-   ========================================================================== */
+/* pages/Login/Login.css */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
 * {
   margin: 0;
@@ -8,331 +7,248 @@
   box-sizing: border-box;
 }
 
-body {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-/* ==========================================================================
-   CONTAINER PRINCIPAL
-   ========================================================================== */
-
-.login-container {
-  width: 100%;
+/* Container Principal (Mesmo fundo do site) */
+.login-page-container {
+  width: 100vw;
   min-height: 100vh;
+  background: #060d28;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  font-family: "DM Sans", system-ui, sans-serif;
   padding: 20px;
 }
 
-/* ==========================================================================
-   PAINEIS
-   ========================================================================== */
+/* Cartão dividido ao meio */
+.login-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  max-width: 900px;
+  height: 500px;
+  background: #0a0f25;;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+}
 
-.left-panel, .right-panel {
-  min-height: 520px;
+/* ----- LADO ESQUERDO (Formulário) ----- */
+.login-form-panel {
+  padding: 48px 56px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  padding: 40px 32px;
-  background: rgba(30, 41, 59, 0.8);
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
 }
 
-/* Painel Esquerdo */
-.left-panel {
-  width: 340px;
-  border: 1px solid rgba(71, 85, 105, 0.5);
-  border-radius: 20px 0 0 20px;
-  text-align: center;
-}
-
-.destaque {
-  color: #38bdf8;
-  font-size: 30px;
-  font-weight: 800;
-  margin-bottom: 12px;
-}
-
-.left-panel h1 {
-  font-size: 22px;
+.login-title {
+  font-family: "Sora", sans-serif;
   font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 12px;
+  font-size: 32px;
+  color: #ffffff;
+  margin-bottom: 32px;
+  letter-spacing: -0.5px;
 }
 
-.left-panel p {
-  color: #94a3b8;
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 28px;
-  max-width: 240px;
+.login-dot {
+  color: #3b82f6;
 }
 
-/* Botão do painel esquerdo */
-.signin-btn {
-  width: 160px;
-  height: 44px;
-  border: 2px solid #38bdf8;
-  background: transparent;
-  color: #38bdf8;
-  border-radius: 30px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.signin-btn:hover {
-  background: #38bdf8;
-  color: white;
-  transform: translateY(-2px);
-}
-
-/* Painel Direito */
-.right-panel {
-  width: 440px;
-  border: 1px solid rgba(71, 85, 105, 0.5);
-  border-left: none;
-  border-radius: 0 20px 20px 0;
-}
-
-.right-panel h1 {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 28px;
-  text-align: center;
-  color: #f1f5f9;
-}
-
-/* ==========================================================================
-   FORMULÁRIO
-   ========================================================================== */
-
-.right-panel form {
-  width: 100%;
-  max-width: 320px;
+.form-group {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
-.right-panel input {
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.input-field {
   width: 100%;
   height: 48px;
-  background: #1e293b;
-  border: 1px solid #334155;
-  outline: none;
-  border-radius: 12px;
   padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   color: #f1f5f9;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: "DM Sans", sans-serif;
 }
 
-.right-panel input::placeholder {
+.input-field::placeholder {
   color: #64748b;
 }
 
-.right-panel input:focus {
-  border-color: #38bdf8;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+.input-field:focus {
+  border-color: #3b82f6;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.right-panel input:-webkit-autofill,
-.right-panel input:-webkit-autofill:hover,
-.right-panel input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px #1e293b inset;
-  -webkit-text-fill-color: #f1f5f9;
-}
-
-/* ==========================================================================
-   BOTÃO PRINCIPAL
-   ========================================================================== */
-
-.signup-btn {
-  width: 100%;
-  height: 48px;
-  border: none;
-  background: #2563eb;
-  color: white;
-  border-radius: 30px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 8px;
-}
-
-.signup-btn:hover {
-  background: #1d4ed8;
-  transform: translateY(-2px);
-}
-
-/* ==========================================================================
-   MENSAGENS DE ERRO
-   ========================================================================== */
-
-.error-msg {
-  color: #f87171;
-  font-size: 13px;
-  text-align: center;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  padding: 10px 14px;
-  border-radius: 30px;
+/* Campo de senha com ícone */
+.password-wrapper {
+  position: relative;
   width: 100%;
 }
 
-/* ==========================================================================
-   BOTÃO VOLTAR
-   ========================================================================== */
+.input-password {
+  padding-right: 44px;
+}
 
-.back-home-btn {
+.password-toggle-btn {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  background: rgba(30, 41, 59, 0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid #334155;
-  color: #f1f5f9;
-  padding: 8px 18px;
-  border-radius: 30px;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #94a3b8;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  transition: all 0.2s ease;
-  z-index: 10;
   display: flex;
   align-items: center;
-  gap: 6px;
+  padding: 4px;
+  transition: color 0.2s;
 }
 
-.back-home-btn:hover {
-  border-color: #38bdf8;
-  color: #38bdf8;
-  transform: translateY(-2px);
+.password-toggle-btn:hover {
+  color: #f1f5f9;
 }
 
-/* ==========================================================================
-   LINK DE ALTERNAR MODO
-   ========================================================================== */
-
-.toggle-mode {
-  text-align: center;
-  margin-top: 16px;
-  color: #94a3b8;
-  font-size: 13px;
-}
-
-.toggle-mode span {
-  color: #38bdf8;
-  cursor: pointer;
+/* Botão de Login (Degradê Azul Padrão) */
+.login-button {
+  margin-top: 12px;
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
   font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.toggle-mode span:hover {
+.login-button:hover {
+
+  box-shadow: 0 5px 20px rgba(37, 99, 235, 0.45);
+}
+
+.register-link {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.register-link span {
+  color: #3b82f6;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.register-link span:hover {
   text-decoration: underline;
 }
 
-/* ==========================================================================
-   DIVISOR
-   ========================================================================== */
-
-.divider {
+/* ----- LADO DIREITO (Logo do Site) ----- */
+.login-image-panel {
+  background: #0a0f25; /* Levemente mais claro que o fundo preto puro para destacar */
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 12px 0;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Efeito de luz sutil atrás da logo, opcional */
+.login-image-panel::after {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.brand-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  z-index: 1;
+}
+
+.login-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.login-brand-name {
+  font-family: "Sora", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+/* ─── BOTÃO VOLTAR PARA HOME ─────────────── */
+.back-home-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px; /* Espaço abaixo do link de cadastro/login */
+  padding: 10px 0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   color: #94a3b8;
-  font-size: 12px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #334155;
+.back-home-button:hover {
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-/* ==========================================================================
-   RESPONSIVIDADE
-   ========================================================================== */
+/* ----- RESPONSIVIDADE (MOBILE) ----- */
+@media (max-width: 860px) {
+  .login-card {
+    grid-template-columns: 1fr;
+    height: auto;
+    max-width: 450px;
+  }
+  
+  .login-image-panel {
+    display: none; /* Esconde a imagem/logo no celular para focar no login */
+  }
 
-@media (max-width: 850px) {
-  .login-container {
-    flex-direction: column;
-    padding: 16px;
+  .login-form-panel {
+    padding: 40px 24px;
   }
-  
-  .left-panel, .right-panel {
-    width: 100%;
-    max-width: 400px;
-    min-height: auto;
-    border-radius: 20px;
-    border: 1px solid #334155;
-  }
-  
-  .left-panel {
-    padding: 32px 24px;
-  }
-  
-  .right-panel {
-    margin-top: 16px;
-    padding: 32px 24px;
-  }
-  
-  .destaque {
-    font-size: 36px;
-  }
-  
-  .right-panel h1 {
-    font-size: 24px;
-    margin-bottom: 24px;
-  }
-  
-  .right-panel form {
-    max-width: 100%;
-  }
-}
 
-@media (max-width: 480px) {
-  .login-container {
-    padding: 12px;
-  }
-  
-  .left-panel, .right-panel {
-    padding: 24px 20px;
-  }
-  
-  .destaque {
-    font-size: 28px;
-  }
-  
-  .left-panel h1 {
-    font-size: 20px;
-  }
-  
-  .right-panel h1 {
-    font-size: 22px;
-  }
-  
-  .right-panel input {
-    height: 44px;
-  }
-  
-  .signup-btn, .signin-btn {
-    height: 44px;
-  }
-  
-  .back-home-btn {
-    top: 12px;
-    left: 12px;
-    padding: 6px 14px;
-    font-size: 12px;
+  .login-title {
+    font-size: 26px;
   }
 }
