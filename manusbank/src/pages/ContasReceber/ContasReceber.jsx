@@ -280,8 +280,14 @@ function ContasReceber() {
     );
   }
 
+  // Controle para esconder sidebar no mobile quando o modal estiver aberto
+  const modalAbertoOuEditando = modalAberto;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div
+      style={{ display: "flex", minHeight: "100vh" }}
+      className={modalAbertoOuEditando ? "modo-modal" : ""}
+    >
       <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="cr-container">
@@ -425,7 +431,7 @@ function ContasReceber() {
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
-                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaConta.valor} onChange={handleInputChange} />
+                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaConta.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="vencimento">Dia do pagamento</label>

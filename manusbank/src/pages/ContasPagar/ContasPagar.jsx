@@ -304,8 +304,14 @@ function ContasPagar() {
     );
   }
 
+  // Controle para esconder sidebar no mobile quando o modal estiver aberto
+  const modalAbertoOuEditando = modalAberto;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div
+      style={{ display: "flex", minHeight: "100vh" }}
+      className={modalAbertoOuEditando ? "modo-modal" : ""}
+    >
       <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="cp-container">
@@ -455,23 +461,23 @@ function ContasPagar() {
                 <form className="cp-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
                     <label htmlFor="titulo">Nome</label>
-                    <input type="text" id="titulo" name="titulo" autocomplete="off" value={novaConta.titulo} onChange={handleInputChange} />
+                    <input type="text" id="titulo" name="titulo" autoComplete="off" value={novaConta.titulo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="tipo">Tipo (opcional)</label>
-                    <input type="text" id="tipo" name="tipo" placeholder="Ex: lanche na rua, compra de algo..." autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
+                    <input type="text" id="tipo" name="tipo" placeholder="Ex: fixa, variável, empréstimo..." autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
-                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autocomplete="off" value={novaConta.valor} onChange={handleInputChange} />
+                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaConta.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="vencimento">Vencimento</label>
-                    <input type="date" id="vencimento" name="vencimento" autocomplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
+                    <input type="date" id="vencimento" name="vencimento" autoComplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: mandei um pix para o meu pai, comprei um livro..." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
+                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Pix de alguém, lanche/compra na rua, etc." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar</button>
                 </form>

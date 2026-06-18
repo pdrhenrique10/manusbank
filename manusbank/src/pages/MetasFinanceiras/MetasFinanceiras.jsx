@@ -431,8 +431,14 @@ function MetasFinanceiras() {
     );
   }
 
+  // Controle para esconder sidebar no mobile quando o modal estiver aberto
+  const modalAbertoOuEditando = modalAberto;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div
+      style={{ display: "flex", minHeight: "100vh" }}
+      className={modalAbertoOuEditando ? "modo-modal" : ""}
+    >
       <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="mf-container">

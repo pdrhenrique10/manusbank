@@ -676,3 +676,11 @@
   .grafico-container { min-height: 240px; }
   .grafico-section h2, .lista-despesas h2 { font-size: 18px; }
 }
+
+/* Esconde a sidebar no mobile quando um modal está aberto */
+@media (max-width: 768px) {
+  .modo-modal .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
