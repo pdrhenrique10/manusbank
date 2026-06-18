@@ -465,7 +465,7 @@ function ContasPagar() {
                   </div>
                   <div className="form-group">
                     <label htmlFor="tipo">Tipo (opcional)</label>
-                    <input type="text" id="tipo" name="tipo" placeholder="Ex: fixa, variável, empréstimo..." autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
+                    <input type="text" id="tipo" name="tipo" placeholder="Ex: lanche na rua, pix para alguém, compra de algo" autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="valor">Valor (R$)</label>
