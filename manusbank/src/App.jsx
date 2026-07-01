@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 import Home from "./pages/Home/Home";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
@@ -12,82 +11,48 @@ import MetasFinanceiras from "./pages/MetasFinanceiras/MetasFinanceiras";
 import Relatorios from "./pages/Relatorios/Relatorios";
 import Configuracoes from "./pages/Configuracoes/Configuracoes";
 import { ThemeProvider } from "./hooks/useTheme";
-import { CurrencyProvider } from "./context/CurrencyProvider"; // 🔥 Importe o provedor
+import { CurrencyProvider } from "./context/CurrencyProvider";
 
 export default function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
         <Routes>
-          {/* Páginas sem sidebar (SEM CurrencyProvider) */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* 🔥 Páginas com sidebar (COM CurrencyProvider) */}
           <Route 
             path="/dashboard" 
-            element={
-              <CurrencyProvider>
-                <Dashboard />
-              </CurrencyProvider>
-            } 
+            element={<CurrencyProvider><Dashboard /></CurrencyProvider>} 
           />
           <Route 
             path="/receitas" 
-            element={
-              <CurrencyProvider>
-                <Receitas />
-              </CurrencyProvider>
-            } 
+            element={<CurrencyProvider><Receitas /></CurrencyProvider>} 
           />
           <Route 
             path="/despesas" 
-            element={
-              <CurrencyProvider>
-                <Despesas />
-              </CurrencyProvider>
-            } 
+            element={<CurrencyProvider><Despesas /></CurrencyProvider>} 
           />
           <Route 
             path="/contas-a-receber" 
-            element={
-              <CurrencyProvider>
-                <ContasReceber />
-              </CurrencyProvider>
-            } 
+            element={<CurrencyProvider><ContasReceber /></CurrencyProvider>} 
           />
           <Route 
             path="/contas-a-pagar" 
-            element={
-              <CurrencyProvider>
-                <ContasPagar />
-              </CurrencyProvider>
-            } 
+            element={<CurrencyProvider><ContasPagar /></CurrencyProvider>} 
           />
           <Route 
             path="/metasfinanceiras" 
-            element={
-              <CurrencyProvider>
-                <MetasFinanceiras />
-              </CurrencyProvider>
-            } 
+            element={<CurrencyProvider><MetasFinanceiras /></CurrencyProvider>} 
           />
           <Route 
             path="/relatorios" 
-            element={
-              <CurrencyProvider>
-                <Relatorios />
-              </CurrencyProvider>
-            } 
+            element={<CurrencyProvider><Relatorios /></CurrencyProvider>} 
           />
           <Route 
             path="/configuracoes" 
-            element={
-              <CurrencyProvider>
-                <Configuracoes />
-              </CurrencyProvider>
-            } 
+            element={<CurrencyProvider><Configuracoes /></CurrencyProvider>} 
           />
         </Routes>
       </ThemeProvider>

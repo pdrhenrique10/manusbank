@@ -21,9 +21,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { API_URL } from "../../config/api";
-
-// 🔥 Importação do sistema de moeda
 import { useCurrency } from "../../context/CurrencyProvider";
+import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
 
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
@@ -43,7 +42,6 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
-// 🔥 Componente de Moeda local (puxa a função do Provider)
 function Money({ value }) {
   const { formatMoney } = useCurrency();
   return <span>{formatMoney(value)}</span>;
@@ -51,8 +49,7 @@ function Money({ value }) {
 
 function Despesas() {
   const navigate = useNavigate();
-  
-  // 🔥 Puxa TUDO do provider
+  const { t } = useIdioma(); // 👈 hook de tradução
   const { 
     formatMoney, 
     convertToBRL, 
@@ -116,7 +113,7 @@ function Despesas() {
         .filter(t => t.tipo === "saque" || t.tipo === "transferenciaSaida")
         .map(t => ({
           id: t.id,
-          nome: t.descricao || "Despesa",
+          nome: t.descricao || t("despesas.defaultName"),
           valor: Number(t.valor) || 0,
           data: extrairData(t.data),
         }));
@@ -127,11 +124,11 @@ function Despesas() {
       console.error("Erro ao carregar despesas:", e);
       const despesasLocal = JSON.parse(localStorage.getItem('despesas') || '[]');
       setDespesas(despesasLocal);
-      setErro("Erro ao carregar despesas. Usando dados locais.");
+      setErro(t("despesas.errorLoading"));
     } finally {
       setCarregando(false);
     }
-  }, [navigate]);
+  }, [navigate, t]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -172,17 +169,16 @@ function Despesas() {
     setSucesso("");
 
     if (!novaDespesa.nome || !novaDespesa.valor || !novaDespesa.data) {
-      setErro("Preencha todos os campos!");
+      setErro(t("despesas.errorAllFields"));
       return;
     }
 
     const valorDigitado = parseFloat(String(novaDespesa.valor).replace(",", "."));
     if (isNaN(valorDigitado) || valorDigitado <= 0) {
-      setErro("Informe um valor válido maior que zero.");
+      setErro(t("despesas.errorInvalidValue"));
       return;
     }
 
-    // 🔥 Converte para Real antes de salvar
     const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = novaDespesa.data.substring(0, 10);
     const token = localStorage.getItem("token");
@@ -218,9 +214,8 @@ function Despesas() {
 
       if (!resp.ok || !resultado.sucesso) {
         setDespesas(prev => [...prev, novaDespesaObj]);
-        const despesasAtualizadas = [...despesas, novaDespesaObj];
-        localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-        setSucesso("Despesa salva localmente!");
+        localStorage.setItem('despesas', JSON.stringify([...despesas, novaDespesaObj]));
+        setSucesso(t("despesas.savedLocally"));
         fecharModal();
         return;
       }
@@ -232,22 +227,20 @@ function Despesas() {
         data: dataFormatada,
       };
       setDespesas(prev => [...prev, despesaLocal]);
-      const despesasAtualizadas = [...despesas, despesaLocal];
-      localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
+      localStorage.setItem('despesas', JSON.stringify([...despesas, despesaLocal]));
       fecharModal();
-      setSucesso("Despesa salva com sucesso!");
+      setSucesso(t("despesas.savedSuccess"));
     } catch (e) {
       console.error("Erro ao salvar despesa:", e);
       setDespesas(prev => [...prev, novaDespesaObj]);
-      const despesasAtualizadas = [...despesas, novaDespesaObj];
-      localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-      setSucesso("Despesa salva localmente (offline)!");
+      localStorage.setItem('despesas', JSON.stringify([...despesas, novaDespesaObj]));
+      setSucesso(t("despesas.savedOffline"));
       fecharModal();
     }
   };
 
   async function handleRemoverDespesa(id) {
-    const confirmar = window.confirm("Tem certeza que deseja remover esta despesa?");
+    const confirmar = window.confirm(t("despesas.confirmDelete"));
     if (!confirmar) return;
 
     const token = localStorage.getItem("token");
@@ -265,22 +258,19 @@ function Despesas() {
 
       if (!resp.ok || !dados.sucesso) {
         setDespesas(prev => prev.filter(d => d.id !== id));
-        const despesasAtualizadas = despesas.filter(d => d.id !== id);
-        localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-        setSucesso("Despesa removida localmente!");
+        localStorage.setItem('despesas', JSON.stringify(despesas.filter(d => d.id !== id)));
+        setSucesso(t("despesas.deletedLocally"));
         return;
       }
 
       setDespesas(prev => prev.filter(d => d.id !== id));
-      const despesasAtualizadas = despesas.filter(d => d.id !== id);
-      localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-      setSucesso("Despesa removida com sucesso!");
+      localStorage.setItem('despesas', JSON.stringify(despesas.filter(d => d.id !== id)));
+      setSucesso(t("despesas.deletedSuccess"));
     } catch (e) {
       console.error("Erro ao remover despesa:", e);
       setDespesas(prev => prev.filter(d => d.id !== id));
-      const despesasAtualizadas = despesas.filter(d => d.id !== id);
-      localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-      setSucesso("Despesa removida localmente!");
+      localStorage.setItem('despesas', JSON.stringify(despesas.filter(d => d.id !== id)));
+      setSucesso(t("despesas.deletedLocally"));
     }
   }
 
@@ -293,11 +283,10 @@ function Despesas() {
 
     const valorDigitado = parseFloat(String(despesaEditando.valor).replace(",", "."));
     if (isNaN(valorDigitado) || valorDigitado <= 0) {
-      setErro("Informe um valor válido maior que zero.");
+      setErro(t("despesas.errorInvalidValue"));
       return;
     }
 
-    // 🔥 Converte para Real antes de salvar
     const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = despesaEditando.data.substring(0, 10);
     const token = localStorage.getItem("token");
@@ -325,7 +314,7 @@ function Despesas() {
       const resultado = await resp.json();
 
       if (!resp.ok || !resultado.sucesso) {
-        setErro(resultado.erro || "Não foi possível atualizar a despesa.");
+        setErro(resultado.erro || t("despesas.errorUpdating"));
         return;
       }
 
@@ -341,11 +330,11 @@ function Despesas() {
       );
       setDespesas(despesasAtualizadas);
       localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-      setSucesso("Despesa atualizada com sucesso!");
+      setSucesso(t("despesas.updatedSuccess"));
       fecharModalEdicao();
     } catch (err) {
       console.error("Erro ao editar despesa:", err);
-      setErro("Erro ao atualizar despesa. Tente novamente.");
+      setErro(t("despesas.errorUpdating"));
     }
   }
 
@@ -363,7 +352,7 @@ function Despesas() {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
         <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>Carregando...</main>
+        <main style={{ flex: 1, padding: "20px" }}>{t("geral.loading")}</main>
       </div>
     );
   }
@@ -380,8 +369,8 @@ function Despesas() {
         <div className="despesas-container">
           <div className="despesas-card">
             <header className="despesas-header">
-              <h1>Despesas Fixas</h1>
-              <p className="subtitle">Gerencie seus gastos fixos de dinheiro.</p>
+              <h1>{t("despesas.title")}</h1>
+              <p className="subtitle">{t("despesas.subtitle")}</p>
             </header>
 
             {erro && <p className="erro-msg">{erro}</p>}
@@ -389,13 +378,11 @@ function Despesas() {
 
             <div className="resumo-card">
               <div className="resumo-item">
-                {/* 🔥 Símbolo puxado do Provider */}
                 <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
                   {getCurrencySymbol()}
                 </span>
                 <div>
-                  <p className="resumo-label">Total de Despesas</p>
-                  {/* 🔥 Substituído por <Money /> */}
+                  <p className="resumo-label">{t("despesas.totalLabel")}</p>
                   <p className="despesas-valor">
                     <Money value={totalDespesas} />
                   </p>
@@ -403,16 +390,18 @@ function Despesas() {
               </div>
               <div className="resumo-item-secundario">
                 <TrendingDown size={20} />
-                <p className="resumo-secundario-label">{despesas.length} despesas cadastradas</p>
+                <p className="resumo-secundario-label">
+                  {t("despesas.countLabel", { count: despesas.length })}
+                </p>
               </div>
             </div>
 
             <button className="btn-nova-despesa" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> Nova Despesa
+              <Plus size={20} /> {t("despesas.newButton")}
             </button>
 
             <section className="grafico-section">
-              <h2>Despesas por Categoria</h2>
+              <h2>{t("despesas.chartTitle")}</h2>
               <div className="grafico-container">
                 {despesas.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
@@ -423,21 +412,20 @@ function Despesas() {
                       <Tooltip
                         contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
                         labelStyle={{ color: "#f8fafc" }}
-                        // 🔥 Formatter usando o Provider
-                        formatter={(value) => [formatMoney(value), "Valor"]}
+                        formatter={(value) => [formatMoney(value), t("despesas.chartValueLabel")]}
                         cursor={false}
                       />
                       <Bar dataKey="valor" fill="#ef4444" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="grafico-vazio"><p>Não há despesas cadastradas ainda</p></div>
+                  <div className="grafico-vazio"><p>{t("despesas.noDataChart")}</p></div>
                 )}
               </div>
             </section>
 
             <section className="lista-despesas">
-              <h2>Lista de Despesas</h2>
+              <h2>{t("despesas.listTitle")}</h2>
               <div className="lista-container">
                 {despesas.length > 0 ? (
                   despesas.map(despesa => (
@@ -447,21 +435,20 @@ function Despesas() {
                         <p className="despesa-data">{formatarData(despesa.data)}</p>
                       </div>
                       <div className="despesa-right">
-                        {/* 🔥 Substituído por <Money /> */}
                         <p className="despesa-valor">
                           <Money value={despesa.valor} />
                         </p>
-                        <button className="btn-editar-despesa" onClick={() => abrirModalEdicao(despesa)} title="Editar despesa">
+                        <button className="btn-editar-despesa" onClick={() => abrirModalEdicao(despesa)} title={t("despesas.editTitle")}>
                           <Pencil size={16} />
                         </button>
-                        <button className="btn-remover-despesa" onClick={() => handleRemoverDespesa(despesa.id)} title="Remover despesa">
+                        <button className="btn-remover-despesa" onClick={() => handleRemoverDespesa(despesa.id)} title={t("despesas.deleteTitle")}>
                           <Trash2 size={16} />
                         </button>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="lista-vazia"><p>Nenhuma despesa cadastrada</p></div>
+                  <div className="lista-vazia"><p>{t("despesas.noDataList")}</p></div>
                 )}
               </div>
             </section>
@@ -472,41 +459,21 @@ function Despesas() {
             <div className="modal-overlay" onClick={fecharModal}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={fecharModal}><X size={24} /></button>
-                <h2>Nova Despesa</h2>
+                <h2>{t("despesas.modalCreate")}</h2>
                 <form className="forma-despesa" onSubmit={handleAdicionarDespesa}>
                   <div className="form-group">
-                    <label htmlFor="nome">Nome</label>
-                    <input type="text" id="nome" name="nome" placeholder="Ex: Mercado, aluguel, contas de casa..." autoComplete="off" value={novaDespesa.nome} onChange={handleInputChange} />
+                    <label htmlFor="nome">{t("despesas.formName")}</label>
+                    <input type="text" id="nome" name="nome" placeholder={t("despesas.formNamePlaceholder")} autoComplete="off" value={novaDespesa.nome} onChange={handleInputChange} />
                   </div>
-                  
-                  {/* 🔥 SELETOR DE MOEDA */}
                   <div className="form-group">
-                    <label htmlFor="moeda">Moeda da transação</label>
-                    <select
-                      id="moeda"
-                      className="currency-select"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                    >
-                      <option value="BRL">🇧🇷 Real (R$)</option>
-                      <option value="USD">🇺🇸 Dólar ($)</option>
-                      <option value="EUR">🇪🇺 Euro (€)</option>
-                      <option value="GBP">🇬🇧 Libra (£)</option>
-                    </select>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                      O valor será convertido e salvo em Real (BRL) no sistema.
-                    </p>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="valor">Valor</label>
+                    <label htmlFor="valor">{t("despesas.formValue")}</label>
                     <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaDespesa.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="data">Data</label>
+                    <label htmlFor="data">{t("despesas.formDate")}</label>
                     <input type="date" id="data" name="data" autoComplete="off" value={novaDespesa.data} onChange={handleInputChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar</button>
+                  <button type="submit" className="btn-salvar">{t("despesas.saveButton")}</button>
                 </form>
               </div>
             </div>
@@ -517,38 +484,21 @@ function Despesas() {
             <div className="modal-overlay" onClick={fecharModalEdicao}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
-                <h2>Editar Despesa</h2>
+                <h2>{t("despesas.modalEdit")}</h2>
                 <form className="forma-despesa" onSubmit={handleEditarDespesa}>
                   <div className="form-group">
-                    <label htmlFor="edit-nome">Nome</label>
+                    <label htmlFor="edit-nome">{t("despesas.formName")}</label>
                     <input type="text" id="edit-nome" name="nome" autoComplete="off" value={despesaEditando.nome} onChange={handleEdicaoChange} />
                   </div>
-
-                  {/* 🔥 SELETOR DE MOEDA NO MODAL DE EDIÇÃO */}
                   <div className="form-group">
-                    <label htmlFor="edit-moeda">Moeda da transação</label>
-                    <select
-                      id="edit-moeda"
-                      className="currency-select"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                    >
-                      <option value="BRL">🇧🇷 Real (R$)</option>
-                      <option value="USD">🇺🇸 Dólar ($)</option>
-                      <option value="EUR">🇪🇺 Euro (€)</option>
-                      <option value="GBP">🇬🇧 Libra (£)</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="edit-valor">Valor</label>
+                    <label htmlFor="edit-valor">{t("despesas.formValue")}</label>
                     <input type="number" id="edit-valor" name="valor" step="0.01" min="0" autoComplete="off" value={despesaEditando.valor} onChange={handleEdicaoChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="edit-data">Data</label>
+                    <label htmlFor="edit-data">{t("despesas.formDate")}</label>
                     <input type="date" id="edit-data" name="data" autoComplete="off" value={despesaEditando.data} onChange={handleEdicaoChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar Alterações</button>
+                  <button type="submit" className="btn-salvar">{t("despesas.saveEditButton")}</button>
                 </form>
               </div>
             </div>

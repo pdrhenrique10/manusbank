@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Receitas.css";
-import { Plus, X, Trash2, Pencil, TrendingUp } from "lucide-react"; // Removi DollarSign
+import { Plus, X, Trash2, Pencil, TrendingUp } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -13,9 +13,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { API_URL } from "../../config/api";
-
-// 🔥 Importa TUDO do seu Provider
 import { useCurrency } from "../../context/CurrencyProvider";
+import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
 
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
@@ -35,7 +34,6 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
-// 🔥 Componente de Moeda local (puxa a função do Provider)
 function Money({ value }) {
   const { formatMoney } = useCurrency();
   return <span>{formatMoney(value)}</span>;
@@ -43,14 +41,13 @@ function Money({ value }) {
 
 function Receitas() {
   const navigate = useNavigate();
-  
-  // 🔥 Puxa TUDO de uma vez do provider
-  const { 
-    formatMoney, 
-    convertToBRL, 
-    currency, 
-    setCurrency, 
-    getCurrencySymbol // 🔥 O símbolo está aqui
+  const { t } = useIdioma(); // 👈 hook de tradução
+  const {
+    formatMoney,
+    convertToBRL,
+    currency,
+    setCurrency,
+    getCurrencySymbol,
   } = useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
@@ -68,11 +65,7 @@ function Receitas() {
 
   const fecharModal = () => {
     setModalAberto(false);
-    setNovaReceita({
-      nome: "",
-      valor: "",
-      data: new Date().toISOString().substring(0, 10),
-    });
+    setNovaReceita({ nome: "", valor: "", data: new Date().toISOString().substring(0, 10) });
     setErro("");
   };
 
@@ -84,7 +77,6 @@ function Receitas() {
 
   const carregarReceitas = useCallback(
     async (token) => {
-      console.log("carregarReceitas chamado com token:", token);
       try {
         setCarregando(true);
         setErro("");
@@ -93,7 +85,6 @@ function Receitas() {
         const resp = await fetch(`${API_URL}/api/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("resposta /api/dashboard status:", resp.status);
 
         if (!resp.ok) {
           if (resp.status === 401) {
@@ -101,24 +92,18 @@ function Receitas() {
             navigate("/login");
             return;
           }
-          const receitasLocal = JSON.parse(
-            localStorage.getItem("receitas") || "[]"
-          );
+          const receitasLocal = JSON.parse(localStorage.getItem("receitas") || "[]");
           setReceitas(receitasLocal);
           setCarregando(false);
           return;
         }
 
         const dados = await resp.json();
-        console.log("DADOS DASHBOARD RECEITAS:", dados);
-
         const receitasBackend = (dados.transacoes || [])
-          .filter(
-            (t) => t.tipo === "deposito" || t.tipo === "transferenciaEntrada"
-          )
+          .filter((t) => t.tipo === "deposito" || t.tipo === "transferenciaEntrada")
           .map((t) => ({
             id: t.id,
-            nome: t.descricao || "Receita",
+            nome: t.descricao || t("receitas.defaultName"),
             valor: Number(t.valor) || 0,
             data: extrairData(t.data),
           }));
@@ -127,40 +112,31 @@ function Receitas() {
         localStorage.setItem("receitas", JSON.stringify(receitasBackend));
       } catch (e) {
         console.error("Erro ao carregar receitas:", e);
-        const receitasLocal = JSON.parse(
-          localStorage.getItem("receitas") || "[]"
-        );
+        const receitasLocal = JSON.parse(localStorage.getItem("receitas") || "[]");
         setReceitas(receitasLocal);
-        setErro("Erro ao carregar receitas. Usando dados locais.");
+        setErro(t("receitas.errorLoading"));
       } finally {
         setCarregando(false);
       }
     },
-    [navigate]
+    [navigate, t]
   );
 
   useEffect(() => {
-    console.log("useEffect RECEITAS rodou");
     const token = localStorage.getItem("token");
-    console.log("TOKEN EM RECEITAS:", token);
     if (!token) {
-      console.log("SEM TOKEN, REDIRECIONANDO PRA LOGIN");
       navigate("/login");
       return;
     }
     carregarReceitas(token);
   }, [navigate, carregarReceitas]);
 
-  // 🔥 Dados do gráfico
   const dadosGrafico = receitas.map((r) => ({
     nome: r.nome.length > 15 ? r.nome.substring(0, 15) + "..." : r.nome,
     valor: Number(r.valor) || 0,
   }));
 
-  const totalReceitas = receitas.reduce(
-    (acc, r) => acc + (Number(r.valor) || 0),
-    0
-  );
+  const totalReceitas = receitas.reduce((acc, r) => acc + (Number(r.valor) || 0), 0);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -178,19 +154,16 @@ function Receitas() {
     setSucesso("");
 
     if (!novaReceita.nome || !novaReceita.valor || !novaReceita.data) {
-      setErro("Preencha todos os campos!");
+      setErro(t("receitas.errorAllFields"));
       return;
     }
 
-    const valorDigitado = parseFloat(
-      String(novaReceita.valor).replace(",", ".")
-    );
+    const valorDigitado = parseFloat(String(novaReceita.valor).replace(",", "."));
     if (isNaN(valorDigitado) || valorDigitado <= 0) {
-      setErro("Informe um valor válido maior que zero.");
+      setErro(t("receitas.errorInvalidValue"));
       return;
     }
 
-    // 🔥 Converte digitado para Real antes de salvar (Para o banco ficar correto)
     const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = novaReceita.data.substring(0, 10);
     const token = localStorage.getItem("token");
@@ -223,12 +196,10 @@ function Receitas() {
       });
 
       const dados = await resp.json();
-
       if (!resp.ok || !dados.sucesso) {
         setReceitas((prev) => [...prev, novaReceitaObj]);
-        const receitasAtualizadas = [...receitas, novaReceitaObj];
-        localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-        setSucesso("Receita salva localmente!");
+        localStorage.setItem("receitas", JSON.stringify([...receitas, novaReceitaObj]));
+        setSucesso(t("receitas.savedLocally"));
         fecharModal();
         return;
       }
@@ -240,24 +211,20 @@ function Receitas() {
         data: dataFormatada,
       };
       setReceitas((prev) => [...prev, receita]);
-      const receitasAtualizadas = [...receitas, receita];
-      localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
+      localStorage.setItem("receitas", JSON.stringify([...receitas, receita]));
       fecharModal();
-      setSucesso("Receita salva com sucesso!");
+      setSucesso(t("receitas.savedSuccess"));
     } catch (err) {
       console.error("Erro ao salvar receita:", err);
       setReceitas((prev) => [...prev, novaReceitaObj]);
-      const receitasAtualizadas = [...receitas, novaReceitaObj];
-      localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-      setSucesso("Receita salva localmente (offline)!");
+      localStorage.setItem("receitas", JSON.stringify([...receitas, novaReceitaObj]));
+      setSucesso(t("receitas.savedOffline"));
       fecharModal();
     }
   }
 
   async function handleRemoverReceita(id) {
-    const confirmar = window.confirm(
-      "Tem certeza que deseja remover esta receita?"
-    );
+    const confirmar = window.confirm(t("receitas.confirmDelete"));
     if (!confirmar) return;
 
     const token = localStorage.getItem("token");
@@ -275,22 +242,19 @@ function Receitas() {
 
       if (!resp.ok || !dados.sucesso) {
         setReceitas((prev) => prev.filter((r) => r.id !== id));
-        const receitasAtualizadas = receitas.filter((r) => r.id !== id);
-        localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-        setSucesso("Receita removida localmente!");
+        localStorage.setItem("receitas", JSON.stringify(receitas.filter((r) => r.id !== id)));
+        setSucesso(t("receitas.deletedLocally"));
         return;
       }
 
       setReceitas((prev) => prev.filter((r) => r.id !== id));
-      const receitasAtualizadas = receitas.filter((r) => r.id !== id);
-      localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-      setSucesso("Receita removida com sucesso!");
+      localStorage.setItem("receitas", JSON.stringify(receitas.filter((r) => r.id !== id)));
+      setSucesso(t("receitas.deletedSuccess"));
     } catch (e) {
       console.error("Erro ao remover receita:", e);
       setReceitas((prev) => prev.filter((r) => r.id !== id));
-      const receitasAtualizadas = receitas.filter((r) => r.id !== id);
-      localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-      setSucesso("Receita removida localmente!");
+      localStorage.setItem("receitas", JSON.stringify(receitas.filter((r) => r.id !== id)));
+      setSucesso(t("receitas.deletedLocally"));
     }
   }
 
@@ -301,15 +265,12 @@ function Receitas() {
     setErro("");
     setSucesso("");
 
-    const valorDigitado = parseFloat(
-      String(receitaEditando.valor).replace(",", ".")
-    );
+    const valorDigitado = parseFloat(String(receitaEditando.valor).replace(",", "."));
     if (isNaN(valorDigitado) || valorDigitado <= 0) {
-      setErro("Informe um valor válido maior que zero.");
+      setErro(t("receitas.errorInvalidValue"));
       return;
     }
 
-    // 🔥 Converte editado para Real
     const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = receitaEditando.data.substring(0, 10);
     const token = localStorage.getItem("token");
@@ -319,48 +280,39 @@ function Receitas() {
     }
 
     try {
-      const resp = await fetch(
-        `${API_URL}/api/transacao/${receitaEditando.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            valor: valorEmReal,
-            data: dataFormatada,
-            descricao: receitaEditando.nome,
-            tipo: "deposito",
-            categoria: receitaEditando.nome,
-          }),
-        }
-      );
+      const resp = await fetch(`${API_URL}/api/transacao/${receitaEditando.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          valor: valorEmReal,
+          data: dataFormatada,
+          descricao: receitaEditando.nome,
+          tipo: "deposito",
+          categoria: receitaEditando.nome,
+        }),
+      });
 
       const resultado = await resp.json();
-
       if (!resp.ok || !resultado.sucesso) {
-        setErro(resultado.erro || "Não foi possível atualizar a receita.");
+        setErro(resultado.erro || t("receitas.errorUpdating"));
         return;
       }
 
       const receitasAtualizadas = receitas.map((r) =>
         r.id === receitaEditando.id
-          ? {
-              ...r,
-              nome: receitaEditando.nome,
-              valor: valorEmReal,
-              data: dataFormatada,
-            }
+          ? { ...r, nome: receitaEditando.nome, valor: valorEmReal, data: dataFormatada }
           : r
       );
       setReceitas(receitasAtualizadas);
       localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-      setSucesso("Receita atualizada com sucesso!");
+      setSucesso(t("receitas.updatedSuccess"));
       fecharModalEdicao();
     } catch (err) {
       console.error("Erro ao editar receita:", err);
-      setErro("Erro ao atualizar receita. Tente novamente.");
+      setErro(t("receitas.errorUpdating"));
     }
   }
 
@@ -378,7 +330,7 @@ function Receitas() {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
         <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>Carregando...</main>
+        <main style={{ flex: 1, padding: "20px" }}>{t("geral.loading")}</main>
       </div>
     );
   }
@@ -386,19 +338,14 @@ function Receitas() {
   const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
-    <div
-      style={{ display: "flex", minHeight: "100vh" }}
-      className={modalAbertoOuEditando ? "modo-modal" : ""}
-    >
+    <div style={{ display: "flex", minHeight: "100vh" }} className={modalAbertoOuEditando ? "modo-modal" : ""}>
       <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="receitas-container">
           <div className="receitas-card">
             <header className="receitas-header">
-              <h1>Rendas Fixas</h1>
-              <p className="substring">
-                Gerencie suas rendas fixas de dinheiro.
-              </p>
+              <h1>{t("receitas.title")}</h1>
+              <p className="substring">{t("receitas.subtitle")}</p>
             </header>
 
             {erro && <p className="erro-msg">{erro}</p>}
@@ -406,12 +353,11 @@ function Receitas() {
 
             <div className="resumo-card">
               <div className="resumo-item">
-                {/* 🔥 Símbolo puxado do Provider direto na tag */}
                 <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
                   {getCurrencySymbol()}
                 </span>
                 <div>
-                  <p className="resumo-label">Total de Receitas</p>
+                  <p className="resumo-label">{t("receitas.totalLabel")}</p>
                   <p className="resumo-valor">
                     <Money value={totalReceitas} />
                   </p>
@@ -420,51 +366,24 @@ function Receitas() {
               <div className="resumo-item-secundario">
                 <TrendingUp size={20} />
                 <p className="resumo-secundario-label">
-                  {receitas.length} receitas cadastradas
+                  {t("receitas.countLabel", { count: receitas.length })}
                 </p>
               </div>
             </div>
 
-            <button
-              className="btn-nova-receita"
-              onClick={() => setModalAberto(true)}
-            >
-              <Plus size={20} /> Nova Renda
+            <button className="btn-nova-receita" onClick={() => setModalAberto(true)}>
+              <Plus size={20} /> {t("receitas.newButton")}
             </button>
 
             <section className="grafico-section">
-              <h2>Receitas por Categoria</h2>
+              <h2>{t("receitas.chartTitle")}</h2>
               <div className="grafico-container">
                 {receitas.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart
-                      data={dadosGrafico}
-                      margin={{
-                        top: 10,
-                        right: 10,
-                        left: 0,
-                        bottom: 0,
-                      }}
-                    >
-                      <CartesianGrid
-                        vertical={false}
-                        stroke="rgba(148, 163, 184, 0.12)"
-                        strokeDasharray="3 3"
-                      />
-
-                      <XAxis
-                        dataKey="nome"
-                        stroke="#94a3b8"
-                        tickLine={false}
-                        axisLine={false}
-                      />
-
-                      <YAxis
-                        stroke="#94a3b8"
-                        tickLine={false}
-                        axisLine={false}
-                      />
-
+                    <BarChart data={dadosGrafico} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid vertical={false} stroke="rgba(148, 163, 184, 0.12)" strokeDasharray="3 3" />
+                      <XAxis dataKey="nome" stroke="#94a3b8" tickLine={false} axisLine={false} />
+                      <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} />
                       <Tooltip
                         cursor={false}
                         contentStyle={{
@@ -473,42 +392,29 @@ function Receitas() {
                           borderRadius: "12px",
                           boxShadow: "0 10px 20px rgba(0,0,0,.25)",
                         }}
-                        labelStyle={{
-                          color: "#f8fafc",
-                        }}
-                        // 🔥 Formatter usando o Provider
-                        formatter={(value) => [
-                          formatMoney(value),
-                          "Valor",
-                        ]}
+                        labelStyle={{ color: "#f8fafc" }}
+                        formatter={(value) => [formatMoney(value), t("receitas.chartValueLabel")]}
                       />
-
-                      <Bar
-                        dataKey="valor"
-                        fill="#3b82f6"
-                        radius={[8, 8, 0, 0]}
-                      />
+                      <Bar dataKey="valor" fill="#3b82f6" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="grafico-vazio">
-                    <p>Não há receitas cadastradas ainda</p>
+                    <p>{t("receitas.noDataChart")}</p>
                   </div>
                 )}
               </div>
             </section>
 
             <section className="lista-receitas">
-              <h2>Lista de Receitas</h2>
+              <h2>{t("receitas.listTitle")}</h2>
               <div className="lista-container">
                 {receitas.length > 0 ? (
                   receitas.map((receita) => (
                     <div key={receita.id} className="receita-item">
                       <div className="receita-info">
                         <h3>{receita.nome}</h3>
-                        <p className="receita-data">
-                          {formatarData(receita.data)}
-                        </p>
+                        <p className="receita-data">{formatarData(receita.data)}</p>
                       </div>
                       <div className="receita-actions">
                         <p className="receita-valor">
@@ -517,14 +423,14 @@ function Receitas() {
                         <button
                           className="btn-editar-receita"
                           onClick={() => abrirModalEdicao(receita)}
-                          title="Editar receita"
+                          title={t("receitas.editTitle")}
                         >
                           <Pencil size={16} />
                         </button>
                         <button
                           className="btn-remover-receita"
                           onClick={() => handleRemoverReceita(receita.id)}
-                          title="Remover receita"
+                          title={t("receitas.deleteTitle")}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -533,7 +439,7 @@ function Receitas() {
                   ))
                 ) : (
                   <div className="lista-vazia">
-                    <p>Nenhuma receita cadastrada</p>
+                    <p>{t("receitas.noDataList")}</p>
                   </div>
                 )}
               </div>
@@ -543,48 +449,26 @@ function Receitas() {
           {/* Modal de criação */}
           {modalAberto && (
             <div className="modal-overlay" onClick={fecharModal}>
-              <div
-                className="modal-conteudo"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={fecharModal}>
                   <X size={24} />
                 </button>
-                <h2>Nova Renda</h2>
+                <h2>{t("receitas.modalCreate")}</h2>
                 <form className="forma-receita" onSubmit={handleAdicionarReceita}>
                   <div className="form-group">
-                    <label htmlFor="nome">Nome</label>
+                    <label htmlFor="nome">{t("receitas.formName")}</label>
                     <input
                       type="text"
                       id="nome"
                       name="nome"
-                      placeholder="Ex: Salário, aposentadoria, pensão..."
+                      placeholder={t("receitas.formNamePlaceholder")}
                       autoComplete="off"
                       value={novaReceita.nome}
                       onChange={handleInputChange}
                     />
                   </div>
-                  
                   <div className="form-group">
-                    <label htmlFor="moeda">Moeda da transação</label>
-                    <select
-                      id="moeda"
-                      className="currency-select"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                    >
-                      <option value="BRL">🇧🇷 Real (R$)</option>
-                      <option value="USD">🇺🇸 Dólar ($)</option>
-                      <option value="EUR">🇪🇺 Euro (€)</option>
-                      <option value="GBP">🇬🇧 Libra (£)</option>
-                    </select>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                      O valor será convertido e salvo em Real (BRL) no sistema.
-                    </p>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="valor">Valor</label>
+                    <label htmlFor="valor">{t("receitas.formValue")}</label>
                     <input
                       type="number"
                       id="valor"
@@ -598,7 +482,7 @@ function Receitas() {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="data">Data</label>
+                    <label htmlFor="data">{t("receitas.formDate")}</label>
                     <input
                       type="date"
                       id="data"
@@ -609,7 +493,7 @@ function Receitas() {
                     />
                   </div>
                   <button type="submit" className="btn-salvar">
-                    Salvar Receita
+                    {t("receitas.saveButton")}
                   </button>
                 </form>
               </div>
@@ -619,17 +503,14 @@ function Receitas() {
           {/* Modal de edição */}
           {modalEdicaoAberto && receitaEditando && (
             <div className="modal-overlay" onClick={fecharModalEdicao}>
-              <div
-                className="modal-conteudo"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={fecharModalEdicao}>
                   <X size={24} />
                 </button>
-                <h2>Editar Renda</h2>
+                <h2>{t("receitas.modalEdit")}</h2>
                 <form className="forma-receita" onSubmit={handleEditarReceita}>
                   <div className="form-group">
-                    <label htmlFor="edit-nome">Nome</label>
+                    <label htmlFor="edit-nome">{t("receitas.formName")}</label>
                     <input
                       type="text"
                       id="edit-nome"
@@ -639,24 +520,8 @@ function Receitas() {
                       onChange={handleEdicaoChange}
                     />
                   </div>
-
                   <div className="form-group">
-                    <label htmlFor="edit-moeda">Moeda da transação</label>
-                    <select
-                      id="edit-moeda"
-                      className="currency-select"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                    >
-                      <option value="BRL">🇧🇷 Real (R$)</option>
-                      <option value="USD">🇺🇸 Dólar ($)</option>
-                      <option value="EUR">🇪🇺 Euro (€)</option>
-                      <option value="GBP">🇬🇧 Libra (£)</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="edit-valor">Valor</label>
+                    <label htmlFor="edit-valor">{t("receitas.formValue")}</label>
                     <input
                       type="number"
                       id="edit-valor"
@@ -669,7 +534,7 @@ function Receitas() {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="edit-data">Data</label>
+                    <label htmlFor="edit-data">{t("receitas.formDate")}</label>
                     <input
                       type="date"
                       id="edit-data"
@@ -680,7 +545,7 @@ function Receitas() {
                     />
                   </div>
                   <button type="submit" className="btn-salvar">
-                    Salvar Alterações
+                    {t("receitas.saveEditButton")}
                   </button>
                 </form>
               </div>

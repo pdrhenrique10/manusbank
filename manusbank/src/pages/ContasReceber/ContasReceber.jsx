@@ -21,11 +21,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { API_URL } from "../../config/api";
-
-// 🔥 Importação do sistema de moeda
 import { useCurrency } from "../../context/CurrencyProvider";
+import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
 
-// 🔥 Componente de Moeda local (puxa a função do Provider)
 function Money({ value }) {
   const { formatMoney } = useCurrency();
   return <span>{formatMoney(value)}</span>;
@@ -33,8 +31,7 @@ function Money({ value }) {
 
 function ContasReceber() {
   const navigate = useNavigate();
-  
-  // 🔥 Puxa TUDO do provider
+  const { t } = useIdioma(); // 👈 hook de tradução
   const { 
     formatMoney, 
     convertToBRL, 
@@ -57,7 +54,6 @@ function ContasReceber() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
 
-  // Verificar autenticação e carregar contas
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -84,7 +80,6 @@ function ContasReceber() {
       }
 
       if (!resp.ok) {
-        // Fallback: carregar do localStorage
         const contasLocal = JSON.parse(localStorage.getItem('contasReceber') || '[]');
         setContas(contasLocal);
         setCarregando(false);
@@ -102,13 +97,12 @@ function ContasReceber() {
       console.error("Erro ao carregar contas a receber:", e);
       const contasLocal = JSON.parse(localStorage.getItem('contasReceber') || '[]');
       setContas(contasLocal);
-      setErro("Erro ao carregar contas. Usando dados locais.");
+      setErro(t("contasReceber.errorLoading"));
     } finally {
       setCarregando(false);
     }
   }
 
-  // Limpar mensagens após 3 segundos
   useEffect(() => {
     if (sucesso) {
       const timer = setTimeout(() => setSucesso(""), 3000);
@@ -162,19 +156,17 @@ function ContasReceber() {
     setSucesso("");
 
     if (!contaEditando.cliente || !contaEditando.valor || !contaEditando.vencimento) {
-      setErro("Preencha cliente, valor e vencimento!");
+      setErro(t("contasReceber.errorAllFields"));
       return;
     }
 
     const valorDigitado = parseFloat(String(contaEditando.valor).replace(",", "."));
     if (isNaN(valorDigitado) || valorDigitado <= 0) {
-      setErro("Informe um valor válido maior que zero.");
+      setErro(t("contasReceber.errorInvalidValue"));
       return;
     }
 
-    // 🔥 Converte para Real antes de salvar
     const valorEmReal = convertToBRL(valorDigitado);
-
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -199,7 +191,7 @@ function ContasReceber() {
       const resultado = await resp.json();
 
       if (!resp.ok || !resultado.sucesso) {
-        setErro(resultado.erro || "Não foi possível atualizar o ganho.");
+        setErro(resultado.erro || t("contasReceber.errorUpdating"));
         return;
       }
 
@@ -209,11 +201,11 @@ function ContasReceber() {
       );
       setContas(contasAtualizadas);
       localStorage.setItem("contasReceber", JSON.stringify(contasAtualizadas));
-      setSucesso("Ganho atualizado com sucesso!");
+      setSucesso(t("contasReceber.updatedSuccess"));
       fecharModalEdicao();
     } catch (err) {
       console.error("Erro ao editar conta:", err);
-      setErro("Erro ao atualizar ganho. Tente novamente.");
+      setErro(t("contasReceber.errorUpdating"));
     }
   };
 
@@ -223,19 +215,17 @@ function ContasReceber() {
     setSucesso("");
 
     if (!novaConta.cliente || !novaConta.valor || !novaConta.vencimento) {
-      setErro("Preencha cliente, valor e vencimento!");
+      setErro(t("contasReceber.errorAllFields"));
       return;
     }
 
     const valorDigitado = parseFloat(String(novaConta.valor).replace(",", "."));
     if (isNaN(valorDigitado) || valorDigitado <= 0) {
-      setErro("Informe um valor válido maior que zero.");
+      setErro(t("contasReceber.errorInvalidValue"));
       return;
     }
 
-    // 🔥 Converte para Real antes de salvar
     const valorEmReal = convertToBRL(valorDigitado);
-
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -269,11 +259,9 @@ function ContasReceber() {
       });
 
       if (!resp.ok) {
-        // Fallback local
         setContas(prev => [...prev, novaContaObj]);
-        const contasAtualizadas = [...contas, novaContaObj];
-        localStorage.setItem('contasReceber', JSON.stringify(contasAtualizadas));
-        setSucesso("Conta salva localmente!");
+        localStorage.setItem('contasReceber', JSON.stringify([...contas, novaContaObj]));
+        setSucesso(t("contasReceber.savedLocally"));
         setModalAberto(false);
         setNovaConta({ cliente: "", valor: "", vencimento: "", descricao: "" });
         return;
@@ -282,17 +270,15 @@ function ContasReceber() {
       const criada = await resp.json();
       const contaComValor = { ...criada, valor: Number(criada.valor) || 0 };
       setContas(prev => [...prev, contaComValor]);
-      const contasAtualizadas = [...contas, contaComValor];
-      localStorage.setItem('contasReceber', JSON.stringify(contasAtualizadas));
+      localStorage.setItem('contasReceber', JSON.stringify([...contas, contaComValor]));
       setNovaConta({ cliente: "", valor: "", vencimento: "", descricao: "" });
       setModalAberto(false);
-      setSucesso("Conta adicionada com sucesso!");
+      setSucesso(t("contasReceber.savedSuccess"));
     } catch (e) {
       console.error("Erro ao salvar conta:", e);
       setContas(prev => [...prev, novaContaObj]);
-      const contasAtualizadas = [...contas, novaContaObj];
-      localStorage.setItem('contasReceber', JSON.stringify(contasAtualizadas));
-      setSucesso("Conta salva localmente (offline)!");
+      localStorage.setItem('contasReceber', JSON.stringify([...contas, novaContaObj]));
+      setSucesso(t("contasReceber.savedOffline"));
       setModalAberto(false);
       setNovaConta({ cliente: "", valor: "", vencimento: "", descricao: "" });
     }
@@ -315,15 +301,11 @@ function ContasReceber() {
       });
 
       if (!resp.ok) {
-        // Fallback local
         setContas(prev =>
           prev.map(c => (c.id === id ? { ...c, status: "pago" } : c))
         );
-        const contasAtualizadas = contas.map(c =>
-          c.id === id ? { ...c, status: "pago" } : c
-        );
-        localStorage.setItem('contasReceber', JSON.stringify(contasAtualizadas));
-        setSucesso("Conta marcada como paga localmente!");
+        localStorage.setItem('contasReceber', JSON.stringify(contas.map(c => c.id === id ? { ...c, status: "pago" } : c)));
+        setSucesso(t("contasReceber.markedAsPaidLocally"));
         return;
       }
 
@@ -331,19 +313,16 @@ function ContasReceber() {
       setContas(prev =>
         prev.map(c => (c.id === conta.id ? { ...conta, valor: Number(conta.valor) || 0 } : c))
       );
-      const contasAtualizadas = contas.map(c =>
-        c.id === conta.id ? { ...conta, valor: Number(conta.valor) || 0 } : c
-      );
-      localStorage.setItem('contasReceber', JSON.stringify(contasAtualizadas));
-      setSucesso("Conta marcada como paga!");
+      localStorage.setItem('contasReceber', JSON.stringify(contas.map(c => c.id === conta.id ? { ...conta, valor: Number(conta.valor) || 0 } : c)));
+      setSucesso(t("contasReceber.markedAsPaid"));
     } catch (e) {
       console.error("Erro ao marcar conta como paga:", e);
-      setErro("Não foi possível marcar como paga.");
+      setErro(t("contasReceber.errorMarkingPaid"));
     }
   };
 
   const handleRemoverConta = async (id) => {
-    const confirmar = window.confirm("Tem certeza que deseja remover esta conta a receber?");
+    const confirmar = window.confirm(t("contasReceber.confirmDelete"));
     if (!confirmar) return;
 
     const token = localStorage.getItem("token");
@@ -360,24 +339,20 @@ function ContasReceber() {
       const dados = await resp.json();
 
       if (!resp.ok || !dados.sucesso) {
-        // Fallback local
         setContas(prev => prev.filter(c => c.id !== id));
-        const contasAtualizadas = contas.filter(c => c.id !== id);
-        localStorage.setItem('contasReceber', JSON.stringify(contasAtualizadas));
-        setSucesso("Conta removida localmente!");
+        localStorage.setItem('contasReceber', JSON.stringify(contas.filter(c => c.id !== id)));
+        setSucesso(t("contasReceber.deletedLocally"));
         return;
       }
 
       setContas(prev => prev.filter(c => c.id !== id));
-      const contasAtualizadas = contas.filter(c => c.id !== id);
-      localStorage.setItem('contasReceber', JSON.stringify(contasAtualizadas));
-      setSucesso("Conta removida com sucesso!");
+      localStorage.setItem('contasReceber', JSON.stringify(contas.filter(c => c.id !== id)));
+      setSucesso(t("contasReceber.deletedSuccess"));
     } catch (e) {
       console.error("Erro ao remover conta:", e);
       setContas(prev => prev.filter(c => c.id !== id));
-      const contasAtualizadas = contas.filter(c => c.id !== id);
-      localStorage.setItem('contasReceber', JSON.stringify(contasAtualizadas));
-      setSucesso("Conta removida localmente!");
+      localStorage.setItem('contasReceber', JSON.stringify(contas.filter(c => c.id !== id)));
+      setSucesso(t("contasReceber.deletedLocally"));
     }
   };
 
@@ -385,12 +360,11 @@ function ContasReceber() {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
         <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>Carregando...</main>
+        <main style={{ flex: 1, padding: "20px" }}>{t("geral.loading")}</main>
       </div>
     );
   }
 
-  // Controle para esconder sidebar no mobile quando o modal estiver aberto
   const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
@@ -403,10 +377,8 @@ function ContasReceber() {
         <div className="cr-container">
           <div className="cr-card">
             <header className="cr-header">
-              <h1>
-                Ganhos não-fixos
-              </h1>
-              <p className="subtitle">Controle o dinheiro que você recebe de rendas a parte.</p>
+              <h1>{t("contasReceber.title")}</h1>
+              <p className="subtitle">{t("contasReceber.subtitle")}</p>
             </header>
 
             {erro && <p className="erro-msg">{erro}</p>}
@@ -414,13 +386,11 @@ function ContasReceber() {
 
             <div className="cr-resumo-card">
               <div className="cr-resumo-item">
-                {/* 🔥 Símbolo puxado do Provider */}
                 <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
                   {getCurrencySymbol()}
                 </span>
                 <div>
-                  <p className="cr-resumo-label">Total em Aberto</p>
-                  {/* 🔥 Substituído por <Money /> */}
+                  <p className="cr-resumo-label">{t("contasReceber.totalLabel")}</p>
                   <p className="cr-resumo-valor">
                     <Money value={totalAberto} />
                   </p>
@@ -429,20 +399,20 @@ function ContasReceber() {
               <div className="cr-resumo-item-secundario">
                 <CalendarClock size={20} />
                 <p className="cr-resumo-secundario-label">
-                  {contas.filter(c => c.status === "pendente").length} ganhos pendentes
+                  {t("contasReceber.countLabel", { count: contas.filter(c => c.status === "pendente").length })}
                 </p>
               </div>
             </div>
 
             <button className="cr-btn-nova" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> Novo Ganho
+              <Plus size={20} /> {t("contasReceber.newButton")}
             </button>
 
             <section className="cr-grafico-section">
-              <h2>Ganhos cadastrados</h2>
+              <h2>{t("contasReceber.chartTitle")}</h2>
               <div className="cr-grafico-container">
                 {carregando ? (
-                  <div className="cr-grafico-vazio"><p>Carregando ganhos...</p></div>
+                  <div className="cr-grafico-vazio"><p>{t("contasReceber.loadingChart")}</p></div>
                 ) : dadosGrafico.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={dadosGrafico}>
@@ -452,23 +422,22 @@ function ContasReceber() {
                       <Tooltip
                         contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
                         labelStyle={{ color: "#f8fafc" }}
-                        // 🔥 Formatter usando o Provider
-                        formatter={(value) => [formatMoney(value), "Valor"]}
+                        formatter={(value) => [formatMoney(value), t("contasReceber.chartValueLabel")]}
                       />
                       <Bar dataKey="valor" fill="#22c55e" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="cr-grafico-vazio"><p>Não há ganhos pendentes</p></div>
+                  <div className="cr-grafico-vazio"><p>{t("contasReceber.noDataChart")}</p></div>
                 )}
               </div>
             </section>
 
             <section className="cr-lista">
-              <h2>Lista de ganhos registrados</h2>
+              <h2>{t("contasReceber.listTitle")}</h2>
               <div className="cr-lista-container">
                 {carregando ? (
-                  <div className="cr-lista-vazia"><p>Carregando ganhos...</p></div>
+                  <div className="cr-lista-vazia"><p>{t("contasReceber.loadingList")}</p></div>
                 ) : contas.length > 0 ? (
                   contas.map(conta => {
                     const isPendente = conta.status === "pendente";
@@ -489,13 +458,13 @@ function ContasReceber() {
                     let statusLabel = "";
                     let statusClass = "";
                     if (isPago) {
-                      statusLabel = "Pago";
+                      statusLabel = t("contasReceber.statusPaid");
                       statusClass = "cr-status pago";
                     } else if (isAtrasado) {
-                      statusLabel = "Atrasado";
+                      statusLabel = t("contasReceber.statusLate");
                       statusClass = "cr-status atrasado";
                     } else if (isPendente) {
-                      statusLabel = "Pendente";
+                      statusLabel = t("contasReceber.statusPending");
                       statusClass = "cr-status pendente";
                     }
 
@@ -506,27 +475,26 @@ function ContasReceber() {
                             {conta.cliente}{" "}
                             {statusLabel && <span className={statusClass}>{statusLabel}</span>}
                           </h3>
-                          <p className="cr-data">Vencimento: {vencimentoFormatado}</p>
+                          <p className="cr-data">{t("contasReceber.dueDate")}: {vencimentoFormatado}</p>
                           {conta.descricao && <p className="cr-descricao">{conta.descricao}</p>}
                         </div>
                         <div className="cr-acoes">
                           <div className="cr-valor-e-remover">
-                            {/* 🔥 Substituído por <Money /> */}
                             <p className="cr-valor">
                               <Money value={conta.valor} />
                             </p>
                             {isPendente && (
-                              <button className="cr-btn-editar" onClick={() => abrirModalEdicao(conta)} title="Editar ganho">
+                              <button className="cr-btn-editar" onClick={() => abrirModalEdicao(conta)} title={t("contasReceber.editTitle")}>
                                 <Pencil size={16} />
                               </button>
                             )}
-                            <button className="cr-btn-remover" onClick={() => handleRemoverConta(conta.id)} title="Remover conta">
+                            <button className="cr-btn-remover" onClick={() => handleRemoverConta(conta.id)} title={t("contasReceber.deleteTitle")}>
                               <Trash2 size={16} />
                             </button>
                           </div>
                           {isPendente && (
                             <button className="cr-btn-acao" onClick={() => handleMarcarComoPaga(conta.id)}>
-                              Marcar como recebido
+                              {t("contasReceber.markAsPaid")}
                             </button>
                           )}
                         </div>
@@ -534,7 +502,7 @@ function ContasReceber() {
                     );
                   })
                 ) : (
-                  <div className="cr-lista-vazia"><p>Nenhum ganho cadastrado</p></div>
+                  <div className="cr-lista-vazia"><p>{t("contasReceber.noDataList")}</p></div>
                 )}
               </div>
             </section>
@@ -545,45 +513,25 @@ function ContasReceber() {
             <div className="modal-overlay" onClick={() => setModalAberto(false)}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={() => setModalAberto(false)}><X size={24} /></button>
-                <h2>Novo Ganho</h2>
+                <h2>{t("contasReceber.modalCreate")}</h2>
                 <form className="cr-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
-                    <label htmlFor="cliente">Nome</label>
-                    <input type="text" id="cliente" name="cliente" placeholder="Ex: Alguém te devendo, venda de algo..." autocomplete="off" value={novaConta.cliente} onChange={handleInputChange} />
+                    <label htmlFor="cliente">{t("contasReceber.formName")}</label>
+                    <input type="text" id="cliente" name="cliente" placeholder={t("contasReceber.formNamePlaceholder")} autoComplete="off" value={novaConta.cliente} onChange={handleInputChange} />
                   </div>
-                  
-                  {/* 🔥 SELETOR DE MOEDA */}
                   <div className="form-group">
-                    <label htmlFor="moeda">Moeda da transação</label>
-                    <select
-                      id="moeda"
-                      className="currency-select"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                    >
-                      <option value="BRL">🇧🇷 Real (R$)</option>
-                      <option value="USD">🇺🇸 Dólar ($)</option>
-                      <option value="EUR">🇪🇺 Euro (€)</option>
-                      <option value="GBP">🇬🇧 Libra (£)</option>
-                    </select>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                      O valor será convertido e salvo em Real (BRL) no sistema.
-                    </p>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="valor">Valor</label>
+                    <label htmlFor="valor">{t("contasReceber.formValue")}</label>
                     <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaConta.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="vencimento">Dia do pagamento</label>
-                    <input type="date" id="vencimento" name="vencimento" autocomplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
+                    <label htmlFor="vencimento">{t("contasReceber.formDueDate")}</label>
+                    <input type="date" id="vencimento" name="vencimento" autoComplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Vendi um video-game, recebi um dinheiro..." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
+                    <label htmlFor="descricao">{t("contasReceber.formDescription")}</label>
+                    <input type="text" id="descricao" name="descricao" placeholder={t("contasReceber.formDescriptionPlaceholder")} autoComplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar</button>
+                  <button type="submit" className="btn-salvar">{t("contasReceber.saveButton")}</button>
                 </form>
               </div>
             </div>
@@ -594,42 +542,25 @@ function ContasReceber() {
             <div className="modal-overlay" onClick={fecharModalEdicao}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
-                <h2>Editar Ganho</h2>
+                <h2>{t("contasReceber.modalEdit")}</h2>
                 <form className="cr-form" onSubmit={handleEditarConta}>
                   <div className="form-group">
-                    <label htmlFor="edit-cliente">Nome</label>
+                    <label htmlFor="edit-cliente">{t("contasReceber.formName")}</label>
                     <input type="text" id="edit-cliente" name="cliente" autoComplete="off" value={contaEditando.cliente} onChange={handleEdicaoChange} />
                   </div>
-
-                  {/* 🔥 SELETOR DE MOEDA NO MODAL DE EDIÇÃO */}
                   <div className="form-group">
-                    <label htmlFor="edit-moeda">Moeda da transação</label>
-                    <select
-                      id="edit-moeda"
-                      className="currency-select"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                    >
-                      <option value="BRL">🇧🇷 Real (R$)</option>
-                      <option value="USD">🇺🇸 Dólar ($)</option>
-                      <option value="EUR">🇪🇺 Euro (€)</option>
-                      <option value="GBP">🇬🇧 Libra (£)</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="edit-valor">Valor</label>
+                    <label htmlFor="edit-valor">{t("contasReceber.formValue")}</label>
                     <input type="number" id="edit-valor" name="valor" step="0.01" min="0" autoComplete="off" value={contaEditando.valor} onChange={handleEdicaoChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="edit-vencimento">Dia do pagamento</label>
+                    <label htmlFor="edit-vencimento">{t("contasReceber.formDueDate")}</label>
                     <input type="date" id="edit-vencimento" name="vencimento" autoComplete="off" value={contaEditando.vencimento} onChange={handleEdicaoChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="edit-descricao">Descrição (opcional)</label>
+                    <label htmlFor="edit-descricao">{t("contasReceber.formDescription")}</label>
                     <input type="text" id="edit-descricao" name="descricao" autoComplete="off" value={contaEditando.descricao} onChange={handleEdicaoChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar Alterações</button>
+                  <button type="submit" className="btn-salvar">{t("contasReceber.saveEditButton")}</button>
                 </form>
               </div>
             </div>

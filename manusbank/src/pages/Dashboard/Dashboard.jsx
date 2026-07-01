@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import { API_URL } from "../../config/api";
-
-// 🔥 Importe o hook da moeda
+import { dataHojeLocal, janelaMesAtual } from "../../utils/periodo";
 import { useCurrency } from "../../context/CurrencyProvider";
+import { useIdioma } from "../../context/IdiomaContext";
 
 import {
   ArrowDownRight,
@@ -14,13 +14,11 @@ import {
   Clock3,
   CreditCard,
   ListChecks,
-  PiggyBank,
   Plus,
   Target,
   Wallet,
 } from "lucide-react";
 
-// 🔧 Formata uma string YYYY-MM-DD para DD/MM/YYYY (sem fuso horário)
 function formatarDataString(dataString) {
   if (!dataString) return "Sem data";
   const partes = dataString.split("-");
@@ -31,52 +29,31 @@ function formatarDataString(dataString) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  
-  // 🔥 Inicializa o hook da moeda
-  const { formatMoney, getCurrencySymbol } = useCurrency();
+  const { formatMoney } = useCurrency();
+  const { t } = useIdioma();
 
   const [usuario, setUsuario] = useState(null);
-  const [saldo, setSaldo] = useState(0);
   const [transacoes, setTransacoes] = useState([]);
   const [contasReceber, setContasReceber] = useState([]);
+  const [receitasMesAtual, setReceitasMesAtual] = useState(0);
+  const [gastosMesAtual, setGastosMesAtual] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // Função que carrega todos os dados (reutilizada no focus)
+  const carregarDados = async () => {
     const token = localStorage.getItem("token");
-    
-    // 1. Verifica se está logado
     if (!token) {
       navigate("/login");
       return;
     }
 
-    // ==========================================
-    // 🔥 CORREÇÃO PARA TESTE SEM BACKEND 🔥
-    // Se for o nosso token mockado, usamos dados de exemplo e pulamos a API
-    // ==========================================
-    if (token === "mock-token") {
-      setUsuario({ nome: "Usuário Teste", email: "teste@mock.com" });
-      setSaldo(3250.00);
-      setTransacoes([
-        { id: 1, descricao: "Salário Fixo", tipo: "deposito", valor: 5000, data: "2026-06-01" },
-        { id: 2, descricao: "Aluguel", tipo: "saque", valor: 1200, data: "2026-06-05" },
-        { id: 3, descricao: "Mercado", tipo: "saque", valor: 550, data: "2026-06-10" }
-      ]);
-      setContasReceber([
-        { id: 1, descricao: "Cliente A", valor: 1500, status: "pendente", data: "2026-06-20" }
-      ]);
-      setLoading(false);
-      return; // Para a execução aqui
-    }
-    // ==========================================
+    const headers = { Authorization: `Bearer ${token}` };
+    const hoje = dataHojeLocal();
+    const { dataInicio, dataFim } = janelaMesAtual();
 
-    // 2. Lógica REAL do Backend (Executada apenas se o token não for mockado)
     const fetchDashboard = async () => {
       try {
-        const resp = await fetch(`${API_URL}/api/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
+        const resp = await fetch(`${API_URL}/api/dashboard`, { headers });
         if (!resp.ok) {
           if (resp.status === 401) {
             localStorage.removeItem("token");
@@ -84,25 +61,33 @@ export default function Dashboard() {
           }
           throw new Error("Erro ao carregar dashboard");
         }
-
         const dados = await resp.json();
         setUsuario(dados.usuario);
-        setSaldo(dados.saldo || 0);
         setTransacoes(dados.transacoes || []);
       } catch (error) {
         console.error("Erro ao carregar dashboard:", error);
-        navigate("/login");
-      } finally {
-        setLoading(false);
+      }
+    };
+
+    const fetchResumoMes = async () => {
+      try {
+        const resp = await fetch(
+          `${API_URL}/api/relatorios?dataInicio=${dataInicio}&dataFim=${dataFim}`,
+          { headers }
+        );
+        if (resp.ok) {
+          const dados = await resp.json();
+          setReceitasMesAtual(Number(dados.totalEntradas || dados.totalReceitas || 0));
+          setGastosMesAtual(Number(dados.totalGastos || dados.totalDespesas || 0));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar resumo do mês:", error);
       }
     };
 
     const fetchContasReceber = async () => {
       try {
-        const resp = await fetch(`${API_URL}/api/contas-receber`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
+        const resp = await fetch(`${API_URL}/api/contas-receber`, { headers });
         if (resp.ok) {
           const dados = await resp.json();
           setContasReceber(dados || []);
@@ -112,68 +97,69 @@ export default function Dashboard() {
       }
     };
 
-    fetchDashboard();
-    fetchContasReceber();
+    await Promise.all([fetchDashboard(), fetchResumoMes(), fetchContasReceber()]);
+    setLoading(false);
+  };
+
+  // Carrega os dados na montagem do componente
+  useEffect(() => {
+    carregarDados();
   }, [navigate]);
 
-  // 🔥 Não precisa mais do formatMoney local, pois estamos usando o do Provider
+  // Recarrega os dados sempre que a janela ganhar foco (usuário volta para a aba)
+  useEffect(() => {
+    const handleFocus = () => {
+      carregarDados();
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, []);
 
-  const agora = new Date();
-  const mesAtual = agora.getMonth(); // 0-indexed (janeiro = 0)
-  const anoAtual = agora.getFullYear();
+  const hoje = dataHojeLocal();
 
-  // Filtra transações do mês atual usando a string YYYY-MM-DD (sem fuso)
-  const transacoesMesAtual = useMemo(() => {
-    return transacoes.filter((t) => {
-      if (!t.data) return false;
-      const [anoStr, mesStr] = t.data.split("-");
-      const ano = parseInt(anoStr, 10);
-      const mes = parseInt(mesStr, 10) - 1; // converte para 0-indexed
-      return ano === anoAtual && mes === mesAtual;
-    });
-  }, [transacoes, anoAtual, mesAtual]);
-
-  const receitasMesAtual = transacoesMesAtual
-    .filter((t) => t.tipo === "deposito" || t.tipo === "transferenciaEntrada")
-    .reduce((acc, t) => acc + Number(t.valor || 0), 0);
-
-  const gastosMesAtual = transacoesMesAtual
-    .filter((t) => t.tipo === "saque" || t.tipo === "transferenciaSaida")
-    .reduce((acc, t) => acc + Number(t.valor || 0), 0);
-
-  const sobraMesAtual = receitasMesAtual - gastosMesAtual;
+  // Saldo atual: considera apenas transações até a data de hoje
+  const saldoAtual = transacoes
+    .filter((t) => t.data && t.data <= hoje)
+    .reduce((acc, tMov) => {
+      const valor = Number(tMov.valor || 0);
+      const isEntrada =
+        tMov.tipo === "deposito" ||
+        tMov.tipo === "transferenciaEntrada" ||
+        tMov.tipo === "entrada";
+      return acc + (isEntrada ? valor : -valor);
+    }, 0);
 
   const contasPendentes = contasReceber.filter((conta) => conta.status === "pendente");
 
-  // Últimas movimentações: ordena pela string YYYY-MM-DD decrescente (lexicográfica funciona)
-  const ultimasMovimentacoes = [...transacoes]
+  const ultimasMovimentacoes = transacoes
+    .filter((t) => t.data && t.data <= hoje)
     .sort((a, b) => (b.data || "").localeCompare(a.data || ""))
     .slice(0, 5);
 
   const temDados = transacoes.length > 0 || contasReceber.length > 0;
 
   const acoesRapidas = [
-    { label: "Receitas fixas", path: "/receitas", icon: ArrowUpRight },
-    { label: "Entradas", path: "/contas-a-receber", icon: Wallet },
-    { label: "Gastos mensais", path: "/despesas", icon: ArrowDownRight },
-    { label: "Gastos imprevistos", path: "/contas-a-pagar", icon: CreditCard },
-    { label: "Suas Metas", path: "/metasfinanceiras", icon: Target },
+    { label: t("dashboard.quickActions.fixedIncomes"), path: "/receitas", icon: ArrowUpRight },
+    { label: t("dashboard.quickActions.incomes"), path: "/contas-a-receber", icon: Wallet },
+    { label: t("dashboard.quickActions.monthlyExpenses"), path: "/despesas", icon: ArrowDownRight },
+    { label: t("dashboard.quickActions.unexpectedExpenses"), path: "/contas-a-pagar", icon: CreditCard },
+    { label: t("dashboard.quickActions.goals"), path: "/metasfinanceiras", icon: Target },
   ];
 
   const passosIniciais = [
     {
-      title: "Cadastre suas receitas principais",
-      text: "Salário fixo e outras rendas fixas.",
+      title: t("dashboard.step1Title"),
+      text: t("dashboard.step1Text"),
       path: "/receitas",
     },
     {
-      title: "Adicione uma conta importante",
-      text: "Registre contas que você tem que pagar sempre.",
+      title: t("dashboard.step2Title"),
+      text: t("dashboard.step2Text"),
       path: "/despesas",
     },
     {
-      title: "Crie sua primeira meta",
-      text: "Defina um objetivo e acompanhe o progresso.",
+      title: t("dashboard.step3Title"),
+      text: t("dashboard.step3Text"),
       path: "/metasfinanceiras",
     },
   ];
@@ -183,7 +169,7 @@ export default function Dashboard() {
       <div className="mainLayout">
         <Sidebar />
         <main className="dashboard">
-          <div className="loadingBox">Carregando...</div>
+          <div className="loadingBox">{t("geral.loading")}</div>
         </main>
       </div>
     );
@@ -195,34 +181,31 @@ export default function Dashboard() {
       <main className="dashboard">
         <div className="top">
           <div>
-            <h1>Início</h1>
+            <h1>{t("dashboard.title")}</h1>
             <p>
-              {usuario?.nome || usuario?.email || "Sua conta"} - prioridades, pendências e
-              próximos passos.
+              {t("dashboard.subtitle", { nome: usuario?.nome || usuario?.email || "Sua conta" })}
             </p>
           </div>
         </div>
 
         <section className="heroPanel">
           <div>
-            <span className="eyebrow">Situação de hoje</span>
+            <span className="eyebrow">{t("dashboard.situation")}</span>
             <h2>
               {temDados
                 ? contasPendentes.length > 0
-                  ? `Você tem ${contasPendentes.length} recebimento(s) pendente(s).`
-                  : "Nenhuma pendência crítica no momento."
-                : "Comece registrando os dados principais da sua vida financeira."}
+                  ? t("dashboard.heroPending", { count: contasPendentes.length })
+                  : t("dashboard.heroNoPending")
+                : t("dashboard.heroNoData")}
             </h2>
             <p>
-              {temDados
-                ? "Use esta tela para agir rápido. Relatórios ficam para análise detalhada."
-                : "Sem dados, gráfico nenhum ajuda. Primeiro alimente o sistema com entradas, gastos, contas e metas."}
+              {temDados ? t("dashboard.heroHasData") : t("dashboard.heroNoDataSub")}
             </p>
           </div>
 
           <button className="heroButton" type="button" onClick={() => navigate("/receitas")}>
             <Plus size={18} />
-            Registrar renda
+            {t("dashboard.registerIncome")}
           </button>
         </section>
 
@@ -231,30 +214,27 @@ export default function Dashboard() {
             <div className="iconBox greenBg">
               <Wallet size={18} />
             </div>
-            {/* 🔥 Substituído por formatMoney do Provider */}
-            <h2>{formatMoney(saldo)}</h2>
-            <span>Saldo atual</span>
-            <p>Valor disponível agora.</p>
+            <h2>{formatMoney(saldoAtual)}</h2>
+            <span>{t("dashboard.balance")}</span>
+            <p>{t("dashboard.balanceDesc")}</p>
           </div>
 
           <div className="card blue">
             <div className="iconBox blueBg">
               <ArrowUpRight size={18} />
             </div>
-            {/* 🔥 Substituído por formatMoney do Provider */}
             <h2>{formatMoney(receitasMesAtual)}</h2>
-            <span>Entradas do mês</span>
-            <p>Receitas e entradas registradas.</p>
+            <span>{t("dashboard.monthIncome")}</span>
+            <p>{t("dashboard.incomeDesc")}</p>
           </div>
 
           <div className="card red">
             <div className="iconBox redBg">
               <ArrowDownRight size={18} />
             </div>
-            {/* 🔥 Substituído por formatMoney do Provider */}
             <h2>{formatMoney(gastosMesAtual)}</h2>
-            <span>Gastos do mês</span>
-            <p>Saídas registradas neste mês.</p>
+            <span>{t("dashboard.monthExpenses")}</span>
+            <p>{t("dashboard.expensesDesc")}</p>
           </div>
         </section>
 
@@ -274,8 +254,8 @@ export default function Dashboard() {
           <div className="panel">
             <div className="panelHeader">
               <div>
-                <h3>Pendências</h3>
-                <p>O que pede atenção antes de virar problema.</p>
+                <h3>{t("dashboard.pending")}</h3>
+                <p>{t("dashboard.pendingDesc")}</p>
               </div>
               <Clock3 size={18} />
             </div>
@@ -283,10 +263,12 @@ export default function Dashboard() {
             {contasPendentes.length > 0 ? (
               <div className="taskList">
                 {contasPendentes.slice(0, 4).map((conta) => (
-                  <div className="taskItem" key={conta.id || conta._id || conta.descricao}>
+                  <div className="taskItem" key={conta.id || conta._id || conta.cliente}>
                     <div>
-                      <strong>{conta.descricao || conta.nome || "Recebimento pendente"}</strong>
-                      <span>{formatarDataString(conta.data)}</span>
+                      <strong>
+                        {conta.cliente || conta.descricao || conta.nome || t("dashboard.pendingFallback")}
+                      </strong>
+                      <span>{formatarDataString(conta.vencimento || conta.data)}</span>
                     </div>
                     <b>{formatMoney(conta.valor)}</b>
                   </div>
@@ -295,7 +277,7 @@ export default function Dashboard() {
             ) : (
               <div className="emptyState">
                 <CheckCircle2 size={22} />
-                <p>Nenhum recebimento pendente registrado.</p>
+                <p>{t("dashboard.noPending")}</p>
               </div>
             )}
           </div>
@@ -303,8 +285,8 @@ export default function Dashboard() {
           <div className="panel">
             <div className="panelHeader">
               <div>
-                <h3>Primeiros passos</h3>
-                <p>Atalhos para deixar o sistema útil mais rápido.</p>
+                <h3>{t("dashboard.firstSteps")}</h3>
+                <p>{t("dashboard.firstStepsDesc")}</p>
               </div>
               <ListChecks size={18} />
             </div>
@@ -322,24 +304,25 @@ export default function Dashboard() {
           <div className="panel wide">
             <div className="panelHeader">
               <div>
-                <h3>Últimas movimentações</h3>
-                <p>O que entrou ou saiu recentemente.</p>
+                <h3>{t("dashboard.lastMovements")}</h3>
+                <p>{t("dashboard.lastMovementsDesc")}</p>
               </div>
             </div>
 
             {ultimasMovimentacoes.length > 0 ? (
               <div className="movementList">
-                {ultimasMovimentacoes.map((t) => {
-                  const entrada = t.tipo === "deposito" || t.tipo === "transferenciaEntrada";
+                {ultimasMovimentacoes.map((tMov) => {
+                  const entrada = tMov.tipo === "deposito" || tMov.tipo === "transferenciaEntrada";
                   return (
-                    <div className="movementItem" key={t.id || t._id || `${t.data}-${t.valor}`}>
+                    <div className="movementItem" key={tMov.id || tMov._id || `${tMov.data}-${tMov.valor}`}>
                       <div>
-                        <strong>{t.descricao || t.categoria || "Movimentação"}</strong>
-                        <span>{formatarDataString(t.data)}</span>
+                        <strong>
+                          {tMov.descricao || tMov.categoria || t("dashboard.movementFallback")}
+                        </strong>
+                        <span>{formatarDataString(tMov.data)}</span>
                       </div>
-                      {/* 🔥 Substituído por formatMoney do Provider */}
                       <b className={entrada ? "positiveValue" : "negativeValue"}>
-                        {entrada ? "+" : "-"} {formatMoney(t.valor)}
+                        {entrada ? "+" : "-"} {formatMoney(tMov.valor)}
                       </b>
                     </div>
                   );
@@ -347,7 +330,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="emptyState">
-                <p>Nenhuma movimentação registrada ainda.</p>
+                <p>{t("dashboard.noMovements")}</p>
               </div>
             )}
           </div>

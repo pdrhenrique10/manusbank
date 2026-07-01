@@ -21,11 +21,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { API_URL } from "../../config/api";
-
-// 🔥 Importação do sistema de moeda
 import { useCurrency } from "../../context/CurrencyProvider";
+import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
 
-// 🔥 Componente de Moeda local (puxa a função do Provider)
 function Money({ value }) {
   const { formatMoney } = useCurrency();
   return <span>{formatMoney(value)}</span>;
@@ -33,8 +31,7 @@ function Money({ value }) {
 
 function ContasPagar() {
   const navigate = useNavigate();
-  
-  // 🔥 Puxa TUDO do provider
+  const { t } = useIdioma(); // 👈 hook de tradução
   const { 
     formatMoney, 
     convertToBRL, 
@@ -58,7 +55,6 @@ function ContasPagar() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
 
-  // Verificar autenticação e carregar contas
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -85,7 +81,6 @@ function ContasPagar() {
       }
 
       if (!resp.ok) {
-        // Fallback: carregar do localStorage
         const contasLocal = JSON.parse(localStorage.getItem('contasPagar') || '[]');
         setContas(contasLocal);
         setCarregando(false);
@@ -103,13 +98,12 @@ function ContasPagar() {
       console.error("Erro ao carregar contas a pagar:", e);
       const contasLocal = JSON.parse(localStorage.getItem('contasPagar') || '[]');
       setContas(contasLocal);
-      setErro("Erro ao carregar contas. Usando dados locais.");
+      setErro(t("contasPagar.errorLoading"));
     } finally {
       setCarregando(false);
     }
   }
 
-  // Limpar mensagens após 3 segundos
   useEffect(() => {
     if (sucesso) {
       const timer = setTimeout(() => setSucesso(""), 3000);
@@ -117,7 +111,6 @@ function ContasPagar() {
     }
   }, [sucesso]);
 
-  // Dados do gráfico: só pendentes
   const dadosGrafico = contas
     .filter(c => c.status === "pendente")
     .map(c => ({
@@ -125,7 +118,6 @@ function ContasPagar() {
       valor: Number(c.valor) || 0,
     }));
 
-  // Total em aberto (somente pendentes)
   const totalPagar = contas
     .filter(c => c.status === "pendente")
     .reduce((acc, c) => acc + (Number(c.valor) || 0), 0);
@@ -166,19 +158,17 @@ function ContasPagar() {
     setSucesso("");
 
     if (!contaEditando.titulo || !contaEditando.valor || !contaEditando.vencimento) {
-      setErro("Preencha título, valor e vencimento!");
+      setErro(t("contasPagar.errorAllFields"));
       return;
     }
 
     const valorDigitado = parseFloat(String(contaEditando.valor).replace(",", "."));
     if (isNaN(valorDigitado) || valorDigitado <= 0) {
-      setErro("Informe um valor válido maior que zero.");
+      setErro(t("contasPagar.errorInvalidValue"));
       return;
     }
 
-    // 🔥 Converte para Real antes de salvar
     const valorEmReal = convertToBRL(valorDigitado);
-
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -204,7 +194,7 @@ function ContasPagar() {
       const resultado = await resp.json();
 
       if (!resp.ok || !resultado.sucesso) {
-        setErro(resultado.erro || "Não foi possível atualizar o gasto.");
+        setErro(resultado.erro || t("contasPagar.errorUpdating"));
         return;
       }
 
@@ -214,11 +204,11 @@ function ContasPagar() {
       );
       setContas(contasAtualizadas);
       localStorage.setItem("contasPagar", JSON.stringify(contasAtualizadas));
-      setSucesso("Gasto atualizado com sucesso!");
+      setSucesso(t("contasPagar.updatedSuccess"));
       fecharModalEdicao();
     } catch (err) {
       console.error("Erro ao editar conta:", err);
-      setErro("Erro ao atualizar gasto. Tente novamente.");
+      setErro(t("contasPagar.errorUpdating"));
     }
   };
 
@@ -228,19 +218,17 @@ function ContasPagar() {
     setSucesso("");
 
     if (!novaConta.titulo || !novaConta.valor || !novaConta.vencimento) {
-      setErro("Preencha título, valor e vencimento!");
+      setErro(t("contasPagar.errorAllFields"));
       return;
     }
 
     const valorDigitado = parseFloat(String(novaConta.valor).replace(",", "."));
     if (isNaN(valorDigitado) || valorDigitado <= 0) {
-      setErro("Informe um valor válido maior que zero.");
+      setErro(t("contasPagar.errorInvalidValue"));
       return;
     }
 
-    // 🔥 Converte para Real antes de salvar
     const valorEmReal = convertToBRL(valorDigitado);
-
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -276,50 +264,28 @@ function ContasPagar() {
       });
 
       if (!resp.ok) {
-        // Fallback local
         setContas(prev => [...prev, novaContaObj]);
-        const contasAtualizadas = [...contas, novaContaObj];
-        localStorage.setItem('contasPagar', JSON.stringify(contasAtualizadas));
-        setSucesso("Conta salva localmente!");
+        localStorage.setItem('contasPagar', JSON.stringify([...contas, novaContaObj]));
+        setSucesso(t("contasPagar.savedLocally"));
         setModalAberto(false);
-        setNovaConta({
-          titulo: "",
-          tipo: "",
-          valor: "",
-          vencimento: "",
-          descricao: "",
-        });
+        setNovaConta({ titulo: "", tipo: "", valor: "", vencimento: "", descricao: "" });
         return;
       }
 
       const criada = await resp.json();
       const contaComValor = { ...criada, valor: Number(criada.valor) || 0 };
       setContas(prev => [...prev, contaComValor]);
-      const contasAtualizadas = [...contas, contaComValor];
-      localStorage.setItem('contasPagar', JSON.stringify(contasAtualizadas));
-      setNovaConta({
-        titulo: "",
-        tipo: "",
-        valor: "",
-        vencimento: "",
-        descricao: "",
-      });
+      localStorage.setItem('contasPagar', JSON.stringify([...contas, contaComValor]));
+      setNovaConta({ titulo: "", tipo: "", valor: "", vencimento: "", descricao: "" });
       setModalAberto(false);
-      setSucesso("Conta adicionada com sucesso!");
+      setSucesso(t("contasPagar.savedSuccess"));
     } catch (e) {
       console.error("Erro ao salvar conta:", e);
       setContas(prev => [...prev, novaContaObj]);
-      const contasAtualizadas = [...contas, novaContaObj];
-      localStorage.setItem('contasPagar', JSON.stringify(contasAtualizadas));
-      setSucesso("Conta salva localmente (offline)!");
+      localStorage.setItem('contasPagar', JSON.stringify([...contas, novaContaObj]));
+      setSucesso(t("contasPagar.savedOffline"));
       setModalAberto(false);
-      setNovaConta({
-        titulo: "",
-        tipo: "",
-        valor: "",
-        vencimento: "",
-        descricao: "",
-      });
+      setNovaConta({ titulo: "", tipo: "", valor: "", vencimento: "", descricao: "" });
     }
   };
 
@@ -340,15 +306,11 @@ function ContasPagar() {
       });
 
       if (!resp.ok) {
-        // Fallback local
         setContas(prev =>
           prev.map(c => (c.id === id ? { ...c, status: "pago" } : c))
         );
-        const contasAtualizadas = contas.map(c =>
-          c.id === id ? { ...c, status: "pago" } : c
-        );
-        localStorage.setItem('contasPagar', JSON.stringify(contasAtualizadas));
-        setSucesso("Conta marcada como paga localmente!");
+        localStorage.setItem('contasPagar', JSON.stringify(contas.map(c => c.id === id ? { ...c, status: "pago" } : c)));
+        setSucesso(t("contasPagar.markedAsPaidLocally"));
         return;
       }
 
@@ -357,19 +319,16 @@ function ContasPagar() {
       setContas(prev =>
         prev.map(c => (c.id === contaAtualizada.id ? contaAtualizada : c))
       );
-      const contasAtualizadas = contas.map(c =>
-        c.id === contaAtualizada.id ? contaAtualizada : c
-      );
-      localStorage.setItem('contasPagar', JSON.stringify(contasAtualizadas));
-      setSucesso("Conta marcada como paga!");
+      localStorage.setItem('contasPagar', JSON.stringify(contas.map(c => c.id === contaAtualizada.id ? contaAtualizada : c)));
+      setSucesso(t("contasPagar.markedAsPaid"));
     } catch (e) {
       console.error("Erro ao marcar conta como paga:", e);
-      setErro("Não foi possível marcar como paga.");
+      setErro(t("contasPagar.errorMarkingPaid"));
     }
   };
 
   const handleRemoverConta = async (id) => {
-    const confirmar = window.confirm("Tem certeza que deseja remover esta conta a pagar?");
+    const confirmar = window.confirm(t("contasPagar.confirmDelete"));
     if (!confirmar) return;
 
     const token = localStorage.getItem("token");
@@ -386,24 +345,20 @@ function ContasPagar() {
       const dados = await resp.json();
 
       if (!resp.ok || !dados.sucesso) {
-        // Fallback local
         setContas(prev => prev.filter(c => c.id !== id));
-        const contasAtualizadas = contas.filter(c => c.id !== id);
-        localStorage.setItem('contasPagar', JSON.stringify(contasAtualizadas));
-        setSucesso("Conta removida localmente!");
+        localStorage.setItem('contasPagar', JSON.stringify(contas.filter(c => c.id !== id)));
+        setSucesso(t("contasPagar.deletedLocally"));
         return;
       }
 
       setContas(prev => prev.filter(c => c.id !== id));
-      const contasAtualizadas = contas.filter(c => c.id !== id);
-      localStorage.setItem('contasPagar', JSON.stringify(contasAtualizadas));
-      setSucesso("Conta removida com sucesso!");
+      localStorage.setItem('contasPagar', JSON.stringify(contas.filter(c => c.id !== id)));
+      setSucesso(t("contasPagar.deletedSuccess"));
     } catch (e) {
       console.error("Erro ao remover conta:", e);
       setContas(prev => prev.filter(c => c.id !== id));
-      const contasAtualizadas = contas.filter(c => c.id !== id);
-      localStorage.setItem('contasPagar', JSON.stringify(contasAtualizadas));
-      setSucesso("Conta removida localmente!");
+      localStorage.setItem('contasPagar', JSON.stringify(contas.filter(c => c.id !== id)));
+      setSucesso(t("contasPagar.deletedLocally"));
     }
   };
 
@@ -411,12 +366,11 @@ function ContasPagar() {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
         <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>Carregando...</main>
+        <main style={{ flex: 1, padding: "20px" }}>{t("geral.loading")}</main>
       </div>
     );
   }
 
-  // Controle para esconder sidebar no mobile quando o modal estiver aberto
   const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
@@ -429,12 +383,8 @@ function ContasPagar() {
         <div className="cp-container">
           <div className="cp-card">
             <header className="cp-header">
-              <h1>
-                Gastos não-fixos
-              </h1>
-              <p className="subtitle">
-                Controle seus gastos imprevistos que surgem no dia-a-dia.
-              </p>
+              <h1>{t("contasPagar.title")}</h1>
+              <p className="subtitle">{t("contasPagar.subtitle")}</p>
             </header>
 
             {erro && <p className="erro-msg">{erro}</p>}
@@ -442,13 +392,11 @@ function ContasPagar() {
 
             <div className="cp-resumo-card">
               <div className="cp-resumo-item">
-                {/* 🔥 Símbolo puxado do Provider */}
                 <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
                   {getCurrencySymbol()}
                 </span>
                 <div>
-                  <p className="cp-resumo-label">Total em Aberto</p>
-                  {/* 🔥 Substituído por <Money /> */}
+                  <p className="cp-resumo-label">{t("contasPagar.totalLabel")}</p>
                   <p className="cp-resumo-valor">
                     <Money value={totalPagar} />
                   </p>
@@ -457,20 +405,20 @@ function ContasPagar() {
               <div className="cp-resumo-item-secundario">
                 <CalendarClock size={20} />
                 <p className="cp-resumo-secundario-label">
-                  {contas.filter(c => c.status === "pendente").length} conta(s) pendente(s)
+                  {t("contasPagar.countLabel", { count: contas.filter(c => c.status === "pendente").length })}
                 </p>
               </div>
             </div>
 
             <button className="cp-btn-nova" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> Novo Gasto 
+              <Plus size={20} /> {t("contasPagar.newButton")}
             </button>
 
             <section className="cp-grafico-section">
-              <h2>Gastos por Título (pendentes)</h2>
+              <h2>{t("contasPagar.chartTitle")}</h2>
               <div className="cp-grafico-container">
                 {carregando ? (
-                  <div className="cp-grafico-vazio"><p>Carregando gastos...</p></div>
+                  <div className="cp-grafico-vazio"><p>{t("contasPagar.loadingChart")}</p></div>
                 ) : dadosGrafico.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={dadosGrafico}>
@@ -480,23 +428,22 @@ function ContasPagar() {
                       <Tooltip
                         contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
                         labelStyle={{ color: "#f8fafc" }}
-                        // 🔥 Formatter usando o Provider
-                        formatter={(value) => [formatMoney(value), "Valor"]}
+                        formatter={(value) => [formatMoney(value), t("contasPagar.chartValueLabel")]}
                       />
                       <Bar dataKey="valor" fill="#f97316" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="cp-grafico-vazio"><p>Não há gastos pendentes</p></div>
+                  <div className="cp-grafico-vazio"><p>{t("contasPagar.noDataChart")}</p></div>
                 )}
               </div>
             </section>
 
             <section className="cp-lista">
-              <h2>Lista de Gastos</h2>
+              <h2>{t("contasPagar.listTitle")}</h2>
               <div className="cp-lista-container">
                 {carregando ? (
-                  <div className="cp-lista-vazia"><p>Carregando gastos...</p></div>
+                  <div className="cp-lista-vazia"><p>{t("contasPagar.loadingList")}</p></div>
                 ) : contas.length > 0 ? (
                   contas.map(conta => {
                     const isPendente = conta.status === "pendente";
@@ -517,13 +464,13 @@ function ContasPagar() {
                     let statusLabel = "";
                     let statusClass = "";
                     if (isPago) {
-                      statusLabel = "Pago";
+                      statusLabel = t("contasPagar.statusPaid");
                       statusClass = "cp-status pago";
                     } else if (isAtrasado) {
-                      statusLabel = "Atrasado";
+                      statusLabel = t("contasPagar.statusLate");
                       statusClass = "cp-status atrasado";
                     } else if (isPendente) {
-                      statusLabel = "Pendente";
+                      statusLabel = t("contasPagar.statusPending");
                       statusClass = "cp-status pendente";
                     }
 
@@ -534,25 +481,24 @@ function ContasPagar() {
                             {conta.titulo}{" "}
                             {statusLabel && <span className={statusClass}>{statusLabel}</span>}
                           </h3>
-                          <p className="cp-data">Vencimento: {vencimentoFormatado}</p>
-                          {conta.tipo && <p className="cp-data">Tipo: {conta.tipo}</p>}
+                          <p className="cp-data">{t("contasPagar.dueDate")}: {vencimentoFormatado}</p>
+                          {conta.tipo && <p className="cp-data">{t("contasPagar.type")}: {conta.tipo}</p>}
                           {conta.descricao && <p className="cp-data">{conta.descricao}</p>}
                         </div>
                         <div className="cp-acoes">
                           <div className="cp-valor-e-remover">
-                            {/* 🔥 Substituído por <Money /> */}
                             <p className="cp-valor">
                               <Money value={conta.valor} />
                             </p>
                             {isPendente && (
-                              <button className="cp-btn-editar" onClick={() => abrirModalEdicao(conta)} title="Editar gasto">
+                              <button className="cp-btn-editar" onClick={() => abrirModalEdicao(conta)} title={t("contasPagar.editTitle")}>
                                 <Pencil size={16} />
                               </button>
                             )}
                             <button
                               className="cp-btn-remover"
                               onClick={() => handleRemoverConta(conta.id)}
-                              title="Remover conta"
+                              title={t("contasPagar.deleteTitle")}
                             >
                               <Trash2 size={16} />
                             </button>
@@ -562,7 +508,7 @@ function ContasPagar() {
                               className="cp-btn-acao"
                               onClick={() => handleMarcarComoPaga(conta.id)}
                             >
-                              Marcar como paga
+                              {t("contasPagar.markAsPaid")}
                             </button>
                           )}
                         </div>
@@ -570,7 +516,7 @@ function ContasPagar() {
                     );
                   })
                 ) : (
-                  <div className="cp-lista-vazia"><p>Nenhum gasto cadastrado</p></div>
+                  <div className="cp-lista-vazia"><p>{t("contasPagar.noDataList")}</p></div>
                 )}
               </div>
             </section>
@@ -581,49 +527,29 @@ function ContasPagar() {
             <div className="modal-overlay" onClick={() => setModalAberto(false)}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={() => setModalAberto(false)}><X size={24} /></button>
-                <h2>Nova Gasto</h2>
+                <h2>{t("contasPagar.modalCreate")}</h2>
                 <form className="cp-form" onSubmit={handleAdicionarConta}>
                   <div className="form-group">
-                    <label htmlFor="titulo">Nome</label>
+                    <label htmlFor="titulo">{t("contasPagar.formName")}</label>
                     <input type="text" id="titulo" name="titulo" autoComplete="off" value={novaConta.titulo} onChange={handleInputChange} />
                   </div>
-                  
-                  {/* 🔥 SELETOR DE MOEDA */}
                   <div className="form-group">
-                    <label htmlFor="moeda">Moeda da transação</label>
-                    <select
-                      id="moeda"
-                      className="currency-select"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                    >
-                      <option value="BRL">🇧🇷 Real (R$)</option>
-                      <option value="USD">🇺🇸 Dólar ($)</option>
-                      <option value="EUR">🇪🇺 Euro (€)</option>
-                      <option value="GBP">🇬🇧 Libra (£)</option>
-                    </select>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                      O valor será convertido e salvo em Real (BRL) no sistema.
-                    </p>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="tipo">Tipo (opcional)</label>
-                    <input type="text" id="tipo" name="tipo" placeholder="Ex: lanche na rua, pix para alguém, compra de algo" autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
+                    <label htmlFor="tipo">{t("contasPagar.formType")}</label>
+                    <input type="text" id="tipo" name="tipo" placeholder={t("contasPagar.formTypePlaceholder")} autoComplete="off" value={novaConta.tipo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="valor">Valor</label>
+                    <label htmlFor="valor">{t("contasPagar.formValue")}</label>
                     <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaConta.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="vencimento">Vencimento</label>
+                    <label htmlFor="vencimento">{t("contasPagar.formDueDate")}</label>
                     <input type="date" id="vencimento" name="vencimento" autoComplete="off" value={novaConta.vencimento} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="descricao">Descrição (opcional)</label>
-                    <input type="text" id="descricao" name="descricao" placeholder="Ex: Pix de alguém, lanche/compra na rua, etc." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
+                    <label htmlFor="descricao">{t("contasPagar.formDescription")}</label>
+                    <input type="text" id="descricao" name="descricao" placeholder={t("contasPagar.formDescriptionPlaceholder")} autoComplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar</button>
+                  <button type="submit" className="btn-salvar">{t("contasPagar.saveButton")}</button>
                 </form>
               </div>
             </div>
@@ -634,46 +560,29 @@ function ContasPagar() {
             <div className="modal-overlay" onClick={fecharModalEdicao}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
                 <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
-                <h2>Editar Gasto</h2>
+                <h2>{t("contasPagar.modalEdit")}</h2>
                 <form className="cp-form" onSubmit={handleEditarConta}>
                   <div className="form-group">
-                    <label htmlFor="edit-titulo">Nome</label>
+                    <label htmlFor="edit-titulo">{t("contasPagar.formName")}</label>
                     <input type="text" id="edit-titulo" name="titulo" autoComplete="off" value={contaEditando.titulo} onChange={handleEdicaoChange} />
                   </div>
-
-                  {/* 🔥 SELETOR DE MOEDA NO MODAL DE EDIÇÃO */}
                   <div className="form-group">
-                    <label htmlFor="edit-moeda">Moeda da transação</label>
-                    <select
-                      id="edit-moeda"
-                      className="currency-select"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                    >
-                      <option value="BRL">🇧🇷 Real (R$)</option>
-                      <option value="USD">🇺🇸 Dólar ($)</option>
-                      <option value="EUR">🇪🇺 Euro (€)</option>
-                      <option value="GBP">🇬🇧 Libra (£)</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="edit-tipo">Tipo (opcional)</label>
+                    <label htmlFor="edit-tipo">{t("contasPagar.formType")}</label>
                     <input type="text" id="edit-tipo" name="tipo" autoComplete="off" value={contaEditando.tipo} onChange={handleEdicaoChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="edit-valor">Valor</label>
+                    <label htmlFor="edit-valor">{t("contasPagar.formValue")}</label>
                     <input type="number" id="edit-valor" name="valor" step="0.01" min="0" autoComplete="off" value={contaEditando.valor} onChange={handleEdicaoChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="edit-vencimento">Vencimento</label>
+                    <label htmlFor="edit-vencimento">{t("contasPagar.formDueDate")}</label>
                     <input type="date" id="edit-vencimento" name="vencimento" autoComplete="off" value={contaEditando.vencimento} onChange={handleEdicaoChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="edit-descricao">Descrição (opcional)</label>
+                    <label htmlFor="edit-descricao">{t("contasPagar.formDescription")}</label>
                     <input type="text" id="edit-descricao" name="descricao" autoComplete="off" value={contaEditando.descricao} onChange={handleEdicaoChange} />
                   </div>
-                  <button type="submit" className="btn-salvar">Salvar Alterações</button>
+                  <button type="submit" className="btn-salvar">{t("contasPagar.saveEditButton")}</button>
                 </form>
               </div>
             </div>

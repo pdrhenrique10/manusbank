@@ -21,7 +21,6 @@ if (!fs.existsSync(USUARIOS_FILE)) {
 const app = express();
 
 // ===== CORS BÁSICO =====
-// Se quiser travar só pro front da apresentação depois, troca "*" pela URL do front.
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -67,31 +66,59 @@ function dataHoje() {
   return `${ano}-${mes}-${dia}`;
 }
 
-// ===== LÓGICA DE PERÍODO =====
-function calcularJanela(periodo) {
-  const hoje = dataHoje();
-  const [ano, mes] = hoje.split("-").map(Number);
-  let dataInicio;
+function formatarDataLocal(date) {
+  const ano = date.getFullYear();
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const dia = String(date.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
 
-  if (periodo === "3m") {
-    const d = new Date(ano, mes - 1, 1);
-    d.setMonth(d.getMonth() - 2);
-    dataInicio = `${d.getFullYear()}-${String(
-      d.getMonth() + 1
-    ).padStart(2, "0")}-01`;
-  } else if (periodo === "6m") {
-    const d = new Date(ano, mes - 1, 1);
-    d.setMonth(d.getMonth() - 5);
-    dataInicio = `${d.getFullYear()}-${String(
-      d.getMonth() + 1
-    ).padStart(2, "0")}-01`;
-  } else if (periodo === "ano") {
-    dataInicio = `${ano}-01-01`;
-  } else {
-    dataInicio = `${ano}-${String(mes).padStart(2, "0")}-01`;
+function ultimoDiaDoMes(ano, mes) {
+  return new Date(ano, mes, 0).getDate();
+}
+
+function normalizarDataReferencia(valor) {
+  if (typeof valor === "string" && /^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+    return valor;
+  }
+  return dataHoje();
+}
+
+// ===== LÓGICA DE PERÍODO =====
+function calcularJanela(periodo, hojeStr = dataHoje()) {
+  const hoje = normalizarDataReferencia(hojeStr);
+  const [anoStr, mesStr, diaStr] = hoje.split("-");
+  const ano = Number(anoStr);
+  const mes = Number(mesStr);
+  const dia = Number(diaStr);
+
+  if (periodo === "mes") {
+    const ultimoDia = ultimoDiaDoMes(ano, mes);
+    return {
+      dataInicio: `${anoStr}-${mesStr}-01`,
+      dataFim: `${anoStr}-${mesStr}-${String(ultimoDia).padStart(2, "0")}`,
+    };
   }
 
-  return { dataInicio, dataFim: hoje };
+  const inicio = new Date(ano, mes - 1, dia);
+
+  if (periodo === "1m") {
+    inicio.setMonth(inicio.getMonth() - 1);
+  } else if (periodo === "3m") {
+    inicio.setMonth(inicio.getMonth() - 3);
+  } else if (periodo === "6m") {
+    inicio.setMonth(inicio.getMonth() - 6);
+  } else if (periodo === "ano") {
+    inicio.setFullYear(inicio.getFullYear() - 1);
+  } else {
+    const ultimoDia = ultimoDiaDoMes(ano, mes);
+    return {
+      dataInicio: `${anoStr}-${mesStr}-01`,
+      dataFim: `${anoStr}-${mesStr}-${String(ultimoDia).padStart(2, "0")}`,
+    };
+  }
+
+  return { dataInicio: formatarDataLocal(inicio), dataFim: hoje };
 }
 
 function dentroDoPeriodo(dataStr, dataInicio, dataFim) {
@@ -217,14 +244,31 @@ app.get("/api/dashboard", autenticar, (req, res) => {
   });
 });
 
+// ===== RELATÓRIOS (CORRIGIDO) =====
 app.get("/api/relatorios", autenticar, (req, res) => {
   const transacoes = req.usuario.transacoes || [];
   const saldo = req.usuario.saldo || 0;
-  const periodosValidos = ["mes", "3m", "6m", "ano"];
+  const periodosValidos = ["mes", "1m", "3m", "6m", "ano"];
   const periodo = periodosValidos.includes(req.query.periodo)
     ? req.query.periodo
     : "mes";
-  const { dataInicio, dataFim } = calcularJanela(periodo);
+  const hojeReferencia = normalizarDataReferencia(req.query.hoje);
+
+  let dataInicio, dataFim;
+
+  // 🔧 NOVA LÓGICA: prioriza parâmetros explícitos enviados pelo frontend
+  const regexData = /^\d{4}-\d{2}-\d{2}$/;
+  if (req.query.dataInicio && req.query.dataFim &&
+      regexData.test(req.query.dataInicio) && regexData.test(req.query.dataFim)) {
+    dataInicio = req.query.dataInicio;
+    dataFim = req.query.dataFim;
+  } else {
+    // fallback para o cálculo tradicional
+    const janela = calcularJanela(periodo, hojeReferencia);
+    dataInicio = janela.dataInicio;
+    dataFim = janela.dataFim;
+  }
+
   const tiposReceita = ["deposito", "transferenciaEntrada"];
   const tiposDespesa = ["saque", "transferenciaSaida"];
 
@@ -279,9 +323,10 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   const temDados = transacoesFiltradas.length > 0;
   const labelsPeriodo = {
     mes: "este mês",
+    "1m": "no último mês",
     "3m": "nos últimos 3 meses",
     "6m": "nos últimos 6 meses",
-    ano: "este ano",
+    ano: "no último ano",
   };
   const mensagem = temDados
     ? null
@@ -291,9 +336,12 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   const taxaEconomia =
     totalReceitas > 0 ? (sobra / totalReceitas) * 100 : 0;
 
+  // ✅ CORREÇÃO: saldoAtual agora reflete apenas o período
   res.json({
     periodo,
-    saldoAtual: saldo,
+    dataInicio,
+    dataFim,
+    saldoAtual: totalReceitas - totalDespesas,
     totalEntradas: totalReceitas,
     totalGastos: totalDespesas,
     totalReceitas,
@@ -317,7 +365,8 @@ app.get("/api/relatorios", autenticar, (req, res) => {
 app.get("/api/relatorios/grafico", autenticar, (req, res) => {
   const transacoes = req.usuario.transacoes || [];
   const periodo = req.query.periodo || "mes";
-  const { dataInicio, dataFim } = calcularJanela(periodo);
+  const hojeReferencia = normalizarDataReferencia(req.query.hoje);
+  const { dataInicio, dataFim } = calcularJanela(periodo, hojeReferencia);
   const tiposReceita = ["deposito", "transferenciaEntrada"];
   const tiposDespesa = ["saque", "transferenciaSaida"];
   const dadosPorMes = {};

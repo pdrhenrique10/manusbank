@@ -19,37 +19,9 @@
     "nome": "Testes",
     "email": "testes@gmail.com",
     "senha": "289160db0d9f39f9ae1754c4ec9c16f90b50e32e09c5fb5481ae642b3d3d1a36",
-    "saldo": 8010,
-    "transacoes": [
-      {
-        "id": 1782866019686,
-        "tipo": "deposito",
-        "valor": 8000,
-        "descricao": "salário",
-        "data": "2026-06-05",
-        "categoria": "salário"
-      },
-      {
-        "id": 1782866193752,
-        "tipo": "deposito",
-        "valor": 10,
-        "descricao": "Recebimento: primo me devendo",
-        "data": "2026-06-30",
-        "categoria": "Contas a Receber"
-      }
-    ],
-    "contasReceber": [
-      {
-        "id": 2,
-        "cliente": "sei la",
-        "valor": 41297.97,
-        "vencimento": "2026-06-03",
-        "descricao": "",
-        "status": "pendente",
-        "dataRecebimento": null,
-        "dataUltimaCobranca": null
-      }
-    ],
+    "saldo": 0,
+    "transacoes": [],
+    "contasReceber": [],
     "nextContaReceberId": 3,
     "contasPagar": [],
     "nextContaPagarId": 1,

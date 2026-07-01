@@ -13,6 +13,7 @@ import {
   Settings
 } from "lucide-react";
 import { API_URL } from "../../config/api";
+import { useIdioma } from "../../context/IdiomaContext"; // 👈 importa tradução
 
 const SIDEBAR_KEY = "sidebarCollapsed";
 
@@ -27,6 +28,7 @@ export default function Sidebar() {
   });
 
   const navigate = useNavigate();
+  const { t } = useIdioma(); // 👈 hook de tradução
 
   useEffect(() => {
     try {
@@ -43,7 +45,6 @@ export default function Sidebar() {
   async function handleLogout() {
     try {
       const token = localStorage.getItem("token");
-
       if (token) {
         await fetch(`${API_URL}/api/logout`, {
           method: "POST",
@@ -57,10 +58,8 @@ export default function Sidebar() {
       console.error("Erro ao deslogar:", e);
     }
 
-    // limpa dados de autenticação no frontend
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     navigate("/login");
   }
 
@@ -73,64 +72,49 @@ export default function Sidebar() {
 
         <div className="logo">
           <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="logo-image" />
-          <h2>ManusFinance</h2>
+          <h2>{t("sidebar.appName")}</h2>
         </div>
       </div>
 
       <nav className="sidebarMenu">
         <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
           <LayoutDashboard size={19} />
-          <span>Página inicial</span>
+          <span>{t("sidebar.dashboard")}</span>
         </NavLink>
 
         <NavLink to="/receitas" className={({ isActive }) => (isActive ? "active" : "")}>
           <TrendingUp size={19} />
-          <span>Rendas Fixas</span>
+          <span>{t("sidebar.fixedIncomes")}</span>
         </NavLink>
 
         <NavLink to="/despesas" className={({ isActive }) => (isActive ? "active" : "")}>
           <TrendingDown size={19} />
-          <span>Despesas Fixas</span>
+          <span>{t("sidebar.fixedExpenses")}</span>
         </NavLink>
 
-        <NavLink
-          to="/contas-a-receber"
-          className={({ isActive }) => (isActive ? "active" : "")}
-        >
+        <NavLink to="/contas-a-receber" className={({ isActive }) => (isActive ? "active" : "")}>
           <WalletCards size={19} />
-          <span>Ganhos não fixos</span>
+          <span>{t("sidebar.nonFixedIncomes")}</span>
         </NavLink>
 
-        <NavLink
-          to="/contas-a-pagar"
-          className={({ isActive }) => (isActive ? "active" : "")}
-        >
+        <NavLink to="/contas-a-pagar" className={({ isActive }) => (isActive ? "active" : "")}>
           <WalletCards size={19} />
-          <span>Gastos não fixos</span>
+          <span>{t("sidebar.nonFixedExpenses")}</span>
         </NavLink>
 
-        <NavLink
-          to="/metasfinanceiras"
-          className={({ isActive }) => (isActive ? "active" : "")}
-        >
+        <NavLink to="/metasfinanceiras" className={({ isActive }) => (isActive ? "active" : "")}>
           <Target size={19} />
-          <span>Metas Financeiras</span>
+          <span>{t("sidebar.goals")}</span>
         </NavLink>
 
-        <NavLink
-          to="/relatorios"
-          className={({ isActive }) => (isActive ? "active" : "")}
-        >
+        <NavLink to="/relatorios" className={({ isActive }) => (isActive ? "active" : "")}>
           <BarChart3 size={19} />
-          <span>Relatórios</span>
+          <span>{t("sidebar.reports")}</span>
         </NavLink>
 
-        <NavLink
-          to="/configuracoes"
-          className={({ isActive }) => (isActive ? "active" : "")}
-        >
+        <NavLink to="/configuracoes" className={({ isActive }) => (isActive ? "active" : "")}>
           <Settings size={19} />
-          <span>Configurações</span>
+          <span>{t("sidebar.settings")}</span>
         </NavLink>
       </nav>
     </aside>
