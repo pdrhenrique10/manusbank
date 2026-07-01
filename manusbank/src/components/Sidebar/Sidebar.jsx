@@ -98,7 +98,7 @@ export default function Sidebar() {
           className={({ isActive }) => (isActive ? "active" : "")}
         >
           <WalletCards size={19} />
-          <span>Ganhos</span>
+          <span>Ganhos não fixos</span>
         </NavLink>
 
         <NavLink
@@ -106,7 +106,7 @@ export default function Sidebar() {
           className={({ isActive }) => (isActive ? "active" : "")}
         >
           <WalletCards size={19} />
-          <span>Gastos</span>
+          <span>Gastos não fixos</span>
         </NavLink>
 
         <NavLink

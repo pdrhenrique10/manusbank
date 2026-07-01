@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SIDEBAR - ESTILO PROFISSIONAL
+   SIDEBAR - ESTILO PROFISSIONAL OTIMIZADO
    ========================================================================== */
 
 .sidebar {
@@ -13,7 +13,7 @@
   position: sticky;
   top: 0;
   overflow-y: auto;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 100;
 }
 
@@ -46,23 +46,6 @@
   padding: 24px 20px;
   border-bottom: 1px solid var(--border-soft);
   min-height: 85px;
-  position: relative;
-}
-
-.sidebarTop::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 20px;
-  right: 20px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.sidebar:hover .sidebarTop::after {
-  opacity: 1;
 }
 
 /* ==========================================================================
@@ -73,35 +56,14 @@
   width: 40px;
   height: 40px;
   border: none;
-  outline: none;
   background: transparent;
   color: var(--text-secondary);
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.menuButton::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(56, 189, 248, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s, height 0.4s;
-}
-
-.menuButton:hover::before {
-  width: 100%;
-  height: 100%;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .menuButton:hover {
@@ -122,8 +84,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s ease;
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .logo:hover {
@@ -138,10 +100,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4);
-  animation: pulseGlow 2s infinite;
+  color: #fff;
 }
 
 .logo h2 {
@@ -152,7 +111,6 @@
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  transition: all 0.2s ease;
 }
 
 /* ==========================================================================
@@ -178,31 +136,7 @@
   color: var(--text-secondary);
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebarMenu a::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, rgba(56, 189, 248, 0.1), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
-}
-
-.sidebarMenu a:hover::before {
-  transform: translateX(0);
-}
-
-.sidebarMenu a span {
-  transition: all 0.2s ease;
-  position: relative;
-  z-index: 1;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .sidebarMenu a:hover {
@@ -216,38 +150,11 @@
   color: var(--accent-blue);
   border-left: 3px solid var(--accent-blue);
   font-weight: 700;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
-}
-
-.sidebarMenu a.active::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  background: var(--accent-blue);
-  border-radius: 3px;
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from {
-    height: 0;
-    opacity: 0;
-  }
-  to {
-    height: 20px;
-    opacity: 1;
-  }
 }
 
 .sidebarMenu a svg {
   min-width: 20px;
-  transition: all 0.2s ease;
-  position: relative;
-  z-index: 1;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .sidebarMenu a:hover svg {
@@ -256,51 +163,7 @@
 }
 
 /* ==========================================================================
-   ESTADO ENCOLHIDO
-   ========================================================================== */
-
-.sidebar.collapsed {
-  width: 90px;
-}
-
-.sidebar.collapsed .logo h2,
-.sidebar.collapsed .sidebarMenu a span {
-  display: none;
-}
-
-.sidebar.collapsed .sidebarMenu a {
-  justify-content: center;
-  padding: 0;
-}
-
-.sidebar.collapsed .sidebarMenu a svg {
-  min-width: 24px;
-}
-
-.sidebar.collapsed .sidebarMenu a:hover {
-  transform: translateX(0);
-}
-
-.sidebar.collapsed .sidebarMenu a.active {
-  border-left: none;
-  border-top: 2px solid var(--accent-blue);
-}
-
-.sidebar.collapsed .sidebarMenu a.active::after {
-  display: none;
-}
-
-.sidebar.collapsed .sidebarTop {
-  justify-content: center;
-  padding: 24px 12px;
-}
-
-.sidebar.collapsed .logo {
-  justify-content: center;
-}
-
-/* ==========================================================================
-   RODAPÉ DA SIDEBAR (OPCIONAL)
+   RODAPÉ DA SIDEBAR
    ========================================================================== */
 
 .sidebarFooter {
@@ -315,8 +178,8 @@
   gap: 12px;
   padding: 8px;
   border-radius: 12px;
-  transition: all 0.2s ease;
   cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .sidebarFooter .userInfo:hover {
@@ -334,7 +197,7 @@
   justify-content: center;
   font-weight: 700;
   font-size: 14px;
-  color: white;
+  color: #fff;
 }
 
 .sidebarFooter .userDetails {
@@ -352,101 +215,75 @@
   font-size: 11px;
 }
 
+/* ==========================================================================
+   ESTADO ENCOLHIDO (Fixado para o JavaScript funcionar em Desktop)
+   ========================================================================== */
+
+.sidebar.collapsed {
+  width: 90px;
+}
+
+.sidebar.collapsed .logo h2,
+.sidebar.collapsed .sidebarMenu a span,
 .sidebar.collapsed .sidebarFooter .userDetails {
   display: none;
 }
 
+.sidebar.collapsed .sidebarMenu a {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar.collapsed .sidebarMenu a:hover {
+  transform: translateX(0);
+}
+
+.sidebar.collapsed .sidebarMenu a svg {
+  min-width: 24px;
+}
+
+.sidebar.collapsed .sidebarMenu a.active {
+  border-left: none;
+  border-top: 2px solid var(--accent-blue);
+}
+
+.sidebar.collapsed .sidebarTop,
+.sidebar.collapsed .logo,
 .sidebar.collapsed .sidebarFooter .userInfo {
   justify-content: center;
 }
 
+.sidebar.collapsed .sidebarTop {
+  padding: 24px 12px;
+}
+
 /* ==========================================================================
-   RESPONSIVIDADE
+   RESPONSIVIDADE (Apenas para comportamento automático em telas menores)
    ========================================================================== */
 
 @media (max-width: 1024px) {
-  .sidebar {
-    width: 90px;
-  }
-  
-  .logo h2,
-  .sidebarMenu a span,
-  .sidebarFooter .userDetails {
-    display: none;
-  }
-  
-  .sidebarMenu a {
-    justify-content: center;
-    padding: 0;
-  }
-  
-  .sidebarMenu a svg {
-    min-width: 24px;
-  }
-  
-  .sidebarMenu a.active {
-    border-left: none;
-    border-top: 2px solid var(--accent-blue);
-  }
-  
-  .sidebarTop {
-    justify-content: center;
-    padding: 24px 12px;
-  }
-  
-  .logo {
-    justify-content: center;
-  }
-  
-  .sidebarFooter .userInfo {
-    justify-content: center;
-  }
+  .sidebar { width: 90px; }
+  .logo h2, .sidebarMenu a span, .sidebarFooter .userDetails { display: none; }
+  .sidebarMenu a { justify-content: center; padding: 0; }
+  .sidebarMenu a:hover { transform: translateX(0); }
+  .sidebarMenu a svg { min-width: 24px; }
+  .sidebarMenu a.active { border-left: none; border-top: 2px solid var(--accent-blue); }
+  .sidebarTop, .logo, .sidebarFooter .userInfo { justify-content: center; }
+  .sidebarTop { padding: 24px 12px; }
 }
 
 @media (max-width: 768px) {
-  .sidebar {
-    width: 70px;
-  }
-  
-  .menuButton {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .logo-image {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .sidebarMenu a {
-    height: 44px;
-  }
-  
-  .sidebarMenu a svg {
-    min-width: 20px;
-  }
+  .sidebar { width: 70px; }
+  .menuButton { width: 36px; height: 36px; }
+  .logo-image { width: 32px; height: 32px; }
+  .sidebarMenu a { height: 44px; }
+  .sidebarMenu a svg { min-width: 20px; }
 }
 
 @media (max-width: 480px) {
-  .sidebar {
-    width: 60px;
-  }
-  
-  .menuButton {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .logo-image {
-    width: 28px;
-    height: 28px;
-  }
-  
-  .sidebarMenu a {
-    height: 40px;
-  }
-  
-  .sidebarMenu a svg {
-    min-width: 18px;
-  }
-} 
+  .sidebar { width: 60px; }
+  .menuButton { width: 32px; height: 32px; }
+  .logo-image { width: 28px; height: 28px; }
+  .sidebarMenu a { height: 40px; }
+  .sidebarMenu a svg { min-width: 18px; }
+}

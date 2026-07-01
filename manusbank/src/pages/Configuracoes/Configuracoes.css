@@ -54,12 +54,8 @@
 /* ==========================================================================
    CABEÇALHO
    ========================================================================== */
-/* ==========================================================================
-   CABEÇALHO
-   ========================================================================== */
 .config-header {
   margin-bottom: clamp(24px, 4vw, 40px);
-  /* Acelerado de 0.6s para 0.35s com transição mais fluida */
   animation: fadeInDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -90,7 +86,7 @@
 }
 
 /* ==========================================================================
-   CARTÃO DE SEÇÃO (CARDS)
+   CARTÃO DE SEÇÃO (CARDS) - OTIMIZADO PARA MUDANÇA DE TEMA
    ========================================================================== */
 .config-section {
   background: var(--bg-card);
@@ -99,8 +95,11 @@
   padding: clamp(16px, 3vw, 28px) clamp(16px, 3vw, 32px);
   margin-bottom: clamp(16px, 2vw, 24px);
   border: 1px solid var(--border-soft);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Acelerado de 0.6s para 0.4s e adicionado um delay sutil de 0.05s para efeito cascata */
+  
+  /* Evita re-renderizar o blur ao mudar de tema */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  will-change: transform, box-shadow;
+  
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
 }
 
@@ -145,7 +144,7 @@
   border-radius: 50%;
   border: 3px solid var(--border-soft);
   box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15), var(--shadow-lg);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
 }
 
@@ -180,20 +179,11 @@
   justify-content: space-between;
   padding: 16px 0;
   border-bottom: 1px solid var(--divider-color);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, padding 0.2s ease;
 }
 
 .config-row:last-child {
   border-bottom: none;
-}
-
-.config-row:hover {
-  background: var(--row-hover-bg);
-  margin: 0 -12px;
-  padding-left: 12px;
-  padding-right: 12px;
-  border-radius: 12px;
-  border-bottom-color: transparent;
 }
 
 .config-text {
@@ -226,9 +216,16 @@
 }
 
 /* ==========================================================================
-   BOTÕES DE AÇÃO (DRY - Otimizado e Unificado)
+   TEMA - SEÇÃO DE APARÊNCIA
    ========================================================================== */
-.config-btn-danger,
+.theme-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
 .config-btn-toggle {
   display: inline-flex;
   align-items: center;
@@ -239,12 +236,15 @@
   font-weight: 600;
   font-size: clamp(12px, 1.5vw, 14px);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  border: 1px solid var(--toggle-border);
 }
 
-.config-btn-danger::before,
 .config-btn-toggle::before {
   content: '';
   position: absolute;
@@ -254,46 +254,17 @@
   height: 0;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
+  transition: width 0.4s ease, height 0.4s ease;
+  background: rgba(56, 189, 248, 0.2);
 }
 
-.config-btn-danger:hover::before,
 .config-btn-toggle:hover::before {
   width: 300px;
   height: 300px;
 }
 
-.config-btn-danger:active,
 .config-btn-toggle:active {
   transform: translateY(0);
-}
-
-/* Estilos específicos do Danger */
-.config-btn-danger {
-  background: linear-gradient(135deg, var(--danger-bg), var(--danger-hover));
-  color: white;
-  border: none;
-}
-
-.config-btn-danger::before {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.config-btn-danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
-}
-
-/* Estilos específicos do Toggle */
-.config-btn-toggle {
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  color: var(--text-primary);
-  border: 1px solid var(--toggle-border);
-}
-
-.config-btn-toggle::before {
-  background: rgba(56, 189, 248, 0.2);
 }
 
 .config-btn-toggle:hover {
@@ -303,99 +274,358 @@
   box-shadow: var(--shadow-glow);
 }
 
+.theme-status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
 /* ==========================================================================
-   TOAST DE AVISO (MODAL / TOAST)
+   BOTÕES DE AÇÃO (DRY - Otimizado e Unificado)
    ========================================================================== */
-.toast-warning {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  display: flex;
+.config-btn-danger {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  background-color: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  padding: 12px 20px;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-soft);
-  border-left: 4px solid #f59e0b;
-  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.toast-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-.toast-icon {
-  color: #f59e0b;
-  flex-shrink: 0;
-}
-
-.toast-message {
-  color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.toast-message strong {
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 28px;
+  border-radius: 40px;
   font-weight: 600;
-  color: #f59e0b;
-}
-
-.toast-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.toast-btn-cancel,
-.toast-btn-confirm {
-  padding: 6px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: clamp(12px, 1.5vw, 14px);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-.toast-btn-cancel {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-soft);
-}
-
-.toast-btn-cancel:hover,
-.toast-close:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: var(--text-primary);
-}
-
-.toast-btn-confirm {
-  background-color: #ef4444;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--danger-bg), var(--danger-hover));
   color: white;
-}
-
-.toast-btn-confirm:hover {
-  background-color: #dc2626;
-}
-
-.toast-close {
-  background: transparent;
   border: none;
+}
+
+.config-btn-danger::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.config-btn-danger:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.config-btn-danger:active {
+  transform: translateY(0);
+}
+
+.config-btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
+}
+
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-radius: 40px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--toggle-border);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   cursor: pointer;
-  color: var(--text-secondary);
-  padding: 4px;
-  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.theme-toggle-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.theme-toggle-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-blue);
+  box-shadow: 0 8px 25px rgba(56, 189, 248, 0.2), 0 0 20px rgba(56, 189, 248, 0.05);
+}
+
+body.dark .theme-toggle-btn:hover {
+  border-color: var(--accent-blue);
+  box-shadow: 0 8px 30px rgba(56, 189, 248, 0.25), 0 0 30px rgba(56, 189, 248, 0.08);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.theme-toggle-btn svg {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+}
+
+.theme-toggle-btn:hover svg {
+  transform: rotate(20deg) scale(1.15);
+  color: var(--accent-blue);
+}
+
+body.dark .theme-toggle-btn:hover svg {
+  color: #60a5fa;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.3));
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+.theme-toggle-btn span {
+  transition: color 0.2s ease;
+}
+
+.theme-toggle-btn:hover span {
+  color: var(--accent-blue);
+}
+
+body.dark .theme-toggle-btn:hover span {
+  color: #60a5fa;
+}
+
+/* ==========================================================================
+   MODAL DE CONFIRMAÇÃO DE LOGOUT (Moderno)
+   ========================================================================== */
+
+/* Overlay (Fundo escuro) */
+.logout-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: fadeInModal 0.3s ease forwards;
+}
+
+/* Card do Modal */
+.logout-modal {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: scaleInModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+/* Botão Fechar (X) */
+.modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: var(--row-hover-bg);
+  color: var(--text-primary);
+  transform: rotate(90deg);
+}
+
+/* Ícone de Alerta */
+.modal-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.modal-alert-icon {
+  color: #f59e0b; /* Cor âmbar para alerta */
+  background: rgba(245, 158, 11, 0.15);
+  padding: 12px;
+  border-radius: 50%;
+}
+
+/* Título e Descrição */
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.modal-description {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+/* Botões de Ação */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.modal-btn-cancel,
+.modal-btn-confirm {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Botão Cancelar (Ghost) */
+.modal-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--text-secondary);
+}
+
+.modal-btn-cancel:hover {
+  background: var(--row-hover-bg);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+/* Botão Confirmar (Danger) */
+.modal-btn-confirm {
+  background: linear-gradient(135deg, var(--danger-bg), var(--danger-hover));
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.modal-btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+.modal-btn-confirm:active {
+  transform: translateY(0);
+}
+
+/* ==========================================
+   SELETOR DE MOEDA (NOVA SEÇÃO)
+   ========================================== */
+
+.currency-select {
+  background: var(--bg-card, rgba(30, 41, 59, 0.7));
+  color: var(--text-primary, #f1f5f9);
+  border: 1px solid var(--border-soft, rgba(71, 85, 105, 0.5));
+  border-radius: 40px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: "DM Sans", sans-serif;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 140px;
+  text-align: center;
+  appearance: none; /* Remove a seta padrão do navegador */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a0aec0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 40px;
+}
+
+.currency-select:hover {
+  border-color: var(--accent-blue, #38bdf8);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+/* Estilo das opções dentro do select */
+.currency-select option {
+  background: #0a0f25;
+  color: #f1f5f9;
+  padding: 10px;
+}
+
+/* Responsividade do seletor */
+@media (max-width: 768px) {
+  .currency-select {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* Animações do Modal */
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleInModal {
+  from { 
+    opacity: 0; 
+    transform: scale(0.9) translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}
+
+/* Responsividade do Modal */
+@media (max-width: 480px) {
+  .logout-modal {
+    padding: 24px;
+    width: 95%;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-btn-cancel,
+  .modal-btn-confirm {
+    width: 100%;
+  }
 }
 
 /* ==========================================================================
@@ -436,7 +666,7 @@
 }
 
 /* ==========================================================================
-   MEDIA QUERIES (Apenas para ajustes críticos e quebras de fluxo layout)
+   MEDIA QUERIES
    ========================================================================== */
 @media (max-width: 768px) {
   .config-row {
@@ -454,5 +684,18 @@
   .config-btn-danger,
   .config-btn-toggle {
     width: 100%;
+  }
+  
+  .theme-toggle-wrapper {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .theme-status {
+    width: 100%;
+    text-align: center;
+    padding-top: 4px;
   }
 }

@@ -4,6 +4,9 @@ import "./Dashboard.css";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import { API_URL } from "../../config/api";
 
+// 🔥 Importe o hook da moeda
+import { useCurrency } from "../../context/CurrencyProvider";
+
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -27,12 +30,16 @@ function formatarDataString(dataString) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  
+  // 🔥 Inicializa o hook da moeda
+  const { formatMoney, getCurrencySymbol } = useCurrency();
+
   const [usuario, setUsuario] = useState(null);
   const [saldo, setSaldo] = useState(0);
   const [transacoes, setTransacoes] = useState([]);
   const [contasReceber, setContasReceber] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -109,11 +116,7 @@ export default function Dashboard() {
     fetchContasReceber();
   }, [navigate]);
 
-  const formatMoney = (value) =>
-    Number(value || 0).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
+  // 🔥 Não precisa mais do formatMoney local, pois estamos usando o do Provider
 
   const agora = new Date();
   const mesAtual = agora.getMonth(); // 0-indexed (janeiro = 0)
@@ -228,6 +231,7 @@ export default function Dashboard() {
             <div className="iconBox greenBg">
               <Wallet size={18} />
             </div>
+            {/* 🔥 Substituído por formatMoney do Provider */}
             <h2>{formatMoney(saldo)}</h2>
             <span>Saldo atual</span>
             <p>Valor disponível agora.</p>
@@ -237,6 +241,7 @@ export default function Dashboard() {
             <div className="iconBox blueBg">
               <ArrowUpRight size={18} />
             </div>
+            {/* 🔥 Substituído por formatMoney do Provider */}
             <h2>{formatMoney(receitasMesAtual)}</h2>
             <span>Entradas do mês</span>
             <p>Receitas e entradas registradas.</p>
@@ -246,6 +251,7 @@ export default function Dashboard() {
             <div className="iconBox redBg">
               <ArrowDownRight size={18} />
             </div>
+            {/* 🔥 Substituído por formatMoney do Provider */}
             <h2>{formatMoney(gastosMesAtual)}</h2>
             <span>Gastos do mês</span>
             <p>Saídas registradas neste mês.</p>
@@ -331,6 +337,7 @@ export default function Dashboard() {
                         <strong>{t.descricao || t.categoria || "Movimentação"}</strong>
                         <span>{formatarDataString(t.data)}</span>
                       </div>
+                      {/* 🔥 Substituído por formatMoney do Provider */}
                       <b className={entrada ? "positiveValue" : "negativeValue"}>
                         {entrada ? "+" : "-"} {formatMoney(t.valor)}
                       </b>

@@ -1,117 +1,95 @@
 [
   {
-    "id": 1780422015077,
-    "nome": "Pedro",
-    "email": "pedro@email.com",
+    "id": 1782855915615,
+    "nome": "Pedro Henrique",
+    "email": "pedro@gmail.com",
     "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
-    "saldo": 7700,
+    "saldo": 0,
+    "transacoes": [],
+    "contasReceber": [],
+    "nextContaReceberId": 1,
+    "contasPagar": [],
+    "nextContaPagarId": 1,
+    "metas": [],
+    "nextMetaId": 1,
+    "criadoEm": "2026-06-30T21:45:15.615Z"
+  },
+  {
+    "id": 1782857642632,
+    "nome": "Testes",
+    "email": "testes@gmail.com",
+    "senha": "289160db0d9f39f9ae1754c4ec9c16f90b50e32e09c5fb5481ae642b3d3d1a36",
+    "saldo": 8010,
     "transacoes": [
       {
-        "id": 1781627566036,
+        "id": 1782866019686,
         "tipo": "deposito",
         "valor": 8000,
         "descricao": "salário",
-        "data": "2026-06-01",
+        "data": "2026-06-05",
         "categoria": "salário"
       },
       {
-        "id": 1781627580588,
-        "tipo": "saque",
-        "valor": 300,
-        "descricao": "mercado",
-        "data": "2026-06-02",
-        "categoria": "mercado"
+        "id": 1782866193752,
+        "tipo": "deposito",
+        "valor": 10,
+        "descricao": "Recebimento: primo me devendo",
+        "data": "2026-06-30",
+        "categoria": "Contas a Receber"
       }
     ],
-    "contasReceber": [],
-    "nextContaReceberId": 5,
+    "contasReceber": [
+      {
+        "id": 2,
+        "cliente": "sei la",
+        "valor": 41297.97,
+        "vencimento": "2026-06-03",
+        "descricao": "",
+        "status": "pendente",
+        "dataRecebimento": null,
+        "dataUltimaCobranca": null
+      }
+    ],
+    "nextContaReceberId": 3,
     "contasPagar": [],
-    "nextContaPagarId": 8,
+    "nextContaPagarId": 1,
     "metas": [],
-    "nextMetaId": 5,
-    "criadoEm": "2026-06-02T17:40:15.077Z"
+    "nextMetaId": 1,
+    "criadoEm": "2026-06-30T22:14:02.632Z"
   },
   {
-    "id": 1780437082250,
-    "nome": "Luiz Philipe",
-    "email": "luiz@gmail.com",
-    "senha": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
-    "saldo": 7250,
+    "id": 1782866421844,
+    "nome": "Guilherme",
+    "email": "gui@gmail.com",
+    "senha": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
+    "saldo": 290,
     "transacoes": [
       {
-        "id": 1780437126699,
+        "id": 1782866444501,
         "tipo": "deposito",
-        "valor": 10000,
-        "descricao": "SALÁRIO",
-        "data": "2026-06-02",
-        "categoria": "SALÁRIO"
+        "valor": 340,
+        "descricao": "Salário Senai",
+        "data": "2026-07-15",
+        "categoria": "Salário Senai"
       },
       {
-        "id": 1780437177866,
-        "tipo": "deposito",
-        "valor": 500,
-        "descricao": "DINHEIRO EMPRESTADO A JUROS",
-        "data": "2026-06-02",
-        "categoria": "DINHEIRO EMPRESTADO A JUROS"
-      },
-      {
-        "id": 1780437191531,
-        "tipo": "deposito",
-        "valor": 750,
-        "descricao": "FREELANCER",
-        "data": "2026-06-02",
-        "categoria": "FREELANCER"
-      },
-      {
-        "id": 1780437241632,
+        "id": 1782866460846,
         "tipo": "saque",
-        "valor": 1200,
-        "descricao": "ALUGUEL",
-        "data": "2026-06-02",
-        "categoria": "ALUGUEL"
-      },
-      {
-        "id": 1780437251120,
-        "tipo": "saque",
-        "valor": 1500,
-        "descricao": "MERCADO",
-        "data": "2026-06-02",
-        "categoria": "MERCADO"
-      },
-      {
-        "id": 1780437258432,
-        "tipo": "saque",
-        "valor": 300,
-        "descricao": "LUZ ",
-        "data": "2026-06-02",
-        "categoria": "LUZ "
-      },
-      {
-        "id": 1780437265472,
-        "tipo": "saque",
-        "valor": 250,
-        "descricao": "AGUA",
-        "data": "2026-06-02",
-        "categoria": "AGUA"
-      },
-      {
-        "id": 1780437280816,
-        "tipo": "saque",
-        "valor": 750,
-        "descricao": "PLANO DE SAÚDE",
-        "data": "2026-06-02",
-        "categoria": "PLANO DE SAÚDE"
+        "valor": 50,
+        "descricao": "Aliança",
+        "data": "2026-07-14",
+        "categoria": "Aliança"
       }
     ],
     "contasReceber": [
       {
         "id": 1,
-        "cliente": "JOÃO",
-        "valor": 500,
-        "vencimento": "2026-06-10",
-        "descricao": "DINHEIRO EMPRESTADO A JUROS DE 40%",
-        "status": "pago",
-        "dataRecebimento": "2026-06-02",
+        "cliente": "Venda do Celular",
+        "valor": 2000,
+        "vencimento": "2026-06-17",
+        "descricao": "",
+        "status": "pendente",
+        "dataRecebimento": null,
         "dataUltimaCobranca": null
       }
     ],
@@ -119,234 +97,29 @@
     "contasPagar": [
       {
         "id": 1,
-        "titulo": "FINANCIAMENTO MOTO",
-        "tipo": "FINANCIAMENTO",
-        "valor": 1000,
-        "vencimento": "2026-06-03",
+        "titulo": "Compra de um Celular",
+        "tipo": "geral",
+        "valor": 1245,
+        "vencimento": "2026-06-24",
         "descricao": "",
-        "status": "pago",
-        "dataPagamento": "2026-06-02",
-        "dataCriacao": "2026-06-02"
+        "status": "pendente",
+        "dataPagamento": null,
+        "dataCriacao": "2026-06-30"
       }
     ],
     "nextContaPagarId": 2,
     "metas": [
       {
         "id": 1,
-        "titulo": "CASA PRÓPRIA",
-        "valorAlvo": 500000,
-        "valorAtual": 0,
-        "dataMeta": "2030-01-01",
+        "titulo": "Carro",
+        "valorAlvo": 120000,
+        "valorAtual": 93001,
+        "dataMeta": "2028-12-25",
         "descricao": "",
-        "dataCriacao": "2026-06-02"
+        "dataCriacao": "2026-06-30"
       }
     ],
     "nextMetaId": 2,
-    "criadoEm": "2026-06-02T21:51:22.251Z"
-  },
-  {
-    "id": 1780448505083,
-    "nome": "leonardo",
-    "email": "leo@email.com",
-    "senha": "115f652493147e000824c52a7c6cb2cb776fbdbe8f67680832f00b21c315fe3d",
-    "saldo": 48300,
-    "transacoes": [
-      {
-        "id": 1780448563787,
-        "tipo": "deposito",
-        "valor": 50000,
-        "descricao": "Salário",
-        "data": "2026-06-03",
-        "categoria": "Salário"
-      },
-      {
-        "id": 1780448594283,
-        "tipo": "saque",
-        "valor": 3000,
-        "descricao": "Aluguel",
-        "data": "2026-06-03",
-        "categoria": "Aluguel"
-      },
-      {
-        "id": 1780448659442,
-        "tipo": "saque",
-        "valor": 700,
-        "descricao": "Conta de Luz",
-        "data": "2026-07-03",
-        "categoria": "Conta de Luz"
-      },
-      {
-        "id": 1780448737498,
-        "tipo": "deposito",
-        "valor": 3000,
-        "descricao": "Recebimento: Ps5 vendido",
-        "data": "2026-06-03",
-        "categoria": "Contas a Receber"
-      },
-      {
-        "id": 1780448785791,
-        "tipo": "saque",
-        "valor": 1000,
-        "descricao": "Pagamento: Financiamento do carro",
-        "data": "2026-06-03",
-        "categoria": "geral"
-      }
-    ],
-    "contasReceber": [
-      {
-        "id": 1,
-        "cliente": "Ps5 vendido",
-        "valor": 3000,
-        "vencimento": "2026-06-10",
-        "descricao": "vendi um ps5 para um colega meu da rua.",
-        "status": "pago",
-        "dataRecebimento": "2026-06-03",
-        "dataUltimaCobranca": null
-      }
-    ],
-    "nextContaReceberId": 2,
-    "contasPagar": [
-      {
-        "id": 1,
-        "titulo": "Financiamento do carro",
-        "tipo": "geral",
-        "valor": 1000,
-        "vencimento": "2026-06-03",
-        "descricao": "comecei a financiar um corolla",
-        "status": "pago",
-        "dataPagamento": "2026-06-03",
-        "dataCriacao": "2026-06-03"
-      }
-    ],
-    "nextContaPagarId": 2,
-    "metas": [
-      {
-        "id": 1,
-        "titulo": "Iphone 17 pro max",
-        "valorAlvo": 12000,
-        "valorAtual": 0,
-        "dataMeta": "2026-12-10",
-        "descricao": "meu sonho agora é comprar esse iphone pra gravar video pro tiktok.",
-        "dataCriacao": "2026-06-03"
-      }
-    ],
-    "nextMetaId": 2,
-    "criadoEm": "2026-06-03T01:01:45.083Z"
-  },
-  {
-    "id": 1780545733655,
-    "nome": "Testes",
-    "email": "teste@gmail.com",
-    "senha": "289160db0d9f39f9ae1754c4ec9c16f90b50e32e09c5fb5481ae642b3d3d1a36",
-    "saldo": 7180,
-    "transacoes": [
-      {
-        "id": 1780959790735,
-        "tipo": "deposito",
-        "valor": 5000,
-        "descricao": "Salário ",
-        "data": "2026-06-08",
-        "categoria": "Salário "
-      },
-      {
-        "id": 1780959800630,
-        "tipo": "saque",
-        "valor": 600,
-        "descricao": "Aluguel",
-        "data": "2026-06-08",
-        "categoria": "Aluguel"
-      },
-      {
-        "id": 1780959807830,
-        "tipo": "saque",
-        "valor": 200,
-        "descricao": "Luz",
-        "data": "2026-06-08",
-        "categoria": "Luz"
-      },
-      {
-        "id": 1780959818214,
-        "tipo": "saque",
-        "valor": 1000,
-        "descricao": "Mercado",
-        "data": "2026-06-08",
-        "categoria": "Mercado"
-      },
-      {
-        "id": 1780959919577,
-        "tipo": "saque",
-        "valor": 20,
-        "descricao": "Pagamento: Lanche na rua",
-        "data": "2026-06-08",
-        "categoria": "geral"
-      },
-      {
-        "id": 1780959990617,
-        "tipo": "saque",
-        "valor": 2000,
-        "descricao": "Pagamento: Celular novo",
-        "data": "2026-06-08",
-        "categoria": "geral"
-      },
-      {
-        "id": 1780960060481,
-        "tipo": "deposito",
-        "valor": 6000,
-        "descricao": "Recebimento: Venda de iphone",
-        "data": "2026-06-08",
-        "categoria": "Contas a Receber"
-      }
-    ],
-    "contasReceber": [
-      {
-        "id": 2,
-        "cliente": "PS5 ",
-        "valor": 3000,
-        "vencimento": "2026-06-10",
-        "descricao": "vendi meu ps5 ",
-        "status": "pago",
-        "dataRecebimento": "2026-06-08",
-        "dataUltimaCobranca": null
-      },
-      {
-        "id": 3,
-        "cliente": "Venda de iphone",
-        "valor": 6000,
-        "vencimento": "2026-06-12",
-        "descricao": "",
-        "status": "pago",
-        "dataRecebimento": "2026-06-08",
-        "dataUltimaCobranca": null
-      }
-    ],
-    "nextContaReceberId": 4,
-    "contasPagar": [
-      {
-        "id": 1,
-        "titulo": "Lanche na rua",
-        "tipo": "geral",
-        "valor": 20,
-        "vencimento": "2026-06-10",
-        "descricao": "lanchei na rua ",
-        "status": "pago",
-        "dataPagamento": "2026-06-08",
-        "dataCriacao": "2026-06-08"
-      },
-      {
-        "id": 2,
-        "titulo": "Celular novo",
-        "tipo": "geral",
-        "valor": 2000,
-        "vencimento": "2026-06-11",
-        "descricao": "",
-        "status": "pago",
-        "dataPagamento": "2026-06-08",
-        "dataCriacao": "2026-06-08"
-      }
-    ],
-    "nextContaPagarId": 3,
-    "metas": [],
-    "nextMetaId": 2,
-    "criadoEm": "2026-06-04T04:02:13.655Z"
+    "criadoEm": "2026-07-01T00:40:21.844Z"
   }
 ]

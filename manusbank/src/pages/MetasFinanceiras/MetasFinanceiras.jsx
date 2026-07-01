@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./MetasFinanceiras.css";
-import { Plus, X, CalendarClock, TrendingUp, Trash2 } from "lucide-react";
+import { Plus, X, CalendarClock, TrendingUp, Trash2, Pencil } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -17,6 +17,7 @@ import { API_URL } from "../../config/api";
 function MetasFinanceiras() {
   const navigate = useNavigate();
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
   const [metas, setMetas] = useState([]);
   const [novaMeta, setNovaMeta] = useState({
     titulo: "",
@@ -24,6 +25,7 @@ function MetasFinanceiras() {
     dataMeta: "",
     descricao: "",
   });
+  const [metaEditando, setMetaEditando] = useState(null);
   const [valorAporte, setValorAporte] = useState("");
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
@@ -115,6 +117,89 @@ function MetasFinanceiras() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNovaMeta((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEdicaoChange = (e) => {
+    const { name, value } = e.target;
+    setMetaEditando((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const fecharModalEdicao = () => {
+    setModalEdicaoAberto(false);
+    setMetaEditando(null);
+    setErro("");
+  };
+
+  const abrirModalEdicao = (meta) => {
+    setMetaEditando({
+      id: meta.id,
+      titulo: meta.titulo,
+      valorAlvo: meta.valorAlvo,
+      dataMeta: String(meta.dataMeta || "").substring(0, 10),
+      descricao: meta.descricao || "",
+    });
+    setModalEdicaoAberto(true);
+  };
+
+  const handleEditarMeta = async (e) => {
+    e.preventDefault();
+    if (!metaEditando) return;
+
+    setErro("");
+    setSucesso("");
+
+    if (!metaEditando.titulo || !metaEditando.valorAlvo || !metaEditando.dataMeta) {
+      setErro("Preencha título, valor objetivo e data da meta!");
+      return;
+    }
+
+    const valorNumero = parseFloat(
+      String(metaEditando.valorAlvo).replace(",", ".")
+    );
+    if (isNaN(valorNumero) || valorNumero <= 0) {
+      setErro("Informe um valor válido maior que zero.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_URL}/api/metas/${metaEditando.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          titulo: metaEditando.titulo,
+          valorAlvo: valorNumero,
+          dataMeta: metaEditando.dataMeta,
+          descricao: metaEditando.descricao,
+        }),
+      });
+
+      const resultado = await resp.json();
+
+      if (!resp.ok || !resultado.sucesso) {
+        setErro(resultado.erro || "Não foi possível atualizar a meta.");
+        return;
+      }
+
+      const metasAtualizadas = metas.map((m) =>
+        m.id === resultado.meta.id ? resultado.meta : m
+      );
+      setMetas(metasAtualizadas);
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metasAtualizadas));
+      setSucesso("Meta atualizada com sucesso!");
+      fecharModalEdicao();
+    } catch (err) {
+      console.error("Erro ao editar meta:", err);
+      setErro("Erro ao atualizar meta. Tente novamente.");
+    }
   };
 
   const handleAdicionarMeta = async (e) => {
@@ -432,7 +517,7 @@ function MetasFinanceiras() {
   }
 
   // Controle para esconder sidebar no mobile quando o modal estiver aberto
-  const modalAbertoOuEditando = modalAberto;
+  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
     <div
@@ -669,6 +754,13 @@ function MetasFinanceiras() {
                                 Tirar aporte
                               </button>
                               <button
+                                className="mf-btn-editar"
+                                onClick={() => abrirModalEdicao(meta)}
+                                title="Editar meta"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                              <button
                                 className="mf-btn-remover"
                                 onClick={() =>
                                   handleRemoverMeta(meta.id)
@@ -766,6 +858,74 @@ function MetasFinanceiras() {
                   </div>
                   <button type="submit" className="btn-salvar">
                     Salvar Meta
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {modalEdicaoAberto && metaEditando && (
+            <div className="modal-overlay" onClick={fecharModalEdicao}>
+              <div
+                className="modal-conteudo"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="modal-fechar"
+                  onClick={fecharModalEdicao}
+                >
+                  <X size={24} />
+                </button>
+                <h2>Editar Meta Financeira</h2>
+                <form className="mf-form" onSubmit={handleEditarMeta}>
+                  <div className="form-group">
+                    <label htmlFor="edit-titulo">Nome da Meta</label>
+                    <input
+                      type="text"
+                      id="edit-titulo"
+                      name="titulo"
+                      autoComplete="off"
+                      value={metaEditando.titulo}
+                      onChange={handleEdicaoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-valorAlvo">Valor objetivo (R$)</label>
+                    <input
+                      type="number"
+                      id="edit-valorAlvo"
+                      name="valorAlvo"
+                      step="0.01"
+                      min="0"
+                      autoComplete="off"
+                      value={metaEditando.valorAlvo}
+                      onChange={handleEdicaoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-dataMeta">Data para bater a meta</label>
+                    <input
+                      type="date"
+                      id="edit-dataMeta"
+                      name="dataMeta"
+                      autoComplete="off"
+                      value={metaEditando.dataMeta}
+                      onChange={handleEdicaoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-descricao">Descrição (opcional)</label>
+                    <input
+                      type="text"
+                      id="edit-descricao"
+                      name="descricao"
+                      autoComplete="off"
+                      value={metaEditando.descricao}
+                      onChange={handleEdicaoChange}
+                    />
+                  </div>
+                  <button type="submit" className="btn-salvar">
+                    Salvar Alterações
                   </button>
                 </form>
               </div>

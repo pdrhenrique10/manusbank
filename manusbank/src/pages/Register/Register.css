@@ -18,15 +18,15 @@
   padding: 20px;
 }
 
-/* Cartão dividido ao meio */
+/* Cartão dividido ao meio - AGORA USA VARIÁVEIS */
 .login-card {
   display: grid;
   grid-template-columns: 1fr 1fr;
   width: 100%;
   max-width: 900px;
-  height: auto; /* Mudamos para auto pois o cadastro tem mais campos */
+  height: auto;
   min-height: 550px;
-  background: #0a0f25;
+  background: var(--bg-card, #0a0f25);
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
@@ -44,7 +44,7 @@
   font-family: "Sora", sans-serif;
   font-weight: 700;
   font-size: 32px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   margin-bottom: 24px;
   letter-spacing: -0.5px;
 }
@@ -63,17 +63,18 @@
 .form-group label {
   font-size: 14px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-secondary, #e2e8f0);
 }
 
+/* INPUTS - AGORA USAM VARIÁVEIS COM FALLBACK ESCURO */
 .input-field {
   width: 100%;
   height: 44px;
   padding: 0 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: #f1f5f9;
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary, #f1f5f9);
   font-size: 15px;
   outline: none;
   transition: border-color 0.2s;
@@ -81,12 +82,12 @@
 }
 
 .input-field::placeholder {
-  color: #64748b;
+  color: var(--text-secondary, #64748b);
 }
 
 .input-field:focus {
   border-color: #3b82f6;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-input-focus, rgba(255, 255, 255, 0.08));
 }
 
 /* Campo de senha com ícone */
@@ -106,7 +107,7 @@
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -115,7 +116,7 @@
 }
 
 .password-toggle-btn:hover {
-  color: #f1f5f9;
+  color: var(--text-primary, #f1f5f9);
 }
 
 /* Botão (Degradê Azul Padrão) */
@@ -142,7 +143,7 @@
   margin-top: 20px;
   text-align: center;
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .register-link span {
@@ -158,13 +159,13 @@
 
 /* ----- LADO DIREITO (Logo do Site) ----- */
 .login-image-panel {
-  background: #0a0f25;
+  background: var(--bg-card, #0a0f25);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 1px solid var(--border-soft, rgba(255, 255, 255, 0.05));
 }
 
 .login-image-panel::after {
@@ -200,7 +201,7 @@
   font-family: "Sora", sans-serif;
   font-size: 22px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   letter-spacing: -0.3px;
 }
 
@@ -211,12 +212,12 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  margin-top: 16px; /* Espaço abaixo do link de cadastro/login */
+  margin-top: 16px;
   padding: 10px 0;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
   border-radius: 12px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   font-family: "DM Sans", sans-serif;
   font-size: 14px;
   font-weight: 500;
@@ -225,9 +226,101 @@
 }
 
 .back-home-button:hover {
-  color: #f1f5f9;
-  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary, #f1f5f9);
+  border-color: var(--border-soft, rgba(255, 255, 255, 0.2));
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* ==========================================
+   MENSAGENS DE ERRO E SUCESSO
+   ========================================== */
+
+.message-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideDownMsg 0.3s ease forwards;
+}
+
+.message-icon {
+  flex-shrink: 0;
+}
+
+/* Caixa de Erro */
+.error-box {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.error-box .message-icon {
+  color: #ef4444;
+}
+
+/* Caixa de Sucesso */
+.success-box {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+.success-box .message-icon {
+  color: #22c55e;
+}
+
+/* Input com erro (borda vermelha) */
+.input-error {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.input-error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* ==========================================
+   LOADING SPINNER NO BOTÃO
+   ========================================== */
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Botão desabilitado */
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   ANIMAÇÕES
+   ========================================== */
+
+@keyframes slideDownMsg {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ----- RESPONSIVIDADE (MOBILE) ----- */

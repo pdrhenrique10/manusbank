@@ -520,6 +520,33 @@
     animation: fadeIn 0.2s ease-out;
   }
 
+  /* ==========================================
+   SELETOR DE MOEDA NO MODAL
+   ========================================== */
+
+.currency-select {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 15px;
+  outline: none;
+  font-family: "DM Sans", sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.currency-select:focus {
+  border-color: #3b82f6;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.currency-select option {
+  background: #0a0f25;
+  color: #f1f5f9;
+}
   /* Scrollbars */
   .receitas-container::-webkit-scrollbar { width: 8px; height: 8px; }
   .receitas-container::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 10px; }

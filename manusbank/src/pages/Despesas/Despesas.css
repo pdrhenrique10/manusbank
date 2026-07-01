@@ -146,7 +146,7 @@
   letter-spacing: 0.1em;
 }
 
-.resumo-valor {
+.despesas-valor {
   color: var(--accent-red);
   font-size: 28px;
   font-weight: 800;

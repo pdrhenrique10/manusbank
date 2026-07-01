@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Receitas.css";
-import { Plus, X, DollarSign, Trash2, Pencil, TrendingUp } from "lucide-react";
+import { Plus, X, Trash2, Pencil, TrendingUp } from "lucide-react"; // Removi DollarSign
 import {
   BarChart,
   Bar,
@@ -13,6 +13,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { API_URL } from "../../config/api";
+
+// 🔥 Importa TUDO do seu Provider
+import { useCurrency } from "../../context/CurrencyProvider";
 
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
@@ -32,8 +35,24 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
+// 🔥 Componente de Moeda local (puxa a função do Provider)
+function Money({ value }) {
+  const { formatMoney } = useCurrency();
+  return <span>{formatMoney(value)}</span>;
+}
+
 function Receitas() {
   const navigate = useNavigate();
+  
+  // 🔥 Puxa TUDO de uma vez do provider
+  const { 
+    formatMoney, 
+    convertToBRL, 
+    currency, 
+    setCurrency, 
+    getCurrencySymbol // 🔥 O símbolo está aqui
+  } = useCurrency();
+
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
   const [receitas, setReceitas] = useState([]);
@@ -132,6 +151,7 @@ function Receitas() {
     carregarReceitas(token);
   }, [navigate, carregarReceitas]);
 
+  // 🔥 Dados do gráfico
   const dadosGrafico = receitas.map((r) => ({
     nome: r.nome.length > 15 ? r.nome.substring(0, 15) + "..." : r.nome,
     valor: Number(r.valor) || 0,
@@ -162,14 +182,16 @@ function Receitas() {
       return;
     }
 
-    const valorNumero = parseFloat(
+    const valorDigitado = parseFloat(
       String(novaReceita.valor).replace(",", ".")
     );
-    if (isNaN(valorNumero) || valorNumero <= 0) {
+    if (isNaN(valorDigitado) || valorDigitado <= 0) {
       setErro("Informe um valor válido maior que zero.");
       return;
     }
 
+    // 🔥 Converte digitado para Real antes de salvar (Para o banco ficar correto)
+    const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = novaReceita.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -180,7 +202,7 @@ function Receitas() {
     const novaReceitaObj = {
       id: Date.now(),
       nome: novaReceita.nome,
-      valor: valorNumero,
+      valor: valorEmReal,
       data: dataFormatada,
     };
 
@@ -193,7 +215,7 @@ function Receitas() {
         },
         body: JSON.stringify({
           tipo: "deposito",
-          valor: valorNumero,
+          valor: valorEmReal,
           descricao: novaReceita.nome,
           data: dataFormatada,
           categoria: novaReceita.nome,
@@ -214,7 +236,7 @@ function Receitas() {
       const receita = {
         id: dados.transacao?.id ?? Date.now(),
         nome: novaReceita.nome,
-        valor: valorNumero,
+        valor: valorEmReal,
         data: dataFormatada,
       };
       setReceitas((prev) => [...prev, receita]);
@@ -279,14 +301,16 @@ function Receitas() {
     setErro("");
     setSucesso("");
 
-    const valorNumero = parseFloat(
+    const valorDigitado = parseFloat(
       String(receitaEditando.valor).replace(",", ".")
     );
-    if (isNaN(valorNumero) || valorNumero <= 0) {
+    if (isNaN(valorDigitado) || valorDigitado <= 0) {
       setErro("Informe um valor válido maior que zero.");
       return;
     }
 
+    // 🔥 Converte editado para Real
+    const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = receitaEditando.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -304,7 +328,7 @@ function Receitas() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            valor: valorNumero,
+            valor: valorEmReal,
             data: dataFormatada,
             descricao: receitaEditando.nome,
             tipo: "deposito",
@@ -313,44 +337,30 @@ function Receitas() {
         }
       );
 
-      if (!resp.ok) {
-        const receitasAtualizadas = receitas.map((r) =>
-          r.id === receitaEditando.id
-            ? { ...r, valor: valorNumero, data: dataFormatada }
-            : r
-        );
-        setReceitas(receitasAtualizadas);
-        localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-        setSucesso("Receita atualizada localmente (offline)!");
-        fecharModalEdicao();
+      const resultado = await resp.json();
+
+      if (!resp.ok || !resultado.sucesso) {
+        setErro(resultado.erro || "Não foi possível atualizar a receita.");
         return;
       }
 
-      const resultado = await resp.json();
-      if (resultado.sucesso) {
-        const receitasAtualizadas = receitas.map((r) =>
-          r.id === receitaEditando.id
-            ? { ...r, valor: valorNumero, data: dataFormatada }
-            : r
-        );
-        setReceitas(receitasAtualizadas);
-        localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-        setSucesso("Receita atualizada com sucesso!");
-        fecharModalEdicao();
-      } else {
-        throw new Error("Falha na atualização");
-      }
-    } catch (err) {
-      console.error("Erro ao editar receita:", err);
       const receitasAtualizadas = receitas.map((r) =>
         r.id === receitaEditando.id
-          ? { ...r, valor: valorNumero, data: dataFormatada }
+          ? {
+              ...r,
+              nome: receitaEditando.nome,
+              valor: valorEmReal,
+              data: dataFormatada,
+            }
           : r
       );
       setReceitas(receitasAtualizadas);
       localStorage.setItem("receitas", JSON.stringify(receitasAtualizadas));
-      setSucesso("Receita atualizada localmente (offline)!");
+      setSucesso("Receita atualizada com sucesso!");
       fecharModalEdicao();
+    } catch (err) {
+      console.error("Erro ao editar receita:", err);
+      setErro("Erro ao atualizar receita. Tente novamente.");
     }
   }
 
@@ -373,7 +383,6 @@ function Receitas() {
     );
   }
 
-  // Verifica se algum modal está aberto para esconder a sidebar no mobile
   const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
@@ -397,14 +406,14 @@ function Receitas() {
 
             <div className="resumo-card">
               <div className="resumo-item">
-                <DollarSign size={24} />
+                {/* 🔥 Símbolo puxado do Provider direto na tag */}
+                <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
+                  {getCurrencySymbol()}
+                </span>
                 <div>
                   <p className="resumo-label">Total de Receitas</p>
                   <p className="resumo-valor">
-                    R{" "}
-                    {totalReceitas.toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                    })}
+                    <Money value={totalReceitas} />
                   </p>
                 </div>
               </div>
@@ -467,10 +476,9 @@ function Receitas() {
                         labelStyle={{
                           color: "#f8fafc",
                         }}
+                        // 🔥 Formatter usando o Provider
                         formatter={(value) => [
-                          `R$ ${Number(value).toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}`,
+                          formatMoney(value),
                           "Valor",
                         ]}
                       />
@@ -504,11 +512,15 @@ function Receitas() {
                       </div>
                       <div className="receita-actions">
                         <p className="receita-valor">
-                          R{" "}
-                          {Number(receita.valor).toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}
+                          <Money value={receita.valor} />
                         </p>
+                        <button
+                          className="btn-editar-receita"
+                          onClick={() => abrirModalEdicao(receita)}
+                          title="Editar receita"
+                        >
+                          <Pencil size={16} />
+                        </button>
                         <button
                           className="btn-remover-receita"
                           onClick={() => handleRemoverReceita(receita.id)}
@@ -552,8 +564,27 @@ function Receitas() {
                       onChange={handleInputChange}
                     />
                   </div>
+                  
                   <div className="form-group">
-                    <label htmlFor="valor">Valor (R)</label>
+                    <label htmlFor="moeda">Moeda da transação</label>
+                    <select
+                      id="moeda"
+                      className="currency-select"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value="BRL">🇧🇷 Real (R$)</option>
+                      <option value="USD">🇺🇸 Dólar ($)</option>
+                      <option value="EUR">🇪🇺 Euro (€)</option>
+                      <option value="GBP">🇬🇧 Libra (£)</option>
+                    </select>
+                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                      O valor será convertido e salvo em Real (BRL) no sistema.
+                    </p>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="valor">Valor</label>
                     <input
                       type="number"
                       id="valor"
@@ -585,7 +616,7 @@ function Receitas() {
             </div>
           )}
 
-          {/* Modal de edição (exemplo, caso você tenha um) */}
+          {/* Modal de edição */}
           {modalEdicaoAberto && receitaEditando && (
             <div className="modal-overlay" onClick={fecharModalEdicao}>
               <div
@@ -608,8 +639,24 @@ function Receitas() {
                       onChange={handleEdicaoChange}
                     />
                   </div>
+
                   <div className="form-group">
-                    <label htmlFor="edit-valor">Valor (R)</label>
+                    <label htmlFor="edit-moeda">Moeda da transação</label>
+                    <select
+                      id="edit-moeda"
+                      className="currency-select"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value="BRL">🇧🇷 Real (R$)</option>
+                      <option value="USD">🇺🇸 Dólar ($)</option>
+                      <option value="EUR">🇪🇺 Euro (€)</option>
+                      <option value="GBP">🇬🇧 Libra (£)</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="edit-valor">Valor</label>
                     <input
                       type="number"
                       id="edit-valor"

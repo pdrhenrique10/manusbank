@@ -420,6 +420,69 @@ app.post("/api/transacao", autenticar, (req, res) => {
   });
 });
 
+function impactoNoSaldo(tipo, valor) {
+  const numeroValor = Number(valor) || 0;
+  if (tipo === "deposito" || tipo === "transferenciaEntrada") {
+    return numeroValor;
+  }
+  if (tipo === "saque" || tipo === "transferenciaSaida") {
+    return -numeroValor;
+  }
+  return 0;
+}
+
+app.put("/api/transacao/:id", autenticar, (req, res) => {
+  const id = Number(req.params.id);
+  const { tipo, valor, descricao, data, categoria } = req.body;
+  const numeroValor = Number(valor);
+
+  if (!tipo || !Number.isFinite(numeroValor) || numeroValor <= 0) {
+    return res
+      .status(400)
+      .json({ erro: "Tipo e valor válidos são obrigatórios" });
+  }
+
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  if (index === -1) {
+    return res.status(404).json({ erro: "Usuário não encontrado" });
+  }
+
+  const transacoes = usuarios[index].transacoes || [];
+  const transacaoIndex = transacoes.findIndex((t) => t.id === id);
+
+  if (transacaoIndex === -1) {
+    return res.status(404).json({ erro: "Transação não encontrada" });
+  }
+
+  const antiga = transacoes[transacaoIndex];
+  const impactoAntigo = impactoNoSaldo(antiga.tipo, antiga.valor);
+  const impactoNovo = impactoNoSaldo(tipo, numeroValor);
+
+  const atualizada = {
+    ...antiga,
+    tipo,
+    valor: numeroValor,
+    descricao: descricao ?? antiga.descricao ?? "",
+    data: data || antiga.data || dataHoje(),
+    categoria: categoria || descricao || antiga.categoria || "Geral",
+  };
+
+  transacoes[transacaoIndex] = atualizada;
+  usuarios[index].transacoes = transacoes;
+  usuarios[index].saldo =
+    (usuarios[index].saldo || 0) - impactoAntigo + impactoNovo;
+
+  salvarUsuarios(usuarios);
+
+  res.json({
+    sucesso: true,
+    transacao: atualizada,
+    saldo: usuarios[index].saldo,
+  });
+});
+
 app.delete("/api/transacao/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const usuarios = carregarUsuarios();
@@ -487,6 +550,57 @@ app.post("/api/contas-receber", autenticar, (req, res) => {
 
   salvarUsuarios(usuarios);
   res.status(201).json(nova);
+});
+
+app.put("/api/contas-receber/:id", autenticar, (req, res) => {
+  const id = Number(req.params.id);
+  const { cliente, valor, vencimento, descricao } = req.body;
+
+  if (!cliente || !valor || !vencimento) {
+    return res
+      .status(400)
+      .json({ erro: "Cliente, valor e vencimento são obrigatórios" });
+  }
+
+  const numeroValor = Number(valor);
+  if (!Number.isFinite(numeroValor) || numeroValor <= 0) {
+    return res.status(400).json({ erro: "Valor inválido" });
+  }
+
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  if (index === -1) {
+    return res.status(404).json({ erro: "Usuário não encontrado" });
+  }
+
+  const contas = usuarios[index].contasReceber || [];
+  const contaIndex = contas.findIndex((c) => c.id === id);
+
+  if (contaIndex === -1) {
+    return res.status(404).json({ erro: "Conta não encontrada" });
+  }
+
+  const conta = contas[contaIndex];
+  if (conta.status === "pago") {
+    return res
+      .status(400)
+      .json({ erro: "Não é possível editar um ganho já recebido" });
+  }
+
+  const atualizada = {
+    ...conta,
+    cliente,
+    valor: numeroValor,
+    vencimento: String(vencimento).slice(0, 10),
+    descricao: descricao ?? conta.descricao ?? "",
+  };
+
+  contas[contaIndex] = atualizada;
+  usuarios[index].contasReceber = contas;
+  salvarUsuarios(usuarios);
+
+  res.json({ sucesso: true, conta: atualizada });
 });
 
 app.patch("/api/contas-receber/:id/pagar", autenticar, (req, res) => {
@@ -569,6 +683,58 @@ app.post("/api/contas-pagar", autenticar, (req, res) => {
   res.status(201).json(nova);
 });
 
+app.put("/api/contas-pagar/:id", autenticar, (req, res) => {
+  const id = Number(req.params.id);
+  const { titulo, tipo, valor, vencimento, descricao } = req.body;
+
+  if (!titulo || !valor || !vencimento) {
+    return res
+      .status(400)
+      .json({ erro: "Título, valor e vencimento são obrigatórios" });
+  }
+
+  const numeroValor = Number(valor);
+  if (!Number.isFinite(numeroValor) || numeroValor <= 0) {
+    return res.status(400).json({ erro: "Valor inválido" });
+  }
+
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  if (index === -1) {
+    return res.status(404).json({ erro: "Usuário não encontrado" });
+  }
+
+  const contas = usuarios[index].contasPagar || [];
+  const contaIndex = contas.findIndex((c) => c.id === id);
+
+  if (contaIndex === -1) {
+    return res.status(404).json({ erro: "Conta não encontrada" });
+  }
+
+  const conta = contas[contaIndex];
+  if (conta.status === "pago") {
+    return res
+      .status(400)
+      .json({ erro: "Não é possível editar um gasto já pago" });
+  }
+
+  const atualizada = {
+    ...conta,
+    titulo,
+    tipo: tipo || conta.tipo || "geral",
+    valor: numeroValor,
+    vencimento: String(vencimento).slice(0, 10),
+    descricao: descricao ?? conta.descricao ?? "",
+  };
+
+  contas[contaIndex] = atualizada;
+  usuarios[index].contasPagar = contas;
+  salvarUsuarios(usuarios);
+
+  res.json({ sucesso: true, conta: atualizada });
+});
+
 app.patch("/api/contas-pagar/:id/pagar", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const usuarios = carregarUsuarios();
@@ -645,6 +811,59 @@ app.post("/api/metas", autenticar, (req, res) => {
 
   salvarUsuarios(usuarios);
   res.status(201).json(novaMeta);
+});
+
+app.put("/api/metas/:id", autenticar, (req, res) => {
+  const id = Number(req.params.id);
+  const { titulo, valorAlvo, dataMeta, descricao } = req.body;
+
+  if (!titulo || !valorAlvo || !dataMeta) {
+    return res.status(400).json({
+      erro: "Título, valor alvo e data são obrigatórios",
+    });
+  }
+
+  const numeroValorAlvo = Number(valorAlvo);
+  if (!Number.isFinite(numeroValorAlvo) || numeroValorAlvo <= 0) {
+    return res.status(400).json({ erro: "Valor alvo inválido" });
+  }
+
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  if (index === -1) {
+    return res.status(404).json({ erro: "Usuário não encontrado" });
+  }
+
+  const metas = usuarios[index].metas || [];
+  const metaIndex = metas.findIndex((m) => m.id === id);
+
+  if (metaIndex === -1) {
+    return res.status(404).json({ erro: "Meta não encontrada" });
+  }
+
+  const meta = metas[metaIndex];
+  const valorAtual = meta.valorAtual || 0;
+
+  if (numeroValorAlvo < valorAtual) {
+    return res.status(400).json({
+      erro: "Valor alvo não pode ser menor que o valor já aportado",
+    });
+  }
+
+  const atualizada = {
+    ...meta,
+    titulo,
+    valorAlvo: numeroValorAlvo,
+    dataMeta: String(dataMeta).slice(0, 10),
+    descricao: descricao ?? meta.descricao ?? "",
+  };
+
+  metas[metaIndex] = atualizada;
+  usuarios[index].metas = metas;
+  salvarUsuarios(usuarios);
+
+  res.json({ sucesso: true, meta: atualizada });
 });
 
 app.delete("/api/metas/:id", autenticar, (req, res) => {

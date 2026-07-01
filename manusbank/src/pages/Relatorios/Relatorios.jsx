@@ -6,7 +6,6 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   CalendarDays,
-  CircleDollarSign,
   PieChart as PieIcon,
   PiggyBank,
   TrendingDown,
@@ -325,13 +324,9 @@ function Relatorios() {
 
               {!temDados ? (
                 <section className="rel-empty">
-                  <CircleDollarSign size={44} />
                   <h2>
                     {dados?.mensagem || "Nenhuma transação encontrada"}
                   </h2>
-                  <p>
-                    Registre novas transações para ver seus relatórios aqui.
-                  </p>
                 </section>
               ) : (
                 <div className="rel-dashboard-grid">

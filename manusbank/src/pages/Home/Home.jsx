@@ -1,21 +1,11 @@
 // pages/Home/Home.jsx
-
 import "./Home.css"
 import { useNavigate } from "react-router-dom"
 import {
-  ShieldCheck,
   BarChart3,
   Wallet,
-  TrendingUp,
   Target,
-  Bell,
   ArrowRight,
-  PieChart,
-  CreditCard,
-  Landmark,
-  GraduationCap,
-  Users,
-  Lightbulb,
 } from "lucide-react"
 
 const features = [
@@ -29,43 +19,10 @@ const features = [
     title: "Controle de gastos",
     desc: "Categorize despesas, acompanhe receitas e mantenha o orçamento sempre em dia.",
   },
- 
   {
     icon: <Target size={26} />,
     title: "Metas financeiras",
     desc: "Defina objetivos e monitore o progresso de cada um de forma clara e visual.",
-  },
- 
-]
-
-const steps = [
-  {
-    icon: <PieChart size={22} />,
-    title: "Visualize tudo",
-    desc: "Veja o panorama completo das suas finanças num único painel intuitivo.",
-  },
-  {
-    icon: <Landmark size={22} />,
-    title: "Tome decisões melhores",
-    desc: "Use os relatórios e insights para guardar mais e gastar com consciência.",
-  },
-]
-
-const about = [
-  {
-    icon: <GraduationCap size={26} />,
-    title: "Projeto acadêmico",
-    desc: "Desenvolvido por um grupo de estudantes da turma de Informática para a FeiraTech, que também será utilizado para o TCC do SENAI.",
-  },
-  {
-    icon: <Users size={26} />,
-    title: "Foco no usuário",
-    desc: "A plataforma foi projetada para ser acessível a qualquer pessoa, independentemente do nível de conhecimento financeiro.",
-  },
-  {
-    icon: <Lightbulb size={26} />,
-    title: "Propósito",
-    desc: "Ajudar pessoas a organizarem suas finanças pessoais de forma prática, visual e sem complicação.",
   },
 ]
 
@@ -79,40 +36,43 @@ export default function Home() {
       <header className="navbar">
         <div className="navbar-brand">
           <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="logo-image" />
-          <span className="logo"> <a href="#">ManusFinance</a></span>
+          <span className="logo">ManusFinance</span>
         </div>
         <nav className="navbar-links">
-          <a href="#">Introdução</a>
+          <a href="#">Início</a>
           <a href="#funcionalidades">Funcionalidades</a>
-          <a href="#como-funciona">Como funciona</a>
-          <a href="#curiosidade">Curiosidade</a>
-          <a href="#sobre">Sobre</a>
         </nav>
       </header>
 
-      {/* HERO */}
+      {/* HERO - COM O GANCHO DE MARKETING */}
       <section className="hero">
         <h1 className="title">
           Suas finanças,
           <span>organizadas de verdade.</span>
         </h1>
-        <p className="description">
-Saiba exatamente para onde seu dinheiro está indo. Registre receitas, controle despesas e acompanhe suas metas financeiras em um só lugar.
+        
+        {/* Frase de impacto direto (Curiosidade transformada em Marketing) */}
+        <p className="hero-impact">
+          <strong>81,6%</strong> das famílias brasileiras estão endividadas. 
+          Não seja mais um. Organize sua vida financeira agora.
         </p>
+
+        <p className="description">
+          Registre receitas, controle despesas e acompanhe suas metas em um só lugar.
+        </p>
+        
         <div className="buttons">
           <button className="primary-btn" onClick={() => navigate("/login")}>
-            Começar agora
-            <ArrowRight size={18} />
+            Começar agora <ArrowRight size={18} />
           </button>
         </div>
       </section>
 
-      {/* FUNCIONALIDADES */}
+      {/* FUNCIONALIDADES (Apenas o essencial) */}
       <section className="section" id="funcionalidades">
         <div className="section-header">
-          <p className="section-tag">Funcionalidades</p>
-          <h2 className="section-title">Tudo que você precisa para controlar o seu dinheiro</h2>
-          <p className="section-sub">Ferramentas pensadas para quem quer sair do vermelho, poupar mais e investir melhor.</p>
+          <h2 className="section-title">Simplifique suas finanças</h2>
+          <p className="section-sub">Ferramentas práticas para sair do vermelho e conquistar seus objetivos.</p>
         </div>
         <div className="grid-3">
           {features.map((f, i) => (
@@ -125,75 +85,13 @@ Saiba exatamente para onde seu dinheiro está indo. Registre receitas, controle 
         </div>
       </section>
 
-      {/* COMO FUNCIONA */}
-      <section className="section" id="como-funciona">
-        <div className="section-header">
-          <p className="section-tag">Como funciona</p>
-          <h2 className="section-title">Configure em menos de 3 minutos</h2>
-          <p className="section-sub">Simples e direto — sem burocracia para começar.</p>
-        </div>
-        <div className="steps">
-          {steps.map((s, i) => (
-            <div className="step" key={i}>
-              <div className="step-number">{String(i + 1).padStart(2, "0")}</div>
-              <div className="step-icon">{s.icon}</div>
-              <h3>{s.title}</h3>
-              <p>{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-            <section className="section" id="curiosidade">
-  <div className="curiosity-card">
-    <p className="section-tag">A realidade financeira</p>
-
-    <h2 className="curiosity-number">
-      81,6%
-    </h2>
-
-    <h3 className="curiosity-title">
-      das famílias brasileiras possuem dívidas
-    </h3>
-
-    <p className="curiosity-text">
-      Controlar o dinheiro nunca foi tão importante. Enquanto milhões de
-      brasileiros enfrentam dificuldades para organizar suas finanças,
-      o ManusFinance ajuda você a acompanhar gastos, receitas e metas,
-      transformando informações em decisões mais inteligentes.
-    </p>
-  </div>
-</section>
-
-      {/* SOBRE */}
-      <section className="section" id="sobre">
-        <div className="section-header">
-          <p className="section-tag">Sobre</p>
-          <h2 className="section-title">O que é o ManusFinance?</h2>
-          <p className="section-sub">
-            Uma plataforma de gestão financeira pessoal desenvolvida por estudantes do SENAI,
-            com o objetivo de tornar as finanças acessíveis e compreensíveis para todos.
-          </p>
-        </div>
-        <div className="grid-3">
-          {about.map((a, i) => (
-            <div className="card" key={i}>
-              <div className="card-icon">{a.icon}</div>
-              <h3>{a.title}</h3>
-              <p>{a.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FOOTER */}
+      {/* FOOTER (Limpo) */}
       <footer className="footer">
         <div className="footer-brand">
           <img src="/mflogo.jpeg" alt="ManusFinance" className="logo-image logo-sm" />
           <span>ManusFinance</span>
         </div>
-        <p className="footer-copy">
-          Projeto FeiraTech - SENAI &nbsp;·&nbsp; © {new Date().getFullYear()} ManusFinance
+        <p className="footer-copy">SENAI &nbsp;·&nbsp; © {new Date().getFullYear()}
         </p>
       </footer>
 

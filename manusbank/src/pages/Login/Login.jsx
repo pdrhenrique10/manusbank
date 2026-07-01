@@ -1,6 +1,6 @@
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { API_URL } from "../../config/api";
 
@@ -12,13 +12,46 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Estados para mensagens de erro e sucesso
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
+  // Função para limpar mensagens após 5 segundos
+  const clearMessages = () => {
+    setTimeout(() => {
+      setError("");
+      setSuccess("");
+    }, 5000);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    // Limpa mensagens anteriores
+    setError("");
+    setSuccess("");
+
+    // Validação de campos vazios
     if (!email.trim() || !password.trim()) {
-      alert("Por favor, preencha o e-mail e a senha para continuar.");
+      setError("Por favor, preencha o e-mail e a senha para continuar.");
+      clearMessages();
+      return;
+    }
+
+    // Validação de formato de e-mail (básica)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError("Por favor, insira um e-mail válido.");
+      clearMessages();
+      return;
+    }
+
+    // Validação de tamanho mínimo da senha
+    if (password.trim().length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres.");
+      clearMessages();
       return;
     }
 
@@ -32,7 +65,6 @@ export default function Login() {
         },
         body: JSON.stringify({
           email: email.trim(),
-          // backend espera "senha"
           senha: password.trim(),
         }),
       });
@@ -40,30 +72,50 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        // backend manda { erro: "..." }
-        alert(data.erro || data.msg || data.error || "E-mail ou senha incorretos.");
+        // Mensagens específicas do backend
+        let errorMsg = data.erro || data.msg || data.error || "E-mail ou senha incorretos.";
+        
+        // Personaliza mensagens baseadas no que o backend retorna
+        if (errorMsg.toLowerCase().includes("não encontrada") || 
+            errorMsg.toLowerCase().includes("email não") || 
+            errorMsg.toLowerCase().includes("conta não")) {
+          errorMsg = "Conta não encontrada. Verifique seu e-mail ou registre-se.";
+        } else if (errorMsg.toLowerCase().includes("senha")) {
+          errorMsg = "Senha incorreta. Tente novamente.";
+        }
+
+        setError(errorMsg);
         setIsLoading(false);
+        clearMessages();
         return;
       }
 
-if (data.token) {
-  localStorage.setItem("token", data.token);
+      if (data.token) {
+        localStorage.setItem("token", data.token);
 
-  // guarda também os dados básicos do usuário
-  if (data.user) {
-    localStorage.setItem("user", JSON.stringify(data.user));
-  }
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
 
-  setIsLoading(false);
-  navigate("/dashboard");
-} else {
-        alert("Erro inesperado: Token não recebido do servidor.");
+        // Mensagem de sucesso
+        setSuccess("Login realizado com sucesso! Redirecionando...");
         setIsLoading(false);
+        clearMessages();
+
+        // Redireciona após 1.5 segundos
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1500);
+      } else {
+        setError("Erro inesperado: Token não recebido do servidor.");
+        setIsLoading(false);
+        clearMessages();
       }
     } catch (error) {
       console.error("Erro de conexão com a API:", error);
-      alert("Não foi possível conectar ao servidor. Verifique sua internet.");
+      setError("Não foi possível conectar ao servidor. Verifique sua internet.");
       setIsLoading(false);
+      clearMessages();
     }
   };
 
@@ -75,13 +127,29 @@ if (data.token) {
             Faça seu login<span className="login-dot">.</span>
           </h1>
 
+          {/* MENSAGEM DE ERRO */}
+          {error && (
+            <div className="message-box error-box">
+              <AlertCircle size={18} className="message-icon" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* MENSAGEM DE SUCESSO */}
+          {success && (
+            <div className="message-box success-box">
+              <CheckCircle size={18} className="message-icon" />
+              <span>{success}</span>
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="email">E-mail</label>
             <input
               type="email"
               id="email"
               placeholder="E-mail"
-              className="input-field"
+              className={`input-field ${error && !email.trim() ? "input-error" : ""}`}
               autoComplete="off"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -89,13 +157,13 @@ if (data.token) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Senha</label>
             <div className="password-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Senha"
-                className="input-field input-password"
+                className={`input-field input-password ${error && password.trim().length < 6 && password.trim().length > 0 ? "input-error" : ""}`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -112,11 +180,15 @@ if (data.token) {
 
           <button
             type="button"
-            className="login-button"
+            className={`login-button ${isLoading ? "loading" : ""}`}
             onClick={handleLogin}
             disabled={isLoading}
           >
-            {isLoading ? "Entrando..." : "Login"}
+            {isLoading ? (
+              <span className="loading-spinner"></span>
+            ) : (
+              "Login"
+            )}
           </button>
 
           <div className="register-link" onClick={() => navigate("/register")}>

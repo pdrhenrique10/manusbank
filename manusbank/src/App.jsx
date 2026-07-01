@@ -11,30 +11,86 @@ import ContasPagar from "./pages/ContasPagar/ContasPagar";
 import MetasFinanceiras from "./pages/MetasFinanceiras/MetasFinanceiras";
 import Relatorios from "./pages/Relatorios/Relatorios";
 import Configuracoes from "./pages/Configuracoes/Configuracoes";
-import { useTheme } from "./hooks/useTheme";
+import { ThemeProvider } from "./hooks/useTheme";
+import { CurrencyProvider } from "./context/CurrencyProvider"; // 🔥 Importe o provedor
 
 export default function App() {
-  // isso já lê o tema salvo e aplica no body assim que o App monta
-  const { theme } = useTheme();
-
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Páginas sem sidebar */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      <ThemeProvider>
+        <Routes>
+          {/* Páginas sem sidebar (SEM CurrencyProvider) */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Páginas com sidebar */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/receitas" element={<Receitas />} />
-        <Route path="/despesas" element={<Despesas />} />
-        <Route path="/contas-a-receber" element={<ContasReceber />} />
-        <Route path="/contas-a-pagar" element={<ContasPagar />} />
-        <Route path="/metasfinanceiras" element={<MetasFinanceiras />} />
-        <Route path="/relatorios" element={<Relatorios />} />
-        <Route path="/configuracoes" element={<Configuracoes />} />
-      </Routes>
+          {/* 🔥 Páginas com sidebar (COM CurrencyProvider) */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <CurrencyProvider>
+                <Dashboard />
+              </CurrencyProvider>
+            } 
+          />
+          <Route 
+            path="/receitas" 
+            element={
+              <CurrencyProvider>
+                <Receitas />
+              </CurrencyProvider>
+            } 
+          />
+          <Route 
+            path="/despesas" 
+            element={
+              <CurrencyProvider>
+                <Despesas />
+              </CurrencyProvider>
+            } 
+          />
+          <Route 
+            path="/contas-a-receber" 
+            element={
+              <CurrencyProvider>
+                <ContasReceber />
+              </CurrencyProvider>
+            } 
+          />
+          <Route 
+            path="/contas-a-pagar" 
+            element={
+              <CurrencyProvider>
+                <ContasPagar />
+              </CurrencyProvider>
+            } 
+          />
+          <Route 
+            path="/metasfinanceiras" 
+            element={
+              <CurrencyProvider>
+                <MetasFinanceiras />
+              </CurrencyProvider>
+            } 
+          />
+          <Route 
+            path="/relatorios" 
+            element={
+              <CurrencyProvider>
+                <Relatorios />
+              </CurrencyProvider>
+            } 
+          />
+          <Route 
+            path="/configuracoes" 
+            element={
+              <CurrencyProvider>
+                <Configuracoes />
+              </CurrencyProvider>
+            } 
+          />
+        </Routes>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

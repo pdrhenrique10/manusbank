@@ -9,6 +9,7 @@ import {
   CalendarClock,
   AlertTriangle,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import {
   BarChart,
@@ -21,9 +22,29 @@ import {
 } from "recharts";
 import { API_URL } from "../../config/api";
 
+// 🔥 Importação do sistema de moeda
+import { useCurrency } from "../../context/CurrencyProvider";
+
+// 🔥 Componente de Moeda local (puxa a função do Provider)
+function Money({ value }) {
+  const { formatMoney } = useCurrency();
+  return <span>{formatMoney(value)}</span>;
+}
+
 function ContasPagar() {
   const navigate = useNavigate();
+  
+  // 🔥 Puxa TUDO do provider
+  const { 
+    formatMoney, 
+    convertToBRL, 
+    currency, 
+    setCurrency, 
+    getCurrencySymbol 
+  } = useCurrency();
+
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
   const [contas, setContas] = useState([]);
   const [novaConta, setNovaConta] = useState({
     titulo: "",
@@ -32,6 +53,7 @@ function ContasPagar() {
     vencimento: "",
     descricao: "",
   });
+  const [contaEditando, setContaEditando] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
@@ -113,6 +135,93 @@ function ContasPagar() {
     setNovaConta(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleEdicaoChange = (e) => {
+    const { name, value } = e.target;
+    setContaEditando(prev => ({ ...prev, [name]: value }));
+  };
+
+  const fecharModalEdicao = () => {
+    setModalEdicaoAberto(false);
+    setContaEditando(null);
+    setErro("");
+  };
+
+  const abrirModalEdicao = (conta) => {
+    setContaEditando({
+      id: conta.id,
+      titulo: conta.titulo,
+      tipo: conta.tipo || "",
+      valor: conta.valor,
+      vencimento: String(conta.vencimento || "").substring(0, 10),
+      descricao: conta.descricao || "",
+    });
+    setModalEdicaoAberto(true);
+  };
+
+  const handleEditarConta = async (e) => {
+    e.preventDefault();
+    if (!contaEditando) return;
+
+    setErro("");
+    setSucesso("");
+
+    if (!contaEditando.titulo || !contaEditando.valor || !contaEditando.vencimento) {
+      setErro("Preencha título, valor e vencimento!");
+      return;
+    }
+
+    const valorDigitado = parseFloat(String(contaEditando.valor).replace(",", "."));
+    if (isNaN(valorDigitado) || valorDigitado <= 0) {
+      setErro("Informe um valor válido maior que zero.");
+      return;
+    }
+
+    // 🔥 Converte para Real antes de salvar
+    const valorEmReal = convertToBRL(valorDigitado);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_URL}/api/contas-pagar/${contaEditando.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          titulo: contaEditando.titulo,
+          tipo: contaEditando.tipo,
+          valor: valorEmReal,
+          vencimento: contaEditando.vencimento,
+          descricao: contaEditando.descricao,
+        }),
+      });
+
+      const resultado = await resp.json();
+
+      if (!resp.ok || !resultado.sucesso) {
+        setErro(resultado.erro || "Não foi possível atualizar o gasto.");
+        return;
+      }
+
+      const atualizada = { ...resultado.conta, valor: Number(resultado.conta.valor) || 0 };
+      const contasAtualizadas = contas.map(c =>
+        c.id === atualizada.id ? atualizada : c
+      );
+      setContas(contasAtualizadas);
+      localStorage.setItem("contasPagar", JSON.stringify(contasAtualizadas));
+      setSucesso("Gasto atualizado com sucesso!");
+      fecharModalEdicao();
+    } catch (err) {
+      console.error("Erro ao editar conta:", err);
+      setErro("Erro ao atualizar gasto. Tente novamente.");
+    }
+  };
+
   const handleAdicionarConta = async (e) => {
     e.preventDefault();
     setErro("");
@@ -123,11 +232,14 @@ function ContasPagar() {
       return;
     }
 
-    const valorNumero = parseFloat(String(novaConta.valor).replace(",", "."));
-    if (isNaN(valorNumero) || valorNumero <= 0) {
+    const valorDigitado = parseFloat(String(novaConta.valor).replace(",", "."));
+    if (isNaN(valorDigitado) || valorDigitado <= 0) {
       setErro("Informe um valor válido maior que zero.");
       return;
     }
+
+    // 🔥 Converte para Real antes de salvar
+    const valorEmReal = convertToBRL(valorDigitado);
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -139,7 +251,7 @@ function ContasPagar() {
       id: Date.now(),
       titulo: novaConta.titulo,
       tipo: novaConta.tipo,
-      valor: valorNumero,
+      valor: valorEmReal,
       vencimento: novaConta.vencimento,
       descricao: novaConta.descricao,
       status: "pendente",
@@ -149,7 +261,7 @@ function ContasPagar() {
       const body = {
         titulo: novaConta.titulo,
         tipo: novaConta.tipo,
-        valor: valorNumero,
+        valor: valorEmReal,
         vencimento: novaConta.vencimento,
         descricao: novaConta.descricao,
       };
@@ -305,7 +417,7 @@ function ContasPagar() {
   }
 
   // Controle para esconder sidebar no mobile quando o modal estiver aberto
-  const modalAbertoOuEditando = modalAberto;
+  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
     <div
@@ -330,11 +442,15 @@ function ContasPagar() {
 
             <div className="cp-resumo-card">
               <div className="cp-resumo-item">
-                <AlertTriangle size={24} />
+                {/* 🔥 Símbolo puxado do Provider */}
+                <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
+                  {getCurrencySymbol()}
+                </span>
                 <div>
                   <p className="cp-resumo-label">Total em Aberto</p>
+                  {/* 🔥 Substituído por <Money /> */}
                   <p className="cp-resumo-valor">
-                    R$ {totalPagar.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    <Money value={totalPagar} />
                   </p>
                 </div>
               </div>
@@ -364,7 +480,8 @@ function ContasPagar() {
                       <Tooltip
                         contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
                         labelStyle={{ color: "#f8fafc" }}
-                        formatter={(value) => ["R$ " + Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 }), "Valor"]}
+                        // 🔥 Formatter usando o Provider
+                        formatter={(value) => [formatMoney(value), "Valor"]}
                       />
                       <Bar dataKey="valor" fill="#f97316" radius={[8, 8, 0, 0]} />
                     </BarChart>
@@ -423,9 +540,15 @@ function ContasPagar() {
                         </div>
                         <div className="cp-acoes">
                           <div className="cp-valor-e-remover">
+                            {/* 🔥 Substituído por <Money /> */}
                             <p className="cp-valor">
-                              R$ {Number(conta.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                              <Money value={conta.valor} />
                             </p>
+                            {isPendente && (
+                              <button className="cp-btn-editar" onClick={() => abrirModalEdicao(conta)} title="Editar gasto">
+                                <Pencil size={16} />
+                              </button>
+                            )}
                             <button
                               className="cp-btn-remover"
                               onClick={() => handleRemoverConta(conta.id)}
@@ -453,6 +576,7 @@ function ContasPagar() {
             </section>
           </div>
 
+          {/* Modal de criação */}
           {modalAberto && (
             <div className="modal-overlay" onClick={() => setModalAberto(false)}>
               <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
@@ -463,12 +587,32 @@ function ContasPagar() {
                     <label htmlFor="titulo">Nome</label>
                     <input type="text" id="titulo" name="titulo" autoComplete="off" value={novaConta.titulo} onChange={handleInputChange} />
                   </div>
+                  
+                  {/* 🔥 SELETOR DE MOEDA */}
+                  <div className="form-group">
+                    <label htmlFor="moeda">Moeda da transação</label>
+                    <select
+                      id="moeda"
+                      className="currency-select"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value="BRL">🇧🇷 Real (R$)</option>
+                      <option value="USD">🇺🇸 Dólar ($)</option>
+                      <option value="EUR">🇪🇺 Euro (€)</option>
+                      <option value="GBP">🇬🇧 Libra (£)</option>
+                    </select>
+                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                      O valor será convertido e salvo em Real (BRL) no sistema.
+                    </p>
+                  </div>
+
                   <div className="form-group">
                     <label htmlFor="tipo">Tipo (opcional)</label>
                     <input type="text" id="tipo" name="tipo" placeholder="Ex: lanche na rua, pix para alguém, compra de algo" autocomplete="off" value={novaConta.tipo} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="valor">Valor (R$)</label>
+                    <label htmlFor="valor">Valor</label>
                     <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaConta.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
@@ -480,6 +624,56 @@ function ContasPagar() {
                     <input type="text" id="descricao" name="descricao" placeholder="Ex: Pix de alguém, lanche/compra na rua, etc." autocomplete="off" value={novaConta.descricao} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de edição */}
+          {modalEdicaoAberto && contaEditando && (
+            <div className="modal-overlay" onClick={fecharModalEdicao}>
+              <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
+                <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
+                <h2>Editar Gasto</h2>
+                <form className="cp-form" onSubmit={handleEditarConta}>
+                  <div className="form-group">
+                    <label htmlFor="edit-titulo">Nome</label>
+                    <input type="text" id="edit-titulo" name="titulo" autoComplete="off" value={contaEditando.titulo} onChange={handleEdicaoChange} />
+                  </div>
+
+                  {/* 🔥 SELETOR DE MOEDA NO MODAL DE EDIÇÃO */}
+                  <div className="form-group">
+                    <label htmlFor="edit-moeda">Moeda da transação</label>
+                    <select
+                      id="edit-moeda"
+                      className="currency-select"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value="BRL">🇧🇷 Real (R$)</option>
+                      <option value="USD">🇺🇸 Dólar ($)</option>
+                      <option value="EUR">🇪🇺 Euro (€)</option>
+                      <option value="GBP">🇬🇧 Libra (£)</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="edit-tipo">Tipo (opcional)</label>
+                    <input type="text" id="edit-tipo" name="tipo" autoComplete="off" value={contaEditando.tipo} onChange={handleEdicaoChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-valor">Valor</label>
+                    <input type="number" id="edit-valor" name="valor" step="0.01" min="0" autoComplete="off" value={contaEditando.valor} onChange={handleEdicaoChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-vencimento">Vencimento</label>
+                    <input type="date" id="edit-vencimento" name="vencimento" autoComplete="off" value={contaEditando.vencimento} onChange={handleEdicaoChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-descricao">Descrição (opcional)</label>
+                    <input type="text" id="edit-descricao" name="descricao" autoComplete="off" value={contaEditando.descricao} onChange={handleEdicaoChange} />
+                  </div>
+                  <button type="submit" className="btn-salvar">Salvar Alterações</button>
                 </form>
               </div>
             </div>

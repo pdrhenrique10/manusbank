@@ -6,6 +6,9 @@
   --border-soft: #e2e8f0;
   --chart-grid: #cbd5e1;
   --tooltip-bg: #ffffff;
+  input[type=date]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
 }
 
 /* Tema escuro - ativado quando body tiver a classe .dark */
@@ -15,6 +18,9 @@ body.dark {
   --text-primary: #f9fafb;
   --text-secondary: #9ca3af;
   --border-soft: rgba(148, 163, 184, 0.35);
+  input[type=date]::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+  }
 }
 
 /* Reset */

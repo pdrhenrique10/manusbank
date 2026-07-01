@@ -1,6 +1,6 @@
 import "./Register.css";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { API_URL } from "../../config/api";
 
@@ -16,32 +16,46 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Estados para mensagens de erro e sucesso
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const togglePasswordVisibility = () =>
     setShowPassword((prev) => !prev);
   const toggleConfirmPasswordVisibility = () =>
     setShowConfirmPassword((prev) => !prev);
 
+  // Função para limpar mensagens após 5 segundos
+  const clearMessages = () => {
+    setTimeout(() => {
+      setError("");
+      setSuccess("");
+    }, 5000);
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    // Limpa mensagens anteriores
+    setError("");
+    setSuccess("");
+
     // Validações básicas
-    if (
-      !name.trim() ||
-      !email.trim() ||
-      !password.trim() ||
-      !confirmPassword.trim()
-    ) {
-      alert("Por favor, preencha todos os campos.");
+    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      setError("Por favor, preencha todos os campos.");
+      clearMessages();
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("As senhas não coincidem. Digite novamente.");
+      setError("As senhas não coincidem. Digite novamente.");
+      clearMessages();
       return;
     }
 
     if (password.length < 6) {
-      alert("A senha deve ter pelo menos 6 caracteres.");
+      setError("A senha deve ter pelo menos 6 caracteres.");
+      clearMessages();
       return;
     }
 
@@ -54,7 +68,6 @@ export default function Register() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // nomes alinhados com o server.js
           nome: name.trim(),
           email: email.trim(),
           senha: password.trim(),
@@ -64,29 +77,40 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        // backend usa "erro" como chave da mensagem
-        alert(data.erro || data.msg || data.error || "Erro ao cadastrar. Tente novamente.");
+        // Backend usa "erro" como chave da mensagem
+        const errorMsg = data.erro || data.msg || data.error || "Erro ao cadastrar. Tente novamente.";
+        setError(errorMsg);
         setIsLoading(false);
+        clearMessages();
         return;
       }
 
       if (data.token) {
-  localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token);
 
-  if (data.user) {
-    localStorage.setItem("user", JSON.stringify(data.user));
-  }
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
 
-  setIsLoading(false);
-  navigate("/dashboard");
-} else {
-        alert("Erro inesperado: Token não recebido do servidor.");
+        // Mensagem de sucesso
+        setSuccess("Cadastro realizado com sucesso! Redirecionando...");
         setIsLoading(false);
+        clearMessages();
+
+        // Redireciona após 1.5 segundos para o usuário ver a mensagem de sucesso
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1500);
+      } else {
+        setError("Erro inesperado: Token não recebido do servidor.");
+        setIsLoading(false);
+        clearMessages();
       }
     } catch (error) {
       console.error("Erro de conexão com a API:", error);
-      alert("Não foi possível conectar ao servidor. Verifique sua internet.");
+      setError("Não foi possível conectar ao servidor. Verifique sua internet.");
       setIsLoading(false);
+      clearMessages();
     }
   };
 
@@ -98,16 +122,32 @@ export default function Register() {
             Crie sua conta<span className="login-dot">.</span>
           </h1>
 
+          {/* MENSAGEM DE ERRO */}
+          {error && (
+            <div className="message-box error-box">
+              <AlertCircle size={18} className="message-icon" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* MENSAGEM DE SUCESSO */}
+          {success && (
+            <div className="message-box success-box">
+              <CheckCircle size={18} className="message-icon" />
+              <span>{success}</span>
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="name">Nome completo</label>
             <input
               type="text"
               id="name"
               placeholder="Digite seu nome"
-              className="input-field"
+              className={`input-field ${error && !name.trim() ? "input-error" : ""}`}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              autoComplete="off"
+              autoComplete="name"
             />
           </div>
 
@@ -117,10 +157,10 @@ export default function Register() {
               type="email"
               id="email"
               placeholder="Digite seu e-mail"
-              className="input-field"
+              className={`input-field ${error && !email.trim() ? "input-error" : ""}`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              autoComplete="off"
+              autoComplete="email"
             />
           </div>
 
@@ -131,9 +171,10 @@ export default function Register() {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Crie uma senha"
-                className="input-field input-password"
+                className={`input-field input-password ${error && password.length < 6 && password.length > 0 ? "input-error" : ""}`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
               />
               <button
                 type="button"
@@ -153,9 +194,10 @@ export default function Register() {
                 type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
                 placeholder="Confirme sua senha"
-                className="input-field input-password"
+                className={`input-field input-password ${error && password !== confirmPassword && confirmPassword.length > 0 ? "input-error" : ""}`}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
               />
               <button
                 type="button"
@@ -169,11 +211,15 @@ export default function Register() {
           </div>
 
           <button
-            className="login-button"
+            className={`login-button ${isLoading ? "loading" : ""}`}
             onClick={handleRegister}
             disabled={isLoading}
           >
-            {isLoading ? "Cadastrando..." : "Registrar"}
+            {isLoading ? (
+              <span className="loading-spinner"></span>
+            ) : (
+              "Registrar"
+            )}
           </button>
 
           <div className="register-link" onClick={() => navigate("/login")}>

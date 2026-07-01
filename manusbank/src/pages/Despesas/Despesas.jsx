@@ -22,6 +22,9 @@ import {
 } from "recharts";
 import { API_URL } from "../../config/api";
 
+// 🔥 Importação do sistema de moeda
+import { useCurrency } from "../../context/CurrencyProvider";
+
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
   if (typeof isoString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
@@ -40,8 +43,24 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
+// 🔥 Componente de Moeda local (puxa a função do Provider)
+function Money({ value }) {
+  const { formatMoney } = useCurrency();
+  return <span>{formatMoney(value)}</span>;
+}
+
 function Despesas() {
   const navigate = useNavigate();
+  
+  // 🔥 Puxa TUDO do provider
+  const { 
+    formatMoney, 
+    convertToBRL, 
+    currency, 
+    setCurrency, 
+    getCurrencySymbol 
+  } = useCurrency();
+
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
   const [despesas, setDespesas] = useState([]);
@@ -157,12 +176,14 @@ function Despesas() {
       return;
     }
 
-    const valorNumero = parseFloat(String(novaDespesa.valor).replace(",", "."));
-    if (isNaN(valorNumero) || valorNumero <= 0) {
+    const valorDigitado = parseFloat(String(novaDespesa.valor).replace(",", "."));
+    if (isNaN(valorDigitado) || valorDigitado <= 0) {
       setErro("Informe um valor válido maior que zero.");
       return;
     }
 
+    // 🔥 Converte para Real antes de salvar
+    const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = novaDespesa.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -173,7 +194,7 @@ function Despesas() {
     const novaDespesaObj = {
       id: Date.now(),
       nome: novaDespesa.nome,
-      valor: valorNumero,
+      valor: valorEmReal,
       data: dataFormatada,
     };
 
@@ -186,7 +207,7 @@ function Despesas() {
         },
         body: JSON.stringify({
           tipo: "saque",
-          valor: valorNumero,
+          valor: valorEmReal,
           descricao: novaDespesa.nome,
           data: dataFormatada,
           categoria: novaDespesa.nome,
@@ -207,7 +228,7 @@ function Despesas() {
       const despesaLocal = {
         id: resultado.transacao?.id ?? Date.now(),
         nome: novaDespesa.nome,
-        valor: valorNumero,
+        valor: valorEmReal,
         data: dataFormatada,
       };
       setDespesas(prev => [...prev, despesaLocal]);
@@ -270,12 +291,14 @@ function Despesas() {
     setErro("");
     setSucesso("");
 
-    const valorNumero = parseFloat(String(despesaEditando.valor).replace(",", "."));
-    if (isNaN(valorNumero) || valorNumero <= 0) {
+    const valorDigitado = parseFloat(String(despesaEditando.valor).replace(",", "."));
+    if (isNaN(valorDigitado) || valorDigitado <= 0) {
       setErro("Informe um valor válido maior que zero.");
       return;
     }
 
+    // 🔥 Converte para Real antes de salvar
+    const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = despesaEditando.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -291,7 +314,7 @@ function Despesas() {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          valor: valorNumero,
+          valor: valorEmReal,
           data: dataFormatada,
           descricao: despesaEditando.nome,
           tipo: "saque",
@@ -299,44 +322,30 @@ function Despesas() {
         }),
       });
 
-      if (!resp.ok) {
-        const despesasAtualizadas = despesas.map(d =>
-          d.id === despesaEditando.id
-            ? { ...d, valor: valorNumero, data: dataFormatada }
-            : d
-        );
-        setDespesas(despesasAtualizadas);
-        localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-        setSucesso("Despesa atualizada localmente (offline)!");
-        fecharModalEdicao();
+      const resultado = await resp.json();
+
+      if (!resp.ok || !resultado.sucesso) {
+        setErro(resultado.erro || "Não foi possível atualizar a despesa.");
         return;
       }
 
-      const resultado = await resp.json();
-      if (resultado.sucesso) {
-        const despesasAtualizadas = despesas.map(d =>
-          d.id === despesaEditando.id
-            ? { ...d, valor: valorNumero, data: dataFormatada }
-            : d
-        );
-        setDespesas(despesasAtualizadas);
-        localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-        setSucesso("Despesa atualizada com sucesso!");
-        fecharModalEdicao();
-      } else {
-        throw new Error("Falha na atualização");
-      }
-    } catch (err) {
-      console.error("Erro ao editar despesa:", err);
       const despesasAtualizadas = despesas.map(d =>
         d.id === despesaEditando.id
-          ? { ...d, valor: valorNumero, data: dataFormatada }
+          ? {
+              ...d,
+              nome: despesaEditando.nome,
+              valor: valorEmReal,
+              data: dataFormatada,
+            }
           : d
       );
       setDespesas(despesasAtualizadas);
       localStorage.setItem('despesas', JSON.stringify(despesasAtualizadas));
-      setSucesso("Despesa atualizada localmente (offline)!");
+      setSucesso("Despesa atualizada com sucesso!");
       fecharModalEdicao();
+    } catch (err) {
+      console.error("Erro ao editar despesa:", err);
+      setErro("Erro ao atualizar despesa. Tente novamente.");
     }
   }
 
@@ -359,7 +368,6 @@ function Despesas() {
     );
   }
 
-  // Variável para controlar se qualquer modal está aberto
   const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
@@ -381,11 +389,15 @@ function Despesas() {
 
             <div className="resumo-card">
               <div className="resumo-item">
-                <CreditCard size={24} />
+                {/* 🔥 Símbolo puxado do Provider */}
+                <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
+                  {getCurrencySymbol()}
+                </span>
                 <div>
                   <p className="resumo-label">Total de Despesas</p>
-                  <p className="resumo-valor">
-                    R$ {totalDespesas.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  {/* 🔥 Substituído por <Money /> */}
+                  <p className="despesas-valor">
+                    <Money value={totalDespesas} />
                   </p>
                 </div>
               </div>
@@ -411,7 +423,8 @@ function Despesas() {
                       <Tooltip
                         contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
                         labelStyle={{ color: "#f8fafc" }}
-                        formatter={(value) => ["R$ " + Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 }), "Valor"]}
+                        // 🔥 Formatter usando o Provider
+                        formatter={(value) => [formatMoney(value), "Valor"]}
                         cursor={false}
                       />
                       <Bar dataKey="valor" fill="#ef4444" radius={[8, 8, 0, 0]} />
@@ -434,9 +447,13 @@ function Despesas() {
                         <p className="despesa-data">{formatarData(despesa.data)}</p>
                       </div>
                       <div className="despesa-right">
+                        {/* 🔥 Substituído por <Money /> */}
                         <p className="despesa-valor">
-                          R$ {Number(despesa.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                          <Money value={despesa.valor} />
                         </p>
+                        <button className="btn-editar-despesa" onClick={() => abrirModalEdicao(despesa)} title="Editar despesa">
+                          <Pencil size={16} />
+                        </button>
                         <button className="btn-remover-despesa" onClick={() => handleRemoverDespesa(despesa.id)} title="Remover despesa">
                           <Trash2 size={16} />
                         </button>
@@ -461,8 +478,28 @@ function Despesas() {
                     <label htmlFor="nome">Nome</label>
                     <input type="text" id="nome" name="nome" placeholder="Ex: Mercado, aluguel, contas de casa..." autoComplete="off" value={novaDespesa.nome} onChange={handleInputChange} />
                   </div>
+                  
+                  {/* 🔥 SELETOR DE MOEDA */}
                   <div className="form-group">
-                    <label htmlFor="valor">Valor (R$)</label>
+                    <label htmlFor="moeda">Moeda da transação</label>
+                    <select
+                      id="moeda"
+                      className="currency-select"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value="BRL">🇧🇷 Real (R$)</option>
+                      <option value="USD">🇺🇸 Dólar ($)</option>
+                      <option value="EUR">🇪🇺 Euro (€)</option>
+                      <option value="GBP">🇬🇧 Libra (£)</option>
+                    </select>
+                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                      O valor será convertido e salvo em Real (BRL) no sistema.
+                    </p>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="valor">Valor</label>
                     <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaDespesa.valor} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
@@ -470,6 +507,48 @@ function Despesas() {
                     <input type="date" id="data" name="data" autoComplete="off" value={novaDespesa.data} onChange={handleInputChange} />
                   </div>
                   <button type="submit" className="btn-salvar">Salvar</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de edição */}
+          {modalEdicaoAberto && despesaEditando && (
+            <div className="modal-overlay" onClick={fecharModalEdicao}>
+              <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
+                <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
+                <h2>Editar Despesa</h2>
+                <form className="forma-despesa" onSubmit={handleEditarDespesa}>
+                  <div className="form-group">
+                    <label htmlFor="edit-nome">Nome</label>
+                    <input type="text" id="edit-nome" name="nome" autoComplete="off" value={despesaEditando.nome} onChange={handleEdicaoChange} />
+                  </div>
+
+                  {/* 🔥 SELETOR DE MOEDA NO MODAL DE EDIÇÃO */}
+                  <div className="form-group">
+                    <label htmlFor="edit-moeda">Moeda da transação</label>
+                    <select
+                      id="edit-moeda"
+                      className="currency-select"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value="BRL">🇧🇷 Real (R$)</option>
+                      <option value="USD">🇺🇸 Dólar ($)</option>
+                      <option value="EUR">🇪🇺 Euro (€)</option>
+                      <option value="GBP">🇬🇧 Libra (£)</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="edit-valor">Valor</label>
+                    <input type="number" id="edit-valor" name="valor" step="0.01" min="0" autoComplete="off" value={despesaEditando.valor} onChange={handleEdicaoChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-data">Data</label>
+                    <input type="date" id="edit-data" name="data" autoComplete="off" value={despesaEditando.data} onChange={handleEdicaoChange} />
+                  </div>
+                  <button type="submit" className="btn-salvar">Salvar Alterações</button>
                 </form>
               </div>
             </div>

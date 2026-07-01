@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
+import { useTheme } from "../../hooks/useTheme";
+import { useCurrency } from "../../context/CurrencyProvider"; // 🔥 Importe o hook da moeda
 import "./Configuracoes.css";
 import {
   LogOut,
@@ -14,27 +16,26 @@ import {
   X,
   Settings,
   Palette,
+  Wallet, // 🔥 Ícone da moeda
 } from "lucide-react";
 
 function Configuracoes() {
   const navigate = useNavigate();
+  const { toggleTheme, isDark } = useTheme();
+  const { currency, setCurrency } = useCurrency(); // 🔥 Use o hook da moeda
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showToast, setShowToast] = useState(false);
-  const [logoutTimer, setLogoutTimer] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // Se não tiver token, manda pro login
     if (!token) {
       navigate("/login");
       return;
     }
 
-    // Se mais tarde você quiser salvar user no localStorage,
-    // pode reaproveitar aqui. Por enquanto, cria um placeholder simples.
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
@@ -44,7 +45,6 @@ function Configuracoes() {
         setUser(null);
       }
     } else {
-      // fallback: usa só email como "desconhecido" ou deixa null
       setUser({
         name: "",
         email: "Usuário autenticado",
@@ -60,29 +60,13 @@ function Configuracoes() {
     navigate("/login");
   };
 
-  const showLogoutWarning = () => {
-    setShowToast(true);
-
-    const timer = setTimeout(() => {
-      setShowToast(false);
-    }, 5000);
-
-    setLogoutTimer(timer);
-  };
-
   const confirmLogout = () => {
-    if (logoutTimer) {
-      clearTimeout(logoutTimer);
-    }
-    setShowToast(false);
+    setShowModal(false);
     handleLogout();
   };
 
   const cancelLogout = () => {
-    setShowToast(false);
-    if (logoutTimer) {
-      clearTimeout(logoutTimer);
-    }
+    setShowModal(false);
   };
 
   if (loading) {
@@ -147,7 +131,7 @@ function Configuracoes() {
                 <User size={16} className="config-icon" /> Nome:
               </div>
               <span className="config-value">
-                {user.name || "Não informado"}
+                {user.nome || "Não informado"}
               </span>
             </div>
 
@@ -173,36 +157,101 @@ function Configuracoes() {
               </div>
               <button
                 className="config-btn-danger"
-                onClick={showLogoutWarning}
+                onClick={() => setShowModal(true)}
               >
                 <LogOut size={18} /> Sair
               </button>
             </div>
           </section>
+
+          {/* Tema */}
+          <section className="config-section">
+            <h2>
+              <Palette size={18} />
+              Aparência
+            </h2>
+            
+            <div className="config-row">
+              <div className="config-text">
+                <Settings size={16} className="config-icon" /> Tema:
+              </div>
+              <div className="theme-toggle-wrapper">
+                <button 
+                  className="theme-toggle-btn" 
+                  onClick={toggleTheme}
+                  aria-label="Alternar tema"
+                >
+                  {isDark ? (
+                    <>
+                      <MoonStar size={18} /> 
+                      <span>Escuro</span>
+                    </>
+                  ) : (
+                    <>
+                      <SunMedium size={18} /> 
+                      <span>Claro</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* 🔥 NOVA SEÇÃO: MOEDA */}
+          <section className="config-section">
+            <h2>
+              <Wallet size={18} />
+              Moeda
+            </h2>
+            
+            <div className="config-row">
+              <div className="config-text">
+                <Settings size={16} className="config-icon" /> Moeda padrão:
+              </div>
+              <div className="theme-toggle-wrapper">
+                <select 
+                  className="currency-select"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                >
+                  <option value="BRL">Real (R$)</option>
+                  <option value="USD">Dólar ($)</option>
+                  <option value="EUR">Euro (€)</option>
+                  <option value="GBP">Libra (£)</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
         </div>
       </main>
 
-      {showToast && (
-        <div className="toast-warning">
-          <div className="toast-content">
-            <AlertTriangle size={20} className="toast-icon" />
-            <div className="toast-message">
-              <strong>Atenção!</strong> Você tem certeza que deseja sair da
-              conta? Você precisará fazer login novamente para acessar o
-              sistema.
+      {/* MODAL DE CONFIRMAÇÃO MODERNO */}
+      {showModal && (
+        <div className="logout-modal-overlay" onClick={cancelLogout}>
+          <div className="logout-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={cancelLogout}>
+              <X size={20} />
+            </button>
+            
+            <div className="modal-icon-wrapper">
+              <AlertTriangle size={40} className="modal-alert-icon" />
+            </div>
+            
+            <h3 className="modal-title">Sair da conta</h3>
+            <p className="modal-description">
+              Tem certeza que deseja sair? Você precisará fazer login novamente para acessar o sistema.
+            </p>
+            
+            <div className="modal-actions">
+              <button className="modal-btn-cancel" onClick={cancelLogout}>
+                Cancelar
+              </button>
+              <button className="modal-btn-confirm" onClick={confirmLogout}>
+                <LogOut size={18} /> Sair
+              </button>
             </div>
           </div>
-          <div className="toast-actions">
-            <button className="toast-btn-cancel" onClick={cancelLogout}>
-              Cancelar
-            </button>
-            <button className="toast-btn-confirm" onClick={confirmLogout}>
-              Confirmar
-            </button>
-          </div>
-          <button className="toast-close" onClick={cancelLogout}>
-            <X size={16} />
-          </button>
         </div>
       )}
     </div>

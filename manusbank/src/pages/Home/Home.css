@@ -1,3 +1,4 @@
+/* pages/Home/Home.css */
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
 /* ─── RESET ─────────────────────────────── */
@@ -9,7 +10,6 @@
 
 /* ─── BASE ───────────────────────────────── */
 html {
-  /* EFEITO 1: Ativa o scroll suave para links âncora da página */
   scroll-behavior: smooth;
 }
 
@@ -26,24 +26,11 @@ a {
   text-decoration: none;
 }
 
-/* ─── ANIMAÇÕES DE SCROLL (CSS MODERNO) ──── */
-@keyframes revelar {
-  from {
-    opacity: 0;
-    transform: translateY(60px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* ─── HOME (CONTAINER GERAL) ────────────── */
 .home {
   width: 100%;
   min-height: 100vh;
   position: relative;
-  box-sizing: border-box;
 }
 
 .home::before {
@@ -57,7 +44,7 @@ a {
   z-index: 0;
 }
 
-/* ─── NAVBAR (FIXA NO TOPO DA TELA 1) ────── */
+/* ─── NAVBAR ─────────────────────────────── */
 .navbar {
   position: fixed;
   top: 0;
@@ -69,7 +56,6 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 32px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   background: rgb(6, 13, 40);
 }
@@ -81,8 +67,6 @@ a {
   font-family: "Sora", sans-serif;
   font-weight: 700;
   font-size: 18px;
-  letter-spacing: -0.3px;
-  flex-shrink: 0;
 }
 
 .logo-image {
@@ -97,48 +81,26 @@ a {
   height: 22px;
 }
 
-/* ─── LINKS DO NAVBAR (ESTILIZADOS) ──────── */
 .navbar-links {
   display: flex;
-  gap: 8px; /* Reduzimos o gap pois o padding dos links fará o espaçamento */
-  margin-left: auto;
+  gap: 8px;
 }
 
 .navbar-links a {
-  padding: 8px 16px; /* Área de clique muito maior e confortável */
-  border-radius: 10px; /* Cantos arredondados para parecer um botão */
+  padding: 8px 16px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
   color: #94a3b8;
   transition: all 0.3s ease;
-  position: relative; /* Necessário para o efeito de linha */
-  cursor: pointer;
 }
 
-/* Efeito de fundo sutil e mudança de cor ao passar o mouse */
 .navbar-links a:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* Efeito de linha inferior estilizada (degradê azul) */
-.navbar-links a::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 4px;
-  width: 0%; /* A linha começa invisível */
-  height: 2px;
-  background: linear-gradient(90deg, #1d4ed8, #2563eb);
-  transition: all 0.3s ease;
-  transform: translateX(-50%);
-  border-radius: 4px;
-}
-
-.navbar-links a:hover::after {
-  width: 60%; /* A linha aparece preenchendo o centro */
-}
-
-/* ─── HERO (TELA 1 CHEIA E CENTRALIZADA) ─── */
+/* ─── HERO ───────────────────────────────── */
 .hero {
   position: relative;
   z-index: 1;
@@ -146,23 +108,21 @@ a {
   min-height: 100vh;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 100px 32px 40px;
-  
+  padding: 120px 32px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  box-sizing: border-box;
 }
 
 .title {
   font-family: "Sora", sans-serif;
-  font-size: 70px;
+  font-size: clamp(40px, 6vw, 70px);
   font-weight: 700;
   line-height: 1.06;
   letter-spacing: -2.5px;
-  margin-bottom: 26px;
+  margin-bottom: 16px;
 }
 
 .title span {
@@ -171,6 +131,22 @@ a {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* 🔥 NOVO SUBTÍTULO DE MARKETING (Substitui a seção de curiosidade) */
+.hero-impact {
+  font-size: 18px;
+  color: #f1f5f9;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 12px 24px;
+  border-radius: 40px;
+  margin-bottom: 24px;
+  max-width: 700px;
+}
+
+.hero-impact strong {
+  color: #ef4444; /* Vermelho para destacar o número */
 }
 
 .description {
@@ -212,33 +188,20 @@ a {
   box-shadow: 0 14px 34px rgba(37, 99, 235, 0.42);
 }
 
-/* ─── SEÇÕES MACRO (TELAS 2, 3 E 4 CHEIAS) ── */
+/* ─── SEÇÕES (Funcionalidades) ───────────── */
 .section {
   position: relative;
   z-index: 1;
   width: 100%;
-  min-height: 100vh;
+  min-height: 80vh; /* Altura um pouco menor, mais objetiva */
   max-width: 1080px;
   margin: 0 auto;
   padding: 80px 32px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
-  box-sizing: border-box;
-
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
-  /* EFEITO 2: Faz as seções surgirem conforme entram na tela */
-  animation: revelar linear both;
-  animation-timeline: view();
-  animation-range: entry 10% cover 40%;
-}
-
-.section-header, 
-.grid-3, 
-.steps {
-  width: 100%;
 }
 
 .section-header {
@@ -247,18 +210,9 @@ a {
   margin: 0 auto 56px;
 }
 
-.section-tag {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #3b82f6;
-  margin-bottom: 12px;
-}
-
 .section-title {
   font-family: "Sora", sans-serif;
-  font-size: 36px;
+  font-size: clamp(28px, 4vw, 36px);
   font-weight: 700;
   letter-spacing: -0.8px;
   line-height: 1.15;
@@ -271,12 +225,11 @@ a {
   line-height: 1.7;
 }
 
-/* ─── GRID DE CARDS ──────────────────────── */
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  align-items: stretch;
+  width: 100%;
 }
 
 .card {
@@ -287,14 +240,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  
-  /* Mantém as transições originais de hover + adiciona a de scroll */
   transition: transform 0.22s, border-color 0.22s, background 0.22s;
-
-  /* EFEITO 3: Animação individual dos cards ao rolar */
-  animation: revelar linear both;
-  animation-timeline: view();
-  animation-range: entry 5% cover 30%;
 }
 
 .card:hover {
@@ -313,7 +259,6 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .card h3 {
@@ -328,82 +273,6 @@ a {
   line-height: 1.65;
 }
 
-/* ─── ETAPAS (STEPS) ─────────────────────── */
-.steps {
-  display: flex;
-  gap: 18px;
-  position: relative;
-}
-
-.steps::before {
-  content: "";
-  position: absolute;
-  top: 50px;
-  left: 16%;
-  right: 16%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.5), transparent);
-}
-
-.step {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 22px;
-  padding: 30px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-  position: relative;
-  z-index: 1;
-  transition: transform 0.22s, border-color 0.22s;
-
-  /* EFEITO 4: Animação individual das etapas ao rolar */
-  animation: revelar linear both;
-  animation-timeline: view();
-  animation-range: entry 5% cover 30%;
-}
-
-.step:hover {
-  transform: translateY(-4px);
-  border-color: rgba(96, 165, 250, 0.32);
-}
-
-.step-number {
-  font-family: "Sora", sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #3b82f6;
-}
-
-.step-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: rgba(37, 99, 235, 0.15);
-  border: 1px solid rgba(96, 165, 250, 0.32);
-  color: #60a5fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.step h3 {
-  font-family: "Sora", sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.step p {
-  font-size: 13px;
-  color: #94a3b8;
-  line-height: 1.6;
-}
-
 /* ─── FOOTER ─────────────────────────────── */
 .footer {
   position: relative;
@@ -416,9 +285,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
   flex-wrap: wrap;
-  box-sizing: border-box;
 }
 
 .footer-brand {
@@ -435,165 +302,22 @@ a {
   color: #64748b;
 }
 
-/* ───────────────── CURIOSIDADE ───────────────── */
-
-.curiosity-card {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-
-  padding: 48px;
-
-  border-radius: 24px;
-
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  transition: all 0.3s ease;
-}
-
-.curiosity-card:hover {
-  border-color: rgba(96, 165, 250, 0.25);
-
-  box-shadow:
-    0 10px 40px rgba(37, 99, 235, 0.12);
-}
-
-.curiosity-card .section-tag {
-  margin-bottom: 18px;
-}
-
-.curiosity-number {
-  font-family: "Sora", sans-serif;
-  font-size: clamp(4rem, 8vw, 6rem);
-  font-weight: 700;
-
-  line-height: 1;
-
-  margin-bottom: 12px;
-
-  background: linear-gradient(
-    90deg,
-    #3b82f6,
-    #60a5fa,
-    #93c5fd
-  );
-
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  background-clip: text;
-}
-
-.curiosity-title {
-  font-family: "Sora", sans-serif;
-  font-size: 2rem;
-  font-weight: 600;
-
-  line-height: 1.2;
-
-  max-width: 650px;
-
-  margin-bottom: 20px;
-}
-
-.curiosity-text {
-  max-width: 720px;
-
-  color: #94a3b8;
-
-  font-size: 1rem;
-  line-height: 1.8;
-}
-
-/* MOBILE */
-
-@media (max-width: 768px) {
-  .curiosity-card {
-    padding: 32px 24px;
-  }
-
-  .curiosity-title {
-    font-size: 1.4rem;
-  }
-
-  .curiosity-text {
-    font-size: 0.95rem;
-  }
-}
-
-/* ─── RESPONSIVIDADE ADAPTATIVA ──────────── */
+/* ─── RESPONSIVIDADE ────────────────────── */
 @media (max-width: 860px) {
+  .navbar {
+    padding: 0 16px;
+  }
+  
+  .hero {
+    padding: 100px 20px 40px;
+  }
+
   .section {
     min-height: auto;
-    padding: 64px 24px;
+    padding: 64px 20px;
   }
 
   .grid-3 {
-    grid-template-columns: 1fr; /* Correção do código cortado */
-  }
-
-  .steps {
-    flex-direction: column;
-  }
-
-  .steps::before {
-    display: none;
-  }
-}
-
-/* ─── NAVBAR RESPONSIVO (MOBILE) ────────── */
-@media (max-width: 860px) {
-  .navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: auto;
-    padding: 10px 16px;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;          /* centraliza logo + tudo */
-  }
-
-  .navbar-brand {
-    font-size: 16px;
-    justify-content: center;
-  }
-
-  .navbar-links {
-    width: 100%;
-    margin-left: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-    justify-content: center;     
-    
-  }
-
-  .navbar-links a {
-    font-size: 13px;
-    text-align: center;
-  }
-
-  .nav-cta {
-    width: auto;                  /* botão fica do tamanho do conteúdo */
-    align-self: center;           /* centraliza o botão */
-    text-align: center;
-    margin-top: 4px;
-  }
-
-  /* Ajusta o hero pra não ficar escondido atrás do navbar fixo */
-  .hero {
-    padding-top: 120px;
-    padding-inline: 20px;
-  }
-
-  .title {
-    font-size: 34px;
-    line-height: 1.2;
-  }
-
-  .description {
-    font-size: 15px;
+    grid-template-columns: 1fr;
   }
 }
