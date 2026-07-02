@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./MetasFinanceiras.css";
@@ -13,10 +13,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { API_URL } from "../../config/api";
-import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
-import { useCurrency } from "../../context/CurrencyProvider"; // 👈 para formatar valores
+import { useIdioma } from "../../context/IdiomaContext";
+import { useCurrency } from "../../context/CurrencyProvider";
 
-// Componente auxiliar para formatação de moeda
+// Componente auxiliar para exibir valor já convertido
 function Money({ value }) {
   const { formatMoney } = useCurrency();
   return <span>{formatMoney(value)}</span>;
@@ -24,8 +24,8 @@ function Money({ value }) {
 
 function MetasFinanceiras() {
   const navigate = useNavigate();
-  const { t } = useIdioma(); // 👈 hook de tradução
-  const { formatMoney } = useCurrency(); // para usar nos textos
+  const { t } = useIdioma();
+  const { formatMoney, currency, rates } = useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
@@ -42,6 +42,21 @@ function MetasFinanceiras() {
   const [sucesso, setSucesso] = useState("");
   const [carregando, setCarregando] = useState(true);
 
+  const moedaAnteriorRef = useRef(currency);
+
+  // 👇 Funções de conversão
+  const convertToBRL = (value, fromCurrency) => {
+    if (!fromCurrency || fromCurrency === "BRL") return value;
+    const rate = rates[fromCurrency] || 1;
+    return value * rate;
+  };
+
+  const convertFromBRL = (valueInBRL) => {
+    if (!currency || currency === "BRL") return valueInBRL;
+    const rate = rates[currency] || 1;
+    return valueInBRL / rate;
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -50,6 +65,37 @@ function MetasFinanceiras() {
     }
     carregarMetas(token);
   }, [navigate]);
+
+  // 👇 Efeito para recarregar e converter metas apenas quando a moeda muda
+  useEffect(() => {
+    if (moedaAnteriorRef.current !== currency && metas.length > 0) {
+      moedaAnteriorRef.current = currency;
+
+      const metasConvertidas = metas.map(meta => {
+        // 🛑 CORREÇÃO: se o backend não devolveu "moeda" (campo ausente),
+        // NÃO assumimos mais "BRL" às cegas — isso causava conversões erradas
+        // para quem usa o app em outra moeda (ex: USD) desde o início.
+        // Se não sabemos a moeda real do registro, assumimos que ele já
+        // está na moeda atualmente exibida (não força conversão indevida).
+        const metaMoeda = meta.moeda || currency;
+
+        if (metaMoeda !== currency) {
+          const valorAlvoEmBRL = convertToBRL(Number(meta.valorAlvo) || 0, metaMoeda);
+          const valorAtualEmBRL = convertToBRL(Number(meta.valorAtual) || 0, metaMoeda);
+          
+          return {
+            ...meta,
+            valorAlvo: convertFromBRL(valorAlvoEmBRL),
+            valorAtual: convertFromBRL(valorAtualEmBRL),
+            moeda: currency,
+          };
+        }
+        return meta;
+      });
+      
+      setMetas(metasConvertidas);
+    }
+  }, [currency, metas, rates]);
 
   async function carregarMetas(token) {
     try {
@@ -75,8 +121,27 @@ function MetasFinanceiras() {
       }
 
       const dados = await resp.json();
-      setMetas(dados || []);
-      localStorage.setItem("metasFinanceiras", JSON.stringify(dados || []));
+      
+      const metasConvertidas = (dados || []).map(meta => {
+        // 🛑 CORREÇÃO: mesmo motivo do efeito acima — não assumir "BRL"
+        // quando o registro vindo da API não tem "moeda" definida.
+        const metaMoeda = meta.moeda || currency;
+        if (metaMoeda !== currency) {
+          const valorAlvoEmBRL = convertToBRL(Number(meta.valorAlvo) || 0, metaMoeda);
+          const valorAtualEmBRL = convertToBRL(Number(meta.valorAtual) || 0, metaMoeda);
+          
+          return {
+            ...meta,
+            valorAlvo: convertFromBRL(valorAlvoEmBRL),
+            valorAtual: convertFromBRL(valorAtualEmBRL),
+            moeda: currency,
+          };
+        }
+        return meta;
+      });
+      
+      setMetas(metasConvertidas);
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metasConvertidas));
     } catch (e) {
       console.error("Erro ao carregar metas:", e);
       const metasLocal = JSON.parse(localStorage.getItem("metasFinanceiras") || "[]");
@@ -175,6 +240,7 @@ function MetasFinanceiras() {
           valorAlvo: valorNumero,
           dataMeta: metaEditando.dataMeta,
           descricao: metaEditando.descricao,
+          moeda: currency,
         }),
       });
 
@@ -186,7 +252,7 @@ function MetasFinanceiras() {
       }
 
       const metasAtualizadas = metas.map((m) =>
-        m.id === resultado.meta.id ? resultado.meta : m
+        m.id === resultado.meta.id ? { ...resultado.meta, moeda: currency } : m
       );
       setMetas(metasAtualizadas);
       localStorage.setItem("metasFinanceiras", JSON.stringify(metasAtualizadas));
@@ -227,6 +293,7 @@ function MetasFinanceiras() {
       valorAtual: 0,
       dataMeta: novaMeta.dataMeta,
       descricao: novaMeta.descricao,
+      moeda: currency,
     };
 
     try {
@@ -235,6 +302,7 @@ function MetasFinanceiras() {
         valorAlvo: valorNumero,
         dataMeta: novaMeta.dataMeta,
         descricao: novaMeta.descricao,
+        moeda: currency,
       };
 
       const resp = await fetch(`${API_URL}/api/metas`, {
@@ -246,6 +314,7 @@ function MetasFinanceiras() {
         body: JSON.stringify(body),
       });
 
+      // Fallback offline
       if (!resp.ok) {
         setMetas((prev) => [...prev, novaMetaObj]);
         localStorage.setItem("metasFinanceiras", JSON.stringify([...metas, novaMetaObj]));
@@ -256,8 +325,9 @@ function MetasFinanceiras() {
       }
 
       const criada = await resp.json();
-      setMetas((prev) => [...prev, criada]);
-      localStorage.setItem("metasFinanceiras", JSON.stringify([...metas, criada]));
+      const metaComMoeda = { ...criada, moeda: currency };
+      setMetas((prev) => [...prev, metaComMoeda]);
+      localStorage.setItem("metasFinanceiras", JSON.stringify([...metas, metaComMoeda]));
       setNovaMeta({ titulo: "", valorAlvo: "", dataMeta: "", descricao: "" });
       setModalAberto(false);
       setSucesso(t("metasFinanceiras.savedSuccess"));
@@ -296,7 +366,10 @@ function MetasFinanceiras() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ valor: valorNumero }),
+        body: JSON.stringify({ 
+          valor: valorNumero,
+          moeda: currency,
+        }),
       });
 
       if (!resp.ok) {
@@ -314,9 +387,10 @@ function MetasFinanceiras() {
       }
 
       const { meta } = await resp.json();
-      setMetas((prev) => prev.map((m) => (m.id === meta.id ? meta : m)));
+      const metaComMoeda = { ...meta, moeda: currency };
+      setMetas((prev) => prev.map((m) => (m.id === meta.id ? metaComMoeda : m)));
       localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
-        m.id === meta.id ? meta : m
+        m.id === meta.id ? metaComMoeda : m
       )));
       setSucesso(t("metasFinanceiras.aporteSuccess", { valor: formatMoney(valorNumero) }));
       setValorAporte("");
@@ -351,7 +425,10 @@ function MetasFinanceiras() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ valor: valorNumero }),
+        body: JSON.stringify({ 
+          valor: valorNumero,
+          moeda: currency,
+        }),
       });
 
       if (!resp.ok) {
@@ -371,9 +448,10 @@ function MetasFinanceiras() {
       }
 
       const { meta } = await resp.json();
-      setMetas((prev) => prev.map((m) => (m.id === meta.id ? meta : m)));
+      const metaComMoeda = { ...meta, moeda: currency };
+      setMetas((prev) => prev.map((m) => (m.id === meta.id ? metaComMoeda : m)));
       localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
-        m.id === meta.id ? meta : m
+        m.id === meta.id ? metaComMoeda : m
       )));
       setSucesso(t("metasFinanceiras.desaporteSuccess", { valor: formatMoney(valorNumero) }));
       setValorAporte("");
@@ -468,11 +546,11 @@ function MetasFinanceiras() {
 
             <section className="mf-grafico-section">
               <h2>{t("metasFinanceiras.chartTitle")}</h2>
-              <div className="mf-grafico-container">
+              <div className="mf-grafico-container" style={{ width: '100%', height: '250px' }}>
                 {carregando ? (
                   <div className="mf-grafico-vazio"><p>{t("metasFinanceiras.loadingChart")}</p></div>
                 ) : metas.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={dadosGrafico}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                       <XAxis dataKey="nome" stroke="#94a3b8" />

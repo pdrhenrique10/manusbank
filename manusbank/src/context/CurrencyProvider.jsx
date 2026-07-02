@@ -19,10 +19,9 @@ export function CurrencyProvider({ children }) {
       const salvo = localStorage.getItem(CURRENCY_KEY);
       if (["BRL", "USD", "EUR", "GBP"].includes(salvo)) return salvo;
     } catch (e) {}
-    return "BRL"; // Padrão brasileiro
+    return "BRL";
   });
 
-  // 🔥 ESTADO DAS COTAÇÕES (Atualizado com valores de fallback mais realistas)
   const [rates, setRates] = useState({
     BRL: 1,
     USD: 5.18,
@@ -30,7 +29,6 @@ export function CurrencyProvider({ children }) {
     GBP: 6.40
   });
 
-  // Buscar cotações na AwesomeAPI
   useEffect(() => {
     async function fetchRates() {
       try {
@@ -45,53 +43,58 @@ export function CurrencyProvider({ children }) {
         });
       } catch (error) {
         console.error("Erro ao buscar cotação da moeda:", error);
-        // Se falhar, mantém os valores de fallback
       }
     }
 
     fetchRates();
   }, []);
 
-  // Salvar a preferência da moeda no localStorage
   useEffect(() => {
     localStorage.setItem(CURRENCY_KEY, currency);
   }, [currency]);
 
-  // 🔥 FORMATADOR UNIVERSAL (Corrigido para Euro e Libra)
+  // Formatador COM conversão (para transações normais)
   const formatMoney = (value) => {
     if (value === null || value === undefined) return "R$ 0,00";
 
     const symbol = CURRENCY_SYMBOLS[currency] || "R$";
     const rate = rates[currency] || 1;
     
-    // 1. Converte o valor (divide pela cotação)
     const convertedValue = value / rate;
 
-    // 2. Formata o número usando a localização pt-BR (vírgula para decimais, ponto para milhar)
-    // Mas sem definir 'style: currency' ou 'currency', para não forçar símbolos.
     const formattedNumber = new Intl.NumberFormat("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(convertedValue);
 
-    // 3. Retorna o símbolo na frente do número (com um espaço opcional)
     return `${symbol} ${formattedNumber}`;
   };
 
-  // 🔥 FUNÇÃO PARA CONVERSÃO (Gráficos e cálculos)
+  // 👇 NOVO: Formatador SEM conversão (para metas - valor já está na moeda escolhida)
+  const formatMoneyDirect = (value) => {
+    if (value === null || value === undefined) return "R$ 0,00";
+
+    const symbol = CURRENCY_SYMBOLS[currency] || "R$";
+
+    const formattedNumber = new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+
+    return `${symbol} ${formattedNumber}`;
+  };
+
   const convertValue = (value) => {
     const rate = rates[currency] || 1;
     return value / rate;
   };
 
-  // 🔥 FUNÇÃO PARA CONVERTER DE VOLTA PARA REAL (Salvar no banco)
   const convertToBRL = (value) => {
     if (currency === "BRL") return value;
     const rate = rates[currency] || 1;
     return value * rate;
   };
 
-  // 🔥 Retorna apenas o símbolo
   const getCurrencySymbol = () => {
     return CURRENCY_SYMBOLS[currency] || "R$";
   };
@@ -100,7 +103,8 @@ export function CurrencyProvider({ children }) {
     <CurrencyContext.Provider value={{ 
       currency, 
       setCurrency, 
-      formatMoney, 
+      formatMoney,
+      formatMoneyDirect, // 👈 exporta a nova função
       convertValue,
       convertToBRL,
       getCurrencySymbol,
@@ -111,7 +115,6 @@ export function CurrencyProvider({ children }) {
   );
 }
 
-// Hook para usar dentro dos componentes
 export function useCurrency() {
   const context = useContext(CurrencyContext);
   if (!context) {

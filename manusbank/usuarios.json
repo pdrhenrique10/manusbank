@@ -19,14 +19,23 @@
     "nome": "Testes",
     "email": "testes@gmail.com",
     "senha": "289160db0d9f39f9ae1754c4ec9c16f90b50e32e09c5fb5481ae642b3d3d1a36",
-    "saldo": 0,
-    "transacoes": [],
+    "saldo": 8000.000000000002,
+    "transacoes": [
+      {
+        "id": 1782944928242,
+        "tipo": "deposito",
+        "valor": 8000,
+        "descricao": "Salário",
+        "data": "2026-07-01",
+        "categoria": "Salário"
+      }
+    ],
     "contasReceber": [],
     "nextContaReceberId": 3,
     "contasPagar": [],
     "nextContaPagarId": 1,
     "metas": [],
-    "nextMetaId": 1,
+    "nextMetaId": 9,
     "criadoEm": "2026-06-30T22:14:02.632Z"
   },
   {

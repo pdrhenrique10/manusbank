@@ -829,11 +829,19 @@ app.delete("/api/contas-pagar/:id", autenticar, (req, res) => {
 
 // ===== METAS =====
 app.get("/api/metas", autenticar, (req, res) => {
-  res.json(req.usuario.metas || []);
+  const metas = req.usuario.metas || [];
+  // 🛑 CORREÇÃO: metas antigas (criadas antes do campo "moeda" existir)
+  // não têm esse campo salvo no JSON. Assumimos "BRL" só para essas,
+  // sem sobrescrever o valor real de metas que já têm moeda definida.
+  const metasComMoeda = metas.map((m) => ({
+    ...m,
+    moeda: m.moeda || "BRL",
+  }));
+  res.json(metasComMoeda);
 });
 
 app.post("/api/metas", autenticar, (req, res) => {
-  const { titulo, valorAlvo, dataMeta, descricao } = req.body;
+  const { titulo, valorAlvo, dataMeta, descricao, moeda } = req.body;
   if (!titulo || !valorAlvo || !dataMeta) {
     return res.status(400).json({
       erro: "Título, valor alvo e data são obrigatórios",
@@ -850,6 +858,11 @@ app.post("/api/metas", autenticar, (req, res) => {
     valorAtual: 0,
     dataMeta: String(dataMeta).slice(0, 10),
     descricao: descricao || "",
+    // 🛑 CORREÇÃO: agora salvamos a moeda em que a meta foi criada.
+    // Antes esse campo era ignorado, e toda meta voltava sem "moeda"
+    // ao ser buscada de novo — o front então assumia BRL por padrão
+    // e convertia o valor errado quando o usuário usava USD (ou outra moeda).
+    moeda: moeda || "BRL",
     dataCriacao: dataHoje(),
   };
 
@@ -864,7 +877,7 @@ app.post("/api/metas", autenticar, (req, res) => {
 
 app.put("/api/metas/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
-  const { titulo, valorAlvo, dataMeta, descricao } = req.body;
+  const { titulo, valorAlvo, dataMeta, descricao, moeda } = req.body;
 
   if (!titulo || !valorAlvo || !dataMeta) {
     return res.status(400).json({
@@ -906,6 +919,9 @@ app.put("/api/metas/:id", autenticar, (req, res) => {
     valorAlvo: numeroValorAlvo,
     dataMeta: String(dataMeta).slice(0, 10),
     descricao: descricao ?? meta.descricao ?? "",
+    // 🛑 CORREÇÃO: preserva/atualiza a moeda também na edição.
+    // Sem isso, editar uma meta apagava a moeda que ela tinha.
+    moeda: moeda || meta.moeda || "BRL",
   };
 
   metas[metaIndex] = atualizada;

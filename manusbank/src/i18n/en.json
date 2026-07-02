@@ -256,7 +256,7 @@
     "modalEdit": "Edit Financial Goal",
     "formTitle": "Goal Name",
     "formTitlePlaceholder": "e.g. Car, gaming PC, House...",
-    "formTargetValue": "Target amount ($)",
+    "formTargetValue": "Target amount",
     "formTargetDate": "Target date to reach the goal",
     "formDescription": "Description (optional)",
     "formDescriptionPlaceholder": "e.g. My first car, phone upgrade...",

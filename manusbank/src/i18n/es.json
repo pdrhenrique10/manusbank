@@ -227,7 +227,7 @@
     "title": "Metas Financieras",
     "subtitle": "Defina y siga sus metas materiales.",
     "totalLabel": "Total de Metas",
-    "completedLabel": "{count} meta(s) completada(s)",
+    "completedLabel": "{count} meta(s) alcanzada(s)",
     "newButton": "Nueva Meta",
     "chartTitle": "Progreso de las Metas (%)",
     "chartProgress": "Progreso",
@@ -256,7 +256,7 @@
     "modalEdit": "Editar Meta Financiera",
     "formTitle": "Nombre de la Meta",
     "formTitlePlaceholder": "Ej: Coche, PC gamer, Casa...",
-    "formTargetValue": "Valor objetivo (R$)",
+    "formTargetValue": "Valor objetivo",
     "formTargetDate": "Fecha para alcanzar la meta",
     "formDescription": "Descripción (opcional)",
     "formDescriptionPlaceholder": "Ej: Mi primer coche, cambio de teléfono...",
@@ -350,14 +350,14 @@
     "noData": "Ninguna transacción en el período."
   },
   "sidebar": {
-  "appName": "ManusFinance",
-  "dashboard": "Inicio",
-  "fixedIncomes": "Ingresos Fijos",
-  "fixedExpenses": "Gastos Fijos",
-  "nonFixedIncomes": "Ingresos no fijos",
-  "nonFixedExpenses": "Gastos no fijos",
-  "goals": "Metas Financieras",
-  "reports": "Informes",
-  "settings": "Configuraciones"
-}
+    "appName": "ManusFinance",
+    "dashboard": "Inicio",
+    "fixedIncomes": "Ingresos Fijos",
+    "fixedExpenses": "Gastos Fijos",
+    "nonFixedIncomes": "Ingresos no fijos",
+    "nonFixedExpenses": "Gastos no fijos",
+    "goals": "Metas Financieras",
+    "reports": "Informes",
+    "settings": "Configuraciones"
+  }
 }

@@ -44,27 +44,29 @@ export default function Home() {
         </nav>
       </header>
 
-      {/* HERO - COM O GANCHO DE MARKETING */}
-      <section className="hero">
-        <h1 className="title">
-          Suas finanças,
-          <span>organizadas de verdade.</span>
-        </h1>
-        
-        {/* Frase de impacto direto (Curiosidade transformada em Marketing) */}
-        <p className="hero-impact">
-          <strong>81,6%</strong> das famílias brasileiras estão endividadas. 
-          Não seja mais um. Organize sua vida financeira agora.
-        </p>
+      {/* HERO - COM IMAGEM DE FUNDO SÓ NESSA SEÇÃO */}
+      <section className="hero-bg">
+        <div className="hero">
+          <h1 className="title">
+            Suas finanças,
+            <span>organizadas de verdade.</span>
+          </h1>
 
-        <p className="description">
-          Registre receitas, controle despesas e acompanhe suas metas em um só lugar.
-        </p>
-        
-        <div className="buttons">
-          <button className="primary-btn" onClick={() => navigate("/login")}>
-            Começar agora <ArrowRight size={18} />
-          </button>
+          {/* Frase de impacto direto (Curiosidade transformada em Marketing) */}
+          <p className="hero-impact">
+            <strong>81,6%</strong> das famílias brasileiras estão endividadas.
+            Não seja mais um. Organize sua vida financeira agora.
+          </p>
+
+          <p className="description">
+            Registre receitas, controle despesas e acompanhe suas metas em um só lugar.
+          </p>
+
+          <div className="buttons">
+            <button className="primary-btn" onClick={() => navigate("/login")}>
+              Começar agora <ArrowRight size={18} />
+            </button>
+          </div>
         </div>
       </section>
 

@@ -256,7 +256,7 @@
     "modalEdit": "Editar Meta Financeira",
     "formTitle": "Nome da Meta",
     "formTitlePlaceholder": "Ex: Carro, PC gamer, Casa...",
-    "formTargetValue": "Valor objetivo (R$)",
+    "formTargetValue": "Valor objetivo",
     "formTargetDate": "Data para bater a meta",
     "formDescription": "Descrição (opcional)",
     "formDescriptionPlaceholder": "Ex: Meu primeiro carro, upgrade de celular...",
