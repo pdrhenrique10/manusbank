@@ -40,6 +40,11 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// ===== SERVE LOCALES ESTÁTICO =====
+// isso permite acessar /locales/pt/common.json, /locales/en/common.json, etc.
+const LOCALES_DIR = path.join(__dirname, "locales");
+app.use("/locales", express.static(LOCALES_DIR));
+
 // ===== FUNÇÕES AUXILIARES =====
 function criptografarSenha(senha) {
   return crypto.createHash("sha256").update(senha).digest("hex");
@@ -256,14 +261,16 @@ app.get("/api/relatorios", autenticar, (req, res) => {
 
   let dataInicio, dataFim;
 
-  // 🔧 NOVA LÓGICA: prioriza parâmetros explícitos enviados pelo frontend
   const regexData = /^\d{4}-\d{2}-\d{2}$/;
-  if (req.query.dataInicio && req.query.dataFim &&
-      regexData.test(req.query.dataInicio) && regexData.test(req.query.dataFim)) {
+  if (
+    req.query.dataInicio &&
+    req.query.dataFim &&
+    regexData.test(req.query.dataInicio) &&
+    regexData.test(req.query.dataFim)
+  ) {
     dataInicio = req.query.dataInicio;
     dataFim = req.query.dataFim;
   } else {
-    // fallback para o cálculo tradicional
     const janela = calcularJanela(periodo, hojeReferencia);
     dataInicio = janela.dataInicio;
     dataFim = janela.dataFim;
@@ -336,7 +343,6 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   const taxaEconomia =
     totalReceitas > 0 ? (sobra / totalReceitas) * 100 : 0;
 
-  // ✅ CORREÇÃO: saldoAtual agora reflete apenas o período
   res.json({
     periodo,
     dataInicio,
@@ -376,10 +382,9 @@ app.get("/api/relatorios/grafico", autenticar, (req, res) => {
 
     const [ano, mes] = t.data.split("-");
     const chave = `${ano}-${mes}`;
-    const nomeMes = new Date(ano, parseInt(mes) - 1).toLocaleString(
-      "pt-BR",
-      { month: "short" }
-    );
+    const nomeMes = new Date(ano, parseInt(mes) - 1).toLocaleString("pt-BR", {
+      month: "short",
+    });
 
     if (!dadosPorMes[chave]) {
       dadosPorMes[chave] = { mes: nomeMes, entradas: 0, gastos: 0 };
@@ -830,9 +835,6 @@ app.delete("/api/contas-pagar/:id", autenticar, (req, res) => {
 // ===== METAS =====
 app.get("/api/metas", autenticar, (req, res) => {
   const metas = req.usuario.metas || [];
-  // 🛑 CORREÇÃO: metas antigas (criadas antes do campo "moeda" existir)
-  // não têm esse campo salvo no JSON. Assumimos "BRL" só para essas,
-  // sem sobrescrever o valor real de metas que já têm moeda definida.
   const metasComMoeda = metas.map((m) => ({
     ...m,
     moeda: m.moeda || "BRL",
@@ -858,18 +860,13 @@ app.post("/api/metas", autenticar, (req, res) => {
     valorAtual: 0,
     dataMeta: String(dataMeta).slice(0, 10),
     descricao: descricao || "",
-    // 🛑 CORREÇÃO: agora salvamos a moeda em que a meta foi criada.
-    // Antes esse campo era ignorado, e toda meta voltava sem "moeda"
-    // ao ser buscada de novo — o front então assumia BRL por padrão
-    // e convertia o valor errado quando o usuário usava USD (ou outra moeda).
     moeda: moeda || "BRL",
     dataCriacao: dataHoje(),
   };
 
   usuarios[index].metas = usuarios[index].metas || [];
   usuarios[index].metas.push(novaMeta);
-  usuarios[index].nextMetaId =
-    (usuarios[index].nextMetaId ?? 1) + 1;
+  usuarios[index].nextMetaId = (usuarios[index].nextMetaId ?? 1) + 1;
 
   salvarUsuarios(usuarios);
   res.status(201).json(novaMeta);
@@ -919,8 +916,6 @@ app.put("/api/metas/:id", autenticar, (req, res) => {
     valorAlvo: numeroValorAlvo,
     dataMeta: String(dataMeta).slice(0, 10),
     descricao: descricao ?? meta.descricao ?? "",
-    // 🛑 CORREÇÃO: preserva/atualiza a moeda também na edição.
-    // Sem isso, editar uma meta apagava a moeda que ela tinha.
     moeda: moeda || meta.moeda || "BRL",
   };
 
@@ -997,4 +992,5 @@ app.patch("/api/metas/:id/desaportar", autenticar, (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📁 Usuários salvos em: ${USUARIOS_FILE}`);
+  console.log(`🌎 Locales servidos em: ${LOCALES_DIR}`);
 });

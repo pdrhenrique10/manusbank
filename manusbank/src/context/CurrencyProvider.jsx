@@ -3,12 +3,11 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 const CURRENCY_KEY = "currency";
 
-// Lista de moedas disponíveis e seus símbolos
 const CURRENCY_SYMBOLS = {
   BRL: "R$",
   USD: "U$",
   EUR: "€",
-  GBP: "£"
+  GBP: "£",
 };
 
 const CurrencyContext = createContext();
@@ -22,55 +21,101 @@ export function CurrencyProvider({ children }) {
     return "BRL";
   });
 
+  // taxas: 1 BRL -> X moeda
   const [rates, setRates] = useState({
     BRL: 1,
-    USD: 5.18,
-    EUR: 5.60,
-    GBP: 6.40
+    USD: 0.18,
+    EUR: 0.17,
+    GBP: 0.14,
   });
+  const [loadingRates, setLoadingRates] = useState(true);
+  const [errorRates, setErrorRates] = useState(null);
 
   useEffect(() => {
+    const API_KEY = import.meta.env.VITE_EXCHANGERATES_API_KEY;
+    if (!API_KEY) {
+      console.warn("VITE_EXCHANGERATES_API_KEY não configurada");
+      setLoadingRates(false);
+      return;
+    }
+
+    let isCancelled = false;
+    let intervalId;
+
     async function fetchRates() {
       try {
-        const res = await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,GBP-BRL");
-        const data = await res.json();
+        if (isCancelled) return;
 
-        setRates({
-          BRL: 1,
-          USD: parseFloat(data.USDBRL.bid),
-          EUR: parseFloat(data.EURBRL.bid),
-          GBP: parseFloat(data.GBPBRL.bid)
-        });
+        setLoadingRates(true);
+        setErrorRates(null);
+
+        // 1 BRL -> outras moedas
+        const url = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/BRL`;
+
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error("Falha ao buscar taxas de câmbio");
+        }
+
+        const data = await res.json();
+        if (data.result !== "success") {
+          throw new Error("Erro na resposta da API de câmbio");
+        }
+        if (isCancelled) return;
+
+        setRates((prev) => ({
+          BRL: data.conversion_rates.BRL ?? prev.BRL,
+          USD: data.conversion_rates.USD ?? prev.USD,
+          EUR: data.conversion_rates.EUR ?? prev.EUR,
+          GBP: data.conversion_rates.GBP ?? prev.GBP,
+        }));
       } catch (error) {
+        if (isCancelled) return;
         console.error("Erro ao buscar cotação da moeda:", error);
+        setErrorRates(error.message);
+      } finally {
+        if (!isCancelled) {
+          setLoadingRates(false);
+        }
       }
     }
 
     fetchRates();
+    intervalId = setInterval(fetchRates, 10 * 60 * 1000);
+
+    return () => {
+      isCancelled = true;
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   useEffect(() => {
     localStorage.setItem(CURRENCY_KEY, currency);
   }, [currency]);
 
-  // Formatador COM conversão (para transações normais)
-  const formatMoney = (value) => {
+  // BRL -> moeda atual (somente exibição)
+  const convertFromBRLToCurrent = (value) => {
+    if (value === null || value === undefined) return 0;
+    const raw = Number(value) || 0;
+    const rate = rates[currency] || 1;
+    return raw * rate;
+  };
+
+  const formatFromBRL = (value) => {
     if (value === null || value === undefined) return "R$ 0,00";
 
+    const converted = convertFromBRLToCurrent(value);
     const symbol = CURRENCY_SYMBOLS[currency] || "R$";
-    const rate = rates[currency] || 1;
-    
-    const convertedValue = value / rate;
 
     const formattedNumber = new Intl.NumberFormat("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(convertedValue);
+    }).format(converted);
 
     return `${symbol} ${formattedNumber}`;
   };
 
-  // 👇 NOVO: Formatador SEM conversão (para metas - valor já está na moeda escolhida)
+  // valor já na moeda atual (sem conversão)
   const formatMoneyDirect = (value) => {
     if (value === null || value === undefined) return "R$ 0,00";
 
@@ -79,20 +124,9 @@ export function CurrencyProvider({ children }) {
     const formattedNumber = new Intl.NumberFormat("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(value);
+    }).format(Number(value) || 0);
 
     return `${symbol} ${formattedNumber}`;
-  };
-
-  const convertValue = (value) => {
-    const rate = rates[currency] || 1;
-    return value / rate;
-  };
-
-  const convertToBRL = (value) => {
-    if (currency === "BRL") return value;
-    const rate = rates[currency] || 1;
-    return value * rate;
   };
 
   const getCurrencySymbol = () => {
@@ -100,16 +134,20 @@ export function CurrencyProvider({ children }) {
   };
 
   return (
-    <CurrencyContext.Provider value={{ 
-      currency, 
-      setCurrency, 
-      formatMoney,
-      formatMoneyDirect, // 👈 exporta a nova função
-      convertValue,
-      convertToBRL,
-      getCurrencySymbol,
-      CURRENCY_SYMBOLS 
-    }}>
+    <CurrencyContext.Provider
+      value={{
+        currency,
+        setCurrency,
+        formatFromBRL,
+        formatMoneyDirect,
+        convertFromBRLToCurrent,
+        getCurrencySymbol,
+        CURRENCY_SYMBOLS,
+        rates,
+        loadingRates,
+        errorRates,
+      }}
+    >
       {children}
     </CurrencyContext.Provider>
   );

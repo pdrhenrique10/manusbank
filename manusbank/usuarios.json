@@ -19,23 +19,25 @@
     "nome": "Testes",
     "email": "testes@gmail.com",
     "senha": "289160db0d9f39f9ae1754c4ec9c16f90b50e32e09c5fb5481ae642b3d3d1a36",
-    "saldo": 8000.000000000002,
-    "transacoes": [
-      {
-        "id": 1782944928242,
-        "tipo": "deposito",
-        "valor": 8000,
-        "descricao": "Salário",
-        "data": "2026-07-01",
-        "categoria": "Salário"
-      }
-    ],
+    "saldo": 1.8189894035458565e-12,
+    "transacoes": [],
     "contasReceber": [],
     "nextContaReceberId": 3,
     "contasPagar": [],
-    "nextContaPagarId": 1,
-    "metas": [],
-    "nextMetaId": 9,
+    "nextContaPagarId": 3,
+    "metas": [
+      {
+        "id": 10,
+        "titulo": "carro",
+        "valorAlvo": 90000,
+        "valorAtual": 0,
+        "dataMeta": "2026-08-13",
+        "descricao": "",
+        "moeda": "BRL",
+        "dataCriacao": "2026-07-02"
+      }
+    ],
+    "nextMetaId": 11,
     "criadoEm": "2026-06-30T22:14:02.632Z"
   },
   {

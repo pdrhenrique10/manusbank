@@ -29,7 +29,7 @@ function formatarDataString(dataString) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { formatMoney } = useCurrency();
+  const { formatFromBRL } = useCurrency(); // <<< troquei aqui
   const { t } = useIdioma();
 
   const [usuario, setUsuario] = useState(null);
@@ -39,7 +39,6 @@ export default function Dashboard() {
   const [gastosMesAtual, setGastosMesAtual] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Função que carrega todos os dados (reutilizada no focus)
   const carregarDados = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -77,8 +76,12 @@ export default function Dashboard() {
         );
         if (resp.ok) {
           const dados = await resp.json();
-          setReceitasMesAtual(Number(dados.totalEntradas || dados.totalReceitas || 0));
-          setGastosMesAtual(Number(dados.totalGastos || dados.totalDespesas || 0));
+          setReceitasMesAtual(
+            Number(dados.totalEntradas || dados.totalReceitas || 0)
+          );
+          setGastosMesAtual(
+            Number(dados.totalGastos || dados.totalDespesas || 0)
+          );
         }
       } catch (error) {
         console.error("Erro ao carregar resumo do mês:", error);
@@ -101,12 +104,10 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  // Carrega os dados na montagem do componente
   useEffect(() => {
     carregarDados();
   }, [navigate]);
 
-  // Recarrega os dados sempre que a janela ganhar foco (usuário volta para a aba)
   useEffect(() => {
     const handleFocus = () => {
       carregarDados();
@@ -117,7 +118,6 @@ export default function Dashboard() {
 
   const hoje = dataHojeLocal();
 
-  // Saldo atual: considera apenas transações até a data de hoje
   const saldoAtual = transacoes
     .filter((t) => t.data && t.data <= hoje)
     .reduce((acc, tMov) => {
@@ -129,7 +129,9 @@ export default function Dashboard() {
       return acc + (isEntrada ? valor : -valor);
     }, 0);
 
-  const contasPendentes = contasReceber.filter((conta) => conta.status === "pendente");
+  const contasPendentes = contasReceber.filter(
+    (conta) => conta.status === "pendente"
+  );
 
   const ultimasMovimentacoes = transacoes
     .filter((t) => t.data && t.data <= hoje)
@@ -139,11 +141,31 @@ export default function Dashboard() {
   const temDados = transacoes.length > 0 || contasReceber.length > 0;
 
   const acoesRapidas = [
-    { label: t("dashboard.quickActions.fixedIncomes"), path: "/receitas", icon: ArrowUpRight },
-    { label: t("dashboard.quickActions.incomes"), path: "/contas-a-receber", icon: Wallet },
-    { label: t("dashboard.quickActions.monthlyExpenses"), path: "/despesas", icon: ArrowDownRight },
-    { label: t("dashboard.quickActions.unexpectedExpenses"), path: "/contas-a-pagar", icon: CreditCard },
-    { label: t("dashboard.quickActions.goals"), path: "/metasfinanceiras", icon: Target },
+    {
+      label: t("dashboard.quickActions.fixedIncomes"),
+      path: "/receitas",
+      icon: ArrowUpRight,
+    },
+    {
+      label: t("dashboard.quickActions.incomes"),
+      path: "/contas-a-receber",
+      icon: Wallet,
+    },
+    {
+      label: t("dashboard.quickActions.monthlyExpenses"),
+      path: "/despesas",
+      icon: ArrowDownRight,
+    },
+    {
+      label: t("dashboard.quickActions.unexpectedExpenses"),
+      path: "/contas-a-pagar",
+      icon: CreditCard,
+    },
+    {
+      label: t("dashboard.quickActions.goals"),
+      path: "/metasfinanceiras",
+      icon: Target,
+    },
   ];
 
   const passosIniciais = [
@@ -183,7 +205,9 @@ export default function Dashboard() {
           <div>
             <h1>{t("dashboard.title")}</h1>
             <p>
-              {t("dashboard.subtitle", { nome: usuario?.nome || usuario?.email || "Sua conta" })}
+              {t("dashboard.subtitle", {
+                nome: usuario?.nome || usuario?.email || "Sua conta",
+              })}
             </p>
           </div>
         </div>
@@ -199,11 +223,17 @@ export default function Dashboard() {
                 : t("dashboard.heroNoData")}
             </h2>
             <p>
-              {temDados ? t("dashboard.heroHasData") : t("dashboard.heroNoDataSub")}
+              {temDados
+                ? t("dashboard.heroHasData")
+                : t("dashboard.heroNoDataSub")}
             </p>
           </div>
 
-          <button className="heroButton" type="button" onClick={() => navigate("/receitas")}>
+          <button
+            className="heroButton"
+            type="button"
+            onClick={() => navigate("/receitas")}
+          >
             <Plus size={18} />
             {t("dashboard.registerIncome")}
           </button>
@@ -214,7 +244,7 @@ export default function Dashboard() {
             <div className="iconBox greenBg">
               <Wallet size={18} />
             </div>
-            <h2>{formatMoney(saldoAtual)}</h2>
+            <h2>{formatFromBRL(saldoAtual)}</h2>
             <span>{t("dashboard.balance")}</span>
             <p>{t("dashboard.balanceDesc")}</p>
           </div>
@@ -223,7 +253,7 @@ export default function Dashboard() {
             <div className="iconBox blueBg">
               <ArrowUpRight size={18} />
             </div>
-            <h2>{formatMoney(receitasMesAtual)}</h2>
+            <h2>{formatFromBRL(receitasMesAtual)}</h2>
             <span>{t("dashboard.monthIncome")}</span>
             <p>{t("dashboard.incomeDesc")}</p>
           </div>
@@ -232,7 +262,7 @@ export default function Dashboard() {
             <div className="iconBox redBg">
               <ArrowDownRight size={18} />
             </div>
-            <h2>{formatMoney(gastosMesAtual)}</h2>
+            <h2>{formatFromBRL(gastosMesAtual)}</h2>
             <span>{t("dashboard.monthExpenses")}</span>
             <p>{t("dashboard.expensesDesc")}</p>
           </div>
@@ -242,7 +272,11 @@ export default function Dashboard() {
           {acoesRapidas.map((acao) => {
             const Icon = acao.icon;
             return (
-              <button key={acao.label} type="button" onClick={() => navigate(acao.path)}>
+              <button
+                key={acao.label}
+                type="button"
+                onClick={() => navigate(acao.path)}
+              >
                 <Icon size={17} />
                 {acao.label}
               </button>
@@ -263,14 +297,22 @@ export default function Dashboard() {
             {contasPendentes.length > 0 ? (
               <div className="taskList">
                 {contasPendentes.slice(0, 4).map((conta) => (
-                  <div className="taskItem" key={conta.id || conta._id || conta.cliente}>
+                  <div
+                    className="taskItem"
+                    key={conta.id || conta._id || conta.cliente}
+                  >
                     <div>
                       <strong>
-                        {conta.cliente || conta.descricao || conta.nome || t("dashboard.pendingFallback")}
+                        {conta.cliente ||
+                          conta.descricao ||
+                          conta.nome ||
+                          t("dashboard.pendingFallback")}
                       </strong>
-                      <span>{formatarDataString(conta.vencimento || conta.data)}</span>
+                      <span>
+                        {formatarDataString(conta.vencimento || conta.data)}
+                      </span>
                     </div>
-                    <b>{formatMoney(conta.valor)}</b>
+                    <b>{formatFromBRL(conta.valor)}</b>
                   </div>
                 ))}
               </div>
@@ -293,7 +335,11 @@ export default function Dashboard() {
 
             <div className="setupList">
               {passosIniciais.map((passo) => (
-                <button key={passo.title} type="button" onClick={() => navigate(passo.path)}>
+                <button
+                  key={passo.title}
+                  type="button"
+                  onClick={() => navigate(passo.path)}
+                >
                   <strong>{passo.title}</strong>
                   <span>{passo.text}</span>
                 </button>
@@ -312,17 +358,33 @@ export default function Dashboard() {
             {ultimasMovimentacoes.length > 0 ? (
               <div className="movementList">
                 {ultimasMovimentacoes.map((tMov) => {
-                  const entrada = tMov.tipo === "deposito" || tMov.tipo === "transferenciaEntrada";
+                  const entrada =
+                    tMov.tipo === "deposito" ||
+                    tMov.tipo === "transferenciaEntrada";
                   return (
-                    <div className="movementItem" key={tMov.id || tMov._id || `${tMov.data}-${tMov.valor}`}>
+                    <div
+                      className="movementItem"
+                      key={
+                        tMov.id ||
+                        tMov._id ||
+                        `${tMov.data}-${tMov.valor}`
+                      }
+                    >
                       <div>
                         <strong>
-                          {tMov.descricao || tMov.categoria || t("dashboard.movementFallback")}
+                          {tMov.descricao ||
+                            tMov.categoria ||
+                            t("dashboard.movementFallback")}
                         </strong>
                         <span>{formatarDataString(tMov.data)}</span>
                       </div>
-                      <b className={entrada ? "positiveValue" : "negativeValue"}>
-                        {entrada ? "+" : "-"} {formatMoney(tMov.valor)}
+                      <b
+                        className={
+                          entrada ? "positiveValue" : "negativeValue"
+                        }
+                      >
+                        {entrada ? "+" : "-"}{" "}
+                        {formatFromBRL(tMov.valor)}
                       </b>
                     </div>
                   );

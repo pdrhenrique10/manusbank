@@ -43,8 +43,8 @@ function formatarData(data) {
 }
 
 function Money({ value }) {
-  const { formatMoney } = useCurrency();
-  return <span>{formatMoney(value)}</span>;
+  const { formatFromBRL } = useCurrency();
+  return <span>{formatFromBRL(value)}</span>;
 }
 
 function Despesas() {

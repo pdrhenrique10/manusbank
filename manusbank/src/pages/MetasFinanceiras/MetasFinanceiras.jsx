@@ -18,8 +18,8 @@ import { useCurrency } from "../../context/CurrencyProvider";
 
 // Componente auxiliar para exibir valor já convertido
 function Money({ value }) {
-  const { formatMoney } = useCurrency();
-  return <span>{formatMoney(value)}</span>;
+  const { formatFromBRL } = useCurrency();
+  return <span>{formatFromBRL(value)}</span>;
 }
 
 function MetasFinanceiras() {

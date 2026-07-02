@@ -25,8 +25,8 @@ import { useCurrency } from "../../context/CurrencyProvider";
 import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
 
 function Money({ value }) {
-  const { formatMoney } = useCurrency();
-  return <span>{formatMoney(value)}</span>;
+  const { formatFromBRL } = useCurrency();
+  return <span>{formatFromBRL(value)}</span>;
 }
 
 function ContasReceber() {

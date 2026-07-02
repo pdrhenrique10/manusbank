@@ -15,6 +15,7 @@ import { CurrencyProvider } from "./context/CurrencyProvider";
 
 export default function App() {
   return (
+    <CurrencyProvider>
     <BrowserRouter>
       <ThemeProvider>
         <Routes>
@@ -57,5 +58,6 @@ export default function App() {
         </Routes>
       </ThemeProvider>
     </BrowserRouter>
+    </CurrencyProvider>
   );
 }

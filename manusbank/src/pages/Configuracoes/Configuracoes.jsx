@@ -208,6 +208,7 @@ function Configuracoes() {
                     <option value="pt-BR">{t("configuracoes.portuguese")}</option>
                     <option value="en">{t("configuracoes.english")}</option>
                     <option value="es">{t("configuracoes.spanish")}</option>
+                    <option value="fr">{t("configuracoes.french")}</option>
                   </select>
                 </div>
               </div>

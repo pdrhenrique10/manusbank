@@ -32,7 +32,7 @@ export default function Home() {
   return (
     <div className="home">
 
-      {/* NAVBAR */}
+      {/* navbar */}
       <header className="navbar">
         <div className="navbar-brand">
           <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="logo-image" />
@@ -44,7 +44,6 @@ export default function Home() {
         </nav>
       </header>
 
-      {/* HERO - COM IMAGEM DE FUNDO SÓ NESSA SEÇÃO */}
       <section className="hero-bg">
         <div className="hero">
           <h1 className="title">
@@ -52,7 +51,7 @@ export default function Home() {
             <span>organizadas de verdade.</span>
           </h1>
 
-          {/* Frase de impacto direto (Curiosidade transformada em Marketing) */}
+          {/* frase de impacto */}
           <p className="hero-impact">
             <strong>81,6%</strong> das famílias brasileiras estão endividadas.
             Não seja mais um. Organize sua vida financeira agora.
@@ -70,7 +69,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FUNCIONALIDADES (Apenas o essencial) */}
+      {/* funcionalidades */}
       <section className="section" id="funcionalidades">
         <div className="section-header">
           <h2 className="section-title">Simplifique suas finanças</h2>
@@ -87,7 +86,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER (Limpo) */}
+      {/* footer */}
       <footer className="footer">
         <div className="footer-brand">
           <img src="/mflogo.jpeg" alt="ManusFinance" className="logo-image logo-sm" />
