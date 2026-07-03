@@ -13,14 +13,15 @@ const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "troque-esta-chave-em-producao";
 
-// Garante que o arquivo existe
+const MOEDAS_VALIDAS = ["BRL", "USD", "EUR", "GBP"];
+const PLANOS_VALIDOS = ["gratis", "premium"];
+
 if (!fs.existsSync(USUARIOS_FILE)) {
   fs.writeFileSync(USUARIOS_FILE, JSON.stringify([], null, 2));
 }
 
 const app = express();
 
-// ===== CORS BÁSICO =====
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -40,12 +41,9 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// ===== SERVE LOCALES ESTÁTICO =====
-// isso permite acessar /locales/pt/common.json, /locales/en/common.json, etc.
 const LOCALES_DIR = path.join(__dirname, "locales");
 app.use("/locales", express.static(LOCALES_DIR));
 
-// ===== FUNÇÕES AUXILIARES =====
 function criptografarSenha(senha) {
   return crypto.createHash("sha256").update(senha).digest("hex");
 }
@@ -87,6 +85,29 @@ function normalizarDataReferencia(valor) {
     return valor;
   }
   return dataHoje();
+}
+
+// ===== HELPERS DE PLANO/MOEDA =====
+function normalizarPlanoUsuario(usuario) {
+  const plano = PLANOS_VALIDOS.includes(usuario.plano) ? usuario.plano : "gratis";
+  const moedaAtual = MOEDAS_VALIDAS.includes(usuario.moedaAtual)
+    ? usuario.moedaAtual
+    : "BRL";
+  const moedaFixa =
+    plano === "gratis"
+      ? MOEDAS_VALIDAS.includes(usuario.moedaFixa)
+        ? usuario.moedaFixa
+        : moedaAtual
+      : null;
+
+  return { plano, moedaAtual, moedaFixa };
+}
+
+// Moeda que deve ser gravada em qualquer item novo (transação, conta a pagar/receber).
+// Sempre decidida pelo servidor com base no usuário autenticado — nunca confiar em
+// um campo "moeda" vindo do body do client pra criação desses itens.
+function moedaAtualDoUsuario(usuario) {
+  return normalizarPlanoUsuario(usuario).moedaAtual;
 }
 
 // ===== LÓGICA DE PERÍODO =====
@@ -167,11 +188,14 @@ function autenticar(req, res, next) {
 
 // ===== ROTAS PÚBLICAS =====
 app.post("/api/register", (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, plano, moeda } = req.body;
 
   if (!nome || !email || !senha) {
     return res.status(400).json({ erro: "Preencha todos os campos" });
   }
+
+  const planoFinal = plano === "premium" ? "premium" : "gratis";
+  const moedaFinal = MOEDAS_VALIDAS.includes(moeda) ? moeda : "BRL";
 
   const usuarios = carregarUsuarios();
 
@@ -184,6 +208,9 @@ app.post("/api/register", (req, res) => {
     nome,
     email,
     senha: criptografarSenha(senha),
+    plano: planoFinal,
+    moedaAtual: moedaFinal,
+    moedaFixa: planoFinal === "gratis" ? moedaFinal : null,
     saldo: 0,
     transacoes: [],
     contasReceber: [],
@@ -203,7 +230,13 @@ app.post("/api/register", (req, res) => {
   res.status(201).json({
     sucesso: true,
     token,
-    user: { id: novoUsuario.id, nome, email },
+    user: {
+      id: novoUsuario.id,
+      nome,
+      email,
+      plano: novoUsuario.plano,
+      moedaAtual: novoUsuario.moedaAtual,
+    },
   });
 });
 
@@ -228,11 +261,12 @@ app.post("/api/login", (req, res) => {
   }
 
   const token = gerarToken(usuario);
+  const { plano, moedaAtual } = normalizarPlanoUsuario(usuario);
 
   res.json({
     sucesso: true,
     token,
-    user: { id: usuario.id, nome: usuario.nome, email },
+    user: { id: usuario.id, nome: usuario.nome, email, plano, moedaAtual },
   });
 });
 
@@ -240,19 +274,111 @@ app.post("/api/logout", (req, res) => {
   res.json({ sucesso: true });
 });
 
-// ===== ROTAS PROTEGIDAS =====
-app.get("/api/dashboard", autenticar, (req, res) => {
+// ===== ROTAS DE PLANO/MOEDA =====
+app.get("/api/usuario/me", autenticar, (req, res) => {
+  const { plano, moedaAtual, moedaFixa } = normalizarPlanoUsuario(req.usuario);
+
   res.json({
-    usuario: { nome: req.usuario.nome, email: req.usuario.email },
-    saldo: req.usuario.saldo || 0,
-    transacoes: req.usuario.transacoes || [],
+    id: req.usuario.id,
+    nome: req.usuario.nome,
+    email: req.usuario.email,
+    plano,
+    moedaAtual,
+    moedaFixa,
   });
 });
 
-// ===== RELATÓRIOS (CORRIGIDO) =====
+app.patch("/api/usuario/moeda", autenticar, (req, res) => {
+  const { moeda } = req.body;
+
+  if (!MOEDAS_VALIDAS.includes(moeda)) {
+    return res.status(400).json({ erro: "Moeda inválida" });
+  }
+
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  if (index === -1) {
+    return res.status(404).json({ erro: "Usuário não encontrado" });
+  }
+
+  const { plano } = normalizarPlanoUsuario(usuarios[index]);
+
+  if (plano === "gratis") {
+    return res.status(403).json({
+      erro:
+        "Usuários do plano grátis não podem trocar de moeda. Faça upgrade para o Premium.",
+    });
+  }
+
+  usuarios[index].plano = plano;
+  usuarios[index].moedaAtual = moeda;
+  usuarios[index].moedaFixa = null;
+
+  salvarUsuarios(usuarios);
+
+  res.json({ sucesso: true, moedaAtual: usuarios[index].moedaAtual });
+});
+
+app.patch("/api/usuario/plano", autenticar, (req, res) => {
+  const { plano } = req.body;
+
+  if (!PLANOS_VALIDOS.includes(plano)) {
+    return res.status(400).json({ erro: "Plano inválido" });
+  }
+
+  const usuarios = carregarUsuarios();
+  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  if (index === -1) {
+    return res.status(404).json({ erro: "Usuário não encontrado" });
+  }
+
+  const usuario = usuarios[index];
+  const atual = normalizarPlanoUsuario(usuario);
+
+  if (plano === "gratis" && atual.plano === "premium") {
+    usuario.moedaFixa = atual.moedaAtual;
+  }
+
+  if (plano === "premium") {
+    usuario.moedaFixa = null;
+  }
+
+  usuario.plano = plano;
+  usuario.moedaAtual = atual.moedaAtual;
+
+  salvarUsuarios(usuarios);
+
+  res.json({
+    sucesso: true,
+    plano: usuario.plano,
+    moedaAtual: usuario.moedaAtual,
+    moedaFixa: usuario.moedaFixa,
+  });
+});
+
+// ===== ROTAS PROTEGIDAS =====
+app.get("/api/dashboard", autenticar, (req, res) => {
+  const transacoes = (req.usuario.transacoes || []).map((t) => ({
+    ...t,
+    moeda: t.moeda || "BRL",
+  }));
+
+  res.json({
+    usuario: { nome: req.usuario.nome, email: req.usuario.email },
+    saldo: req.usuario.saldo || 0,
+    moedaAtual: moedaAtualDoUsuario(req.usuario),
+    transacoes,
+  });
+});
+
+// ===== RELATÓRIOS =====
 app.get("/api/relatorios", autenticar, (req, res) => {
-  const transacoes = req.usuario.transacoes || [];
-  const saldo = req.usuario.saldo || 0;
+  const transacoes = (req.usuario.transacoes || []).map((t) => ({
+    ...t,
+    moeda: t.moeda || "BRL",
+  }));
   const periodosValidos = ["mes", "1m", "3m", "6m", "ano"];
   const periodo = periodosValidos.includes(req.query.periodo)
     ? req.query.periodo
@@ -347,6 +473,7 @@ app.get("/api/relatorios", autenticar, (req, res) => {
     periodo,
     dataInicio,
     dataFim,
+    moedaAtual: moedaAtualDoUsuario(req.usuario),
     saldoAtual: totalReceitas - totalDespesas,
     totalEntradas: totalReceitas,
     totalGastos: totalDespesas,
@@ -451,6 +578,7 @@ app.post("/api/transacao", autenticar, (req, res) => {
     id: Date.now(),
     tipo,
     valor: numeroValor,
+    moeda: moedaAtualDoUsuario(usuarios[index]),
     descricao: descricao || "",
     data: dataTransacao,
     categoria: categoria || descricao || "Geral",
@@ -518,6 +646,8 @@ app.put("/api/transacao/:id", autenticar, (req, res) => {
     ...antiga,
     tipo,
     valor: numeroValor,
+    // moeda NUNCA muda na edição — o item foi criado numa moeda e continua nela
+    moeda: antiga.moeda || "BRL",
     descricao: descricao ?? antiga.descricao ?? "",
     data: data || antiga.data || dataHoje(),
     categoria: categoria || descricao || antiga.categoria || "Geral",
@@ -572,7 +702,11 @@ app.delete("/api/transacao/:id", autenticar, (req, res) => {
 
 // ===== CONTAS A RECEBER =====
 app.get("/api/contas-receber", autenticar, (req, res) => {
-  res.json(req.usuario.contasReceber || []);
+  const contas = (req.usuario.contasReceber || []).map((c) => ({
+    ...c,
+    moeda: c.moeda || "BRL",
+  }));
+  res.json(contas);
 });
 
 app.post("/api/contas-receber", autenticar, (req, res) => {
@@ -590,6 +724,7 @@ app.post("/api/contas-receber", autenticar, (req, res) => {
     id: req.usuario.nextContaReceberId ?? 1,
     cliente,
     valor: Number(valor),
+    moeda: moedaAtualDoUsuario(usuarios[index]),
     vencimento: String(vencimento).slice(0, 10),
     descricao: descricao || "",
     status: "pendente",
@@ -646,6 +781,7 @@ app.put("/api/contas-receber/:id", autenticar, (req, res) => {
     ...conta,
     cliente,
     valor: numeroValor,
+    moeda: conta.moeda || "BRL",
     vencimento: String(vencimento).slice(0, 10),
     descricao: descricao ?? conta.descricao ?? "",
   };
@@ -671,11 +807,13 @@ app.patch("/api/contas-receber/:id/pagar", autenticar, (req, res) => {
 
   conta.status = "pago";
   conta.dataRecebimento = dataHoje();
+  conta.moeda = conta.moeda || "BRL";
 
   const novaTransacao = {
     id: Date.now(),
     tipo: "deposito",
     valor: conta.valor,
+    moeda: conta.moeda,
     descricao: `Recebimento: ${conta.cliente}`,
     data: conta.dataRecebimento,
     categoria: "Contas a Receber",
@@ -702,7 +840,11 @@ app.delete("/api/contas-receber/:id", autenticar, (req, res) => {
 
 // ===== CONTAS A PAGAR =====
 app.get("/api/contas-pagar", autenticar, (req, res) => {
-  res.json(req.usuario.contasPagar || []);
+  const contas = (req.usuario.contasPagar || []).map((c) => ({
+    ...c,
+    moeda: c.moeda || "BRL",
+  }));
+  res.json(contas);
 });
 
 app.post("/api/contas-pagar", autenticar, (req, res) => {
@@ -721,6 +863,7 @@ app.post("/api/contas-pagar", autenticar, (req, res) => {
     titulo,
     tipo: tipo || "geral",
     valor: Number(valor),
+    moeda: moedaAtualDoUsuario(usuarios[index]),
     vencimento: String(vencimento).slice(0, 10),
     descricao: descricao || "",
     status: "pendente",
@@ -778,6 +921,7 @@ app.put("/api/contas-pagar/:id", autenticar, (req, res) => {
     titulo,
     tipo: tipo || conta.tipo || "geral",
     valor: numeroValor,
+    moeda: conta.moeda || "BRL",
     vencimento: String(vencimento).slice(0, 10),
     descricao: descricao ?? conta.descricao ?? "",
   };
@@ -803,11 +947,13 @@ app.patch("/api/contas-pagar/:id/pagar", autenticar, (req, res) => {
 
   conta.status = "pago";
   conta.dataPagamento = dataHoje();
+  conta.moeda = conta.moeda || "BRL";
 
   const novaTransacao = {
     id: Date.now(),
     tipo: "saque",
     valor: conta.valor,
+    moeda: conta.moeda,
     descricao: `Pagamento: ${conta.titulo}`,
     data: conta.dataPagamento,
     categoria: conta.tipo || "Contas a Pagar",

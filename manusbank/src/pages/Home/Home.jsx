@@ -41,6 +41,8 @@ export default function Home() {
         <nav className="navbar-links">
           <a href="#">Início</a>
           <a href="#funcionalidades">Funcionalidades</a>
+          <a onClick={() => navigate("/planos")}>Planos</a>
+          <a onClick={() => navigate("/login")}>Entrar</a>
         </nav>
       </header>
 
@@ -62,7 +64,7 @@ export default function Home() {
           </p>
 
           <div className="buttons">
-            <button className="primary-btn" onClick={() => navigate("/login")}>
+            <button className="primary-btn" onClick={() => navigate("/planos")}>
               Começar agora <ArrowRight size={18} />
             </button>
           </div>

@@ -42,20 +42,24 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
-function Money({ value }) {
-  const { formatFromBRL } = useCurrency();
-  return <span>{formatFromBRL(value)}</span>;
+// 👇 Cada despesa já guarda sua própria moeda (vinda do backend).
+// Por isso usamos formatValorNaMoeda (SEM conversão) — é o valor
+// que já está na moeda certa, só precisa do símbolo e da formatação.
+function Money({ value, moeda }) {
+  const { formatValorNaMoeda } = useCurrency();
+  return <span>{formatValorNaMoeda(value, moeda)}</span>;
 }
 
 function Despesas() {
   const navigate = useNavigate();
   const { t } = useIdioma(); // 👈 hook de tradução
-  const { 
-    formatMoney, 
-    convertToBRL, 
-    currency, 
-    setCurrency, 
-    getCurrencySymbol 
+  const {
+    formatMoney,
+    formatValorNaMoeda,
+    converterEntreMoedas,
+    currency,
+    setCurrency,
+    getCurrencySymbol,
   } = useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
@@ -115,6 +119,7 @@ function Despesas() {
           id: t.id,
           nome: t.descricao || t("despesas.defaultName"),
           valor: Number(t.valor) || 0,
+          moeda: t.moeda || "BRL", // 👈 preserva a moeda do item, vinda do backend
           data: extrairData(t.data),
         }));
 
@@ -146,12 +151,20 @@ function Despesas() {
     }
   }, [sucesso]);
 
+  // Helper: valor do item convertido (número puro) para a moeda atualmente
+  // selecionada. Usa converterEntreMoedas, que retorna número, não string
+  // formatada — evita parsing frágil de string de volta pra número.
+  const paraMoedaAtual = (item) =>
+    converterEntreMoedas(item.valor, item.moeda || "BRL", currency);
+
   const dadosGrafico = despesas.map(d => ({
     nome: d.nome.length > 15 ? d.nome.substring(0, 15) + "..." : d.nome,
-    valor: Number(d.valor) || 0,
+    valor: paraMoedaAtual(d),
   }));
 
-  const totalDespesas = despesas.reduce((acc, d) => acc + (Number(d.valor) || 0), 0);
+  // total é um somatório: cada item pode ter sido criado numa moeda
+  // diferente, então convertemos todos para a moeda atual antes de somar.
+  const totalDespesas = despesas.reduce((acc, d) => acc + paraMoedaAtual(d), 0);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -179,7 +192,9 @@ function Despesas() {
       return;
     }
 
-    const valorEmReal = convertToBRL(valorDigitado);
+    // 👇 NÃO convertemos mais para BRL aqui. O valor digitado já está
+    // na moeda atualmente selecionada pelo usuário, e é o backend quem
+    // decide/grava qual é essa moeda (moedaAtualDoUsuario). Ver server.js.
     const dataFormatada = novaDespesa.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -190,7 +205,8 @@ function Despesas() {
     const novaDespesaObj = {
       id: Date.now(),
       nome: novaDespesa.nome,
-      valor: valorEmReal,
+      valor: valorDigitado,
+      moeda: currency,
       data: dataFormatada,
     };
 
@@ -203,7 +219,7 @@ function Despesas() {
         },
         body: JSON.stringify({
           tipo: "saque",
-          valor: valorEmReal,
+          valor: valorDigitado,
           descricao: novaDespesa.nome,
           data: dataFormatada,
           categoria: novaDespesa.nome,
@@ -223,7 +239,8 @@ function Despesas() {
       const despesaLocal = {
         id: resultado.transacao?.id ?? Date.now(),
         nome: novaDespesa.nome,
-        valor: valorEmReal,
+        valor: valorDigitado,
+        moeda: resultado.transacao?.moeda || currency,
         data: dataFormatada,
       };
       setDespesas(prev => [...prev, despesaLocal]);
@@ -287,7 +304,8 @@ function Despesas() {
       return;
     }
 
-    const valorEmReal = convertToBRL(valorDigitado);
+    // 👇 sem conversão para BRL — moeda do item nunca muda na edição
+    // (o próprio backend já garante isso em PUT /api/transacao/:id)
     const dataFormatada = despesaEditando.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -303,7 +321,7 @@ function Despesas() {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          valor: valorEmReal,
+          valor: valorDigitado,
           data: dataFormatada,
           descricao: despesaEditando.nome,
           tipo: "saque",
@@ -323,7 +341,8 @@ function Despesas() {
           ? {
               ...d,
               nome: despesaEditando.nome,
-              valor: valorEmReal,
+              valor: valorDigitado,
+              // moeda permanece a mesma do item original — não sobrescrever
               data: dataFormatada,
             }
           : d
@@ -383,8 +402,9 @@ function Despesas() {
                 </span>
                 <div>
                   <p className="resumo-label">{t("despesas.totalLabel")}</p>
+                  {/* total já é um somatório convertido p/ moeda atual, então usamos formatMoney */}
                   <p className="despesas-valor">
-                    <Money value={totalDespesas} />
+                    {formatMoney(totalDespesas)}
                   </p>
                 </div>
               </div>
@@ -436,7 +456,8 @@ function Despesas() {
                       </div>
                       <div className="despesa-right">
                         <p className="despesa-valor">
-                          <Money value={despesa.valor} />
+                          {/* cada item exibido na SUA PRÓPRIA moeda, sem reconverter */}
+                          <Money value={despesa.valor} moeda={despesa.moeda} />
                         </p>
                         <button className="btn-editar-despesa" onClick={() => abrirModalEdicao(despesa)} title={t("despesas.editTitle")}>
                           <Pencil size={16} />

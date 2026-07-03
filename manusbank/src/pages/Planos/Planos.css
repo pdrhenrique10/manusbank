@@ -1,0 +1,256 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Container Principal (Mesmo fundo do site) */
+.planos-page {
+  width: 100vw;
+  min-height: 100vh;
+  background: #060d28;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "DM Sans", system-ui, sans-serif;
+  padding: 60px 20px;
+}
+
+/* ----- CABEÇALHO ----- */
+.planos-header {
+  text-align: center;
+  max-width: 560px;
+  margin-bottom: 36px;
+}
+
+.planos-header h1 {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 34px;
+  color: var(--text-primary, #ffffff);
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+
+.planos-dot {
+  color: #3b82f6;
+}
+
+.planos-header p {
+  font-size: 15px;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.5;
+}
+
+/* ----- SELETOR DE MOEDA ----- */
+.planos-moeda-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 48px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.planos-moeda-select label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary, #e2e8f0);
+  text-align: center;
+}
+
+.planos-moeda-select select {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary, #f1f5f9);
+  font-size: 15px;
+  font-family: "DM Sans", sans-serif;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  transition: border-color 0.2s;
+}
+
+.planos-moeda-select select:focus {
+  border-color: #3b82f6;
+  background-color: var(--bg-input-focus, rgba(255, 255, 255, 0.08));
+}
+
+.planos-moeda-select select option {
+  background: #0a0f25;
+  color: #f1f5f9;
+}
+
+/* ----- GRID DE PLANOS ----- */
+.planos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  max-width: 780px;
+}
+
+/* ----- CARD DE PLANO ----- */
+.plano-card {
+  position: relative;
+  background: var(--bg-card, #0a0f25);
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
+  border-radius: 24px;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.plano-card:hover {
+  transform: translateY(-4px);
+}
+
+.plano-card h2 {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--text-primary, #ffffff);
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+
+.plano-preco {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  color: var(--text-primary, #ffffff);
+  margin-bottom: 28px;
+}
+
+.plano-preco span {
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary, #94a3b8);
+  margin-left: 4px;
+}
+
+/* ----- LISTA DE FEATURES ----- */
+.plano-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 32px;
+  flex-grow: 1;
+}
+
+.plano-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14.5px;
+  color: var(--text-secondary, #e2e8f0);
+  line-height: 1.4;
+}
+
+.icon-check {
+  color: #22c55e;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.icon-x {
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.feature-limitada {
+  color: var(--text-secondary, #94a3b8);
+}
+
+.feature-limitada strong {
+  color: var(--text-primary, #f1f5f9);
+  font-weight: 600;
+}
+
+/* ----- BOTÕES ----- */
+.plano-btn {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 12px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.plano-btn-primario {
+  background: linear-gradient(90deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+}
+
+.plano-btn-primario:hover {
+  box-shadow: 0 5px 20px rgba(37, 99, 235, 0.45);
+}
+
+.plano-btn-secundario {
+  background: transparent;
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.15));
+  color: var(--text-primary, #f1f5f9);
+}
+
+.plano-btn-secundario:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ----- CARD EM DESTAQUE (PREMIUM) ----- */
+.plano-card-destaque {
+  border-color: #3b82f6;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, var(--bg-card, #0a0f25) 100%);
+  box-shadow: 0 25px 60px rgba(37, 99, 235, 0.25);
+}
+
+.plano-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+}
+
+/* ----- RESPONSIVIDADE (MOBILE) ----- */
+@media (max-width: 860px) {
+  .planos-grid {
+    grid-template-columns: 1fr;
+    max-width: 380px;
+  }
+
+  .planos-header h1 {
+    font-size: 26px;
+  }
+
+  .plano-card {
+    padding: 32px 24px;
+  }
+}

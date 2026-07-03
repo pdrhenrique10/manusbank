@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import { API_URL } from "../../config/api";
 import { useCurrency } from "../../context/CurrencyProvider";
-import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
+import { useIdioma } from "../../context/IdiomaContext";
 
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
@@ -34,21 +34,17 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
-function Money({ value }) {
-  const { formatFromBRL } = useCurrency();
-  return <span>{formatFromBRL(value)}</span>;
+// Exibe o valor na moeda PRÓPRIA do item, sem converter.
+function Money({ value, moeda }) {
+  const { formatValorNaMoeda } = useCurrency();
+  return <span>{formatValorNaMoeda(value, moeda)}</span>;
 }
 
 function Receitas() {
   const navigate = useNavigate();
-  const { t } = useIdioma(); // 👈 hook de tradução
-  const {
-    formatMoney,
-    convertToBRL,
-    currency,
-    setCurrency,
-    getCurrencySymbol,
-  } = useCurrency();
+  const { t } = useIdioma();
+  const { formatMoney, currency, getCurrencySymbol, formatConvertendoParaAtual } =
+    useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
@@ -105,6 +101,7 @@ function Receitas() {
             id: t.id,
             nome: t.descricao || t("receitas.defaultName"),
             valor: Number(t.valor) || 0,
+            moeda: t.moeda || "BRL",
             data: extrairData(t.data),
           }));
 
@@ -133,10 +130,20 @@ function Receitas() {
 
   const dadosGrafico = receitas.map((r) => ({
     nome: r.nome.length > 15 ? r.nome.substring(0, 15) + "..." : r.nome,
-    valor: Number(r.valor) || 0,
+    // gráfico soma tudo convertido pra moeda atual, pra não misturar escalas
+    valor: formatConvertendoParaAtual
+      ? Number(r.valor) || 0
+      : Number(r.valor) || 0,
   }));
 
-  const totalReceitas = receitas.reduce((acc, r) => acc + (Number(r.valor) || 0), 0);
+  // Total: converte cada item pra moeda atual antes de somar (cobre o caso
+  // Premium de ter itens antigos em moedas diferentes; no plano grátis é
+  // sempre a mesma moeda, então a conversão vira um no-op).
+  const { converterEntreMoedas } = useCurrency();
+  const totalReceitas = receitas.reduce(
+    (acc, r) => acc + converterEntreMoedas(r.valor, r.moeda || "BRL", currency),
+    0
+  );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -164,7 +171,8 @@ function Receitas() {
       return;
     }
 
-    const valorEmReal = convertToBRL(valorDigitado);
+    // Não converte mais pra BRL. O valor é salvo exatamente como digitado —
+    // o backend etiqueta a moeda automaticamente com base no usuário logado.
     const dataFormatada = novaReceita.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -175,7 +183,8 @@ function Receitas() {
     const novaReceitaObj = {
       id: Date.now(),
       nome: novaReceita.nome,
-      valor: valorEmReal,
+      valor: valorDigitado,
+      moeda: currency,
       data: dataFormatada,
     };
 
@@ -188,7 +197,7 @@ function Receitas() {
         },
         body: JSON.stringify({
           tipo: "deposito",
-          valor: valorEmReal,
+          valor: valorDigitado,
           descricao: novaReceita.nome,
           data: dataFormatada,
           categoria: novaReceita.nome,
@@ -207,7 +216,8 @@ function Receitas() {
       const receita = {
         id: dados.transacao?.id ?? Date.now(),
         nome: novaReceita.nome,
-        valor: valorEmReal,
+        valor: Number(dados.transacao?.valor) || valorDigitado,
+        moeda: dados.transacao?.moeda || currency,
         data: dataFormatada,
       };
       setReceitas((prev) => [...prev, receita]);
@@ -271,7 +281,6 @@ function Receitas() {
       return;
     }
 
-    const valorEmReal = convertToBRL(valorDigitado);
     const dataFormatada = receitaEditando.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -287,7 +296,7 @@ function Receitas() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          valor: valorEmReal,
+          valor: valorDigitado,
           data: dataFormatada,
           descricao: receitaEditando.nome,
           tipo: "deposito",
@@ -303,7 +312,14 @@ function Receitas() {
 
       const receitasAtualizadas = receitas.map((r) =>
         r.id === receitaEditando.id
-          ? { ...r, nome: receitaEditando.nome, valor: valorEmReal, data: dataFormatada }
+          ? {
+              ...r,
+              nome: receitaEditando.nome,
+              valor: Number(resultado.transacao?.valor) || valorDigitado,
+              // moeda não muda na edição — segue a moeda original do item
+              moeda: resultado.transacao?.moeda || r.moeda,
+              data: dataFormatada,
+            }
           : r
       );
       setReceitas(receitasAtualizadas);
@@ -358,9 +374,7 @@ function Receitas() {
                 </span>
                 <div>
                   <p className="resumo-label">{t("receitas.totalLabel")}</p>
-                  <p className="resumo-valor">
-                    <Money value={totalReceitas} />
-                  </p>
+                  <p className="resumo-valor">{formatMoney(totalReceitas)}</p>
                 </div>
               </div>
               <div className="resumo-item-secundario">
@@ -418,7 +432,7 @@ function Receitas() {
                       </div>
                       <div className="receita-actions">
                         <p className="receita-valor">
-                          <Money value={receita.valor} />
+                          <Money value={receita.valor} moeda={receita.moeda} />
                         </p>
                         <button
                           className="btn-editar-receita"
@@ -446,7 +460,6 @@ function Receitas() {
             </section>
           </div>
 
-          {/* Modal de criação */}
           {modalAberto && (
             <div className="modal-overlay" onClick={fecharModal}>
               <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
@@ -468,7 +481,9 @@ function Receitas() {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="valor">{t("receitas.formValue")}</label>
+                    <label htmlFor="valor">
+                      {t("receitas.formValue")} ({getCurrencySymbol()})
+                    </label>
                     <input
                       type="number"
                       id="valor"
@@ -500,7 +515,6 @@ function Receitas() {
             </div>
           )}
 
-          {/* Modal de edição */}
           {modalEdicaoAberto && receitaEditando && (
             <div className="modal-overlay" onClick={fecharModalEdicao}>
               <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>

@@ -25,18 +25,7 @@
     "nextContaReceberId": 3,
     "contasPagar": [],
     "nextContaPagarId": 3,
-    "metas": [
-      {
-        "id": 10,
-        "titulo": "carro",
-        "valorAlvo": 90000,
-        "valorAtual": 0,
-        "dataMeta": "2026-08-13",
-        "descricao": "",
-        "moeda": "BRL",
-        "dataCriacao": "2026-07-02"
-      }
-    ],
+    "metas": [],
     "nextMetaId": 11,
     "criadoEm": "2026-06-30T22:14:02.632Z"
   },

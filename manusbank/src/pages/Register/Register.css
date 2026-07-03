@@ -64,6 +64,9 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--text-secondary, #e2e8f0);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* INPUTS - AGORA USAM VARIÁVEIS COM FALLBACK ESCURO */
@@ -117,6 +120,43 @@
 
 .password-toggle-btn:hover {
   color: var(--text-primary, #f1f5f9);
+}
+
+/* ==========================================
+   SELECT DE MOEDA
+   ========================================== */
+
+select.input-field {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+select.input-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-style: dashed;
+}
+
+select.input-field option {
+  background: #0a0f25;
+  color: #f1f5f9;
+}
+
+.moeda-aviso {
+  font-size: 12.5px;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.moeda-aviso-premium {
+  color: #93c5fd;
 }
 
 /* Botão (Degradê Azul Padrão) */

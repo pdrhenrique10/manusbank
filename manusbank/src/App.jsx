@@ -10,6 +10,7 @@ import ContasPagar from "./pages/ContasPagar/ContasPagar";
 import MetasFinanceiras from "./pages/MetasFinanceiras/MetasFinanceiras";
 import Relatorios from "./pages/Relatorios/Relatorios";
 import Configuracoes from "./pages/Configuracoes/Configuracoes";
+import Planos from "./pages/Planos/Planos";
 import { ThemeProvider } from "./hooks/useTheme";
 import { CurrencyProvider } from "./context/CurrencyProvider";
 
@@ -17,12 +18,14 @@ export default function App() {
   return (
     <CurrencyProvider>
     <BrowserRouter>
-      <ThemeProvider>
+    <ThemeProvider>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/planos" element={<Planos />} />
 
+  
           <Route 
             path="/dashboard" 
             element={<CurrencyProvider><Dashboard /></CurrencyProvider>} 
@@ -56,7 +59,7 @@ export default function App() {
             element={<CurrencyProvider><Configuracoes /></CurrencyProvider>} 
           />
         </Routes>
-      </ThemeProvider>
+                </ThemeProvider>
     </BrowserRouter>
     </CurrencyProvider>
   );

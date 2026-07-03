@@ -1,31 +1,47 @@
 import "./Register.css";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Eye, EyeOff, ArrowLeft, CheckCircle, AlertCircle, Lock } from "lucide-react";
 import { useState } from "react";
 import { API_URL } from "../../config/api";
 
+const MOEDAS = [
+  { codigo: "BRL", label: "Real (R$)" },
+  { codigo: "USD", label: "Dólar (U$)" },
+  { codigo: "EUR", label: "Euro (€)" },
+  { codigo: "GBP", label: "Libra (£)" },
+];
+
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Se o usuário veio da tela de Planos, usa o que ele escolheu lá.
+  // Se caiu direto no /register (ex: link direto), assume plano grátis + BRL.
+  const planoInicial = location.state?.plano === "premium" ? "premium" : "gratis";
+  const moedaInicial = MOEDAS.some((m) => m.codigo === location.state?.moeda)
+    ? location.state.moeda
+    : "BRL";
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [plano] = useState(planoInicial);
+  const [moeda, setMoeda] = useState(moedaInicial);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Estados para mensagens de erro e sucesso
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const togglePasswordVisibility = () =>
-    setShowPassword((prev) => !prev);
+  const isGratis = plano === "gratis";
+
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
   const toggleConfirmPasswordVisibility = () =>
     setShowConfirmPassword((prev) => !prev);
 
-  // Função para limpar mensagens após 5 segundos
   const clearMessages = () => {
     setTimeout(() => {
       setError("");
@@ -36,11 +52,9 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Limpa mensagens anteriores
     setError("");
     setSuccess("");
 
-    // Validações básicas
     if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       setError("Por favor, preencha todos os campos.");
       clearMessages();
@@ -71,13 +85,14 @@ export default function Register() {
           nome: name.trim(),
           email: email.trim(),
           senha: password.trim(),
+          plano,
+          moeda,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Backend usa "erro" como chave da mensagem
         const errorMsg = data.erro || data.msg || data.error || "Erro ao cadastrar. Tente novamente.";
         setError(errorMsg);
         setIsLoading(false);
@@ -92,12 +107,10 @@ export default function Register() {
           localStorage.setItem("user", JSON.stringify(data.user));
         }
 
-        // Mensagem de sucesso
         setSuccess("Cadastro realizado com sucesso! Redirecionando...");
         setIsLoading(false);
         clearMessages();
 
-        // Redireciona após 1.5 segundos para o usuário ver a mensagem de sucesso
         setTimeout(() => {
           navigate("/dashboard");
         }, 1500);
@@ -122,7 +135,6 @@ export default function Register() {
             Crie sua conta<span className="login-dot">.</span>
           </h1>
 
-          {/* MENSAGEM DE ERRO */}
           {error && (
             <div className="message-box error-box">
               <AlertCircle size={18} className="message-icon" />
@@ -130,7 +142,6 @@ export default function Register() {
             </div>
           )}
 
-          {/* MENSAGEM DE SUCESSO */}
           {success && (
             <div className="message-box success-box">
               <CheckCircle size={18} className="message-icon" />
@@ -209,6 +220,32 @@ export default function Register() {
               </button>
             </div>
           </div>
+
+{/* SELEÇÃO DE MOEDA */}
+<div className="form-group">
+  <label htmlFor="moeda">Moeda</label>
+  <select
+    id="moeda"
+    className="input-field"
+    value={moeda}
+    onChange={(e) => setMoeda(e.target.value)}
+  >
+    {MOEDAS.map((m) => (
+      <option key={m.codigo} value={m.codigo}>
+        {m.label}
+      </option>
+    ))}
+  </select>
+  {isGratis ? (
+    <small className="moeda-aviso">
+      No plano grátis essa escolha é definitiva assim que você criar a conta. Pra trocar depois, você vai precisar assinar o Premium.
+    </small>
+  ) : (
+    <small className="moeda-aviso moeda-aviso-premium">
+      Plano Premium: você pode trocar de moeda quando quiser, direto nas configurações.
+    </small>
+  )}
+</div>
 
           <button
             className={`login-button ${isLoading ? "loading" : ""}`}

@@ -49,7 +49,6 @@ export function CurrencyProvider({ children }) {
         setLoadingRates(true);
         setErrorRates(null);
 
-        // 1 BRL -> outras moedas
         const url = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/BRL`;
 
         const res = await fetch(url);
@@ -93,33 +92,19 @@ export function CurrencyProvider({ children }) {
     localStorage.setItem(CURRENCY_KEY, currency);
   }, [currency]);
 
-  // BRL -> moeda atual (somente exibição)
-  const convertFromBRLToCurrent = (value) => {
-    if (value === null || value === undefined) return 0;
-    const raw = Number(value) || 0;
-    const rate = rates[currency] || 1;
-    return raw * rate;
+  const getCurrencySymbol = (moedaEspecifica) => {
+    return CURRENCY_SYMBOLS[moedaEspecifica || currency] || "R$";
   };
 
-  const formatFromBRL = (value) => {
-    if (value === null || value === undefined) return "R$ 0,00";
+  // ===== FORMATAÇÃO SEM CONVERSÃO =====
+  // Formata um valor que JÁ ESTÁ na moeda informada (ou na moeda atual,
+  // se não informar). Não faz nenhuma conversão — é isso que praticamente
+  // toda tela deve usar pra exibir valores de transações/contas/metas,
+  // já que cada item guarda sua própria moeda vinda do backend.
+  const formatValorNaMoeda = (value, moedaDoItem) => {
+    if (value === null || value === undefined) return "";
 
-    const converted = convertFromBRLToCurrent(value);
-    const symbol = CURRENCY_SYMBOLS[currency] || "R$";
-
-    const formattedNumber = new Intl.NumberFormat("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(converted);
-
-    return `${symbol} ${formattedNumber}`;
-  };
-
-  // valor já na moeda atual (sem conversão)
-  const formatMoneyDirect = (value) => {
-    if (value === null || value === undefined) return "R$ 0,00";
-
-    const symbol = CURRENCY_SYMBOLS[currency] || "R$";
+    const symbol = getCurrencySymbol(moedaDoItem);
 
     const formattedNumber = new Intl.NumberFormat("pt-BR", {
       minimumFractionDigits: 2,
@@ -129,8 +114,34 @@ export function CurrencyProvider({ children }) {
     return `${symbol} ${formattedNumber}`;
   };
 
-  const getCurrencySymbol = () => {
-    return CURRENCY_SYMBOLS[currency] || "R$";
+  // Atalho usado em gráficos/tooltips: formata um valor já assumido como
+  // estando na moeda atualmente selecionada (ex: valores computados no
+  // próprio front, sem vínculo a um item específico do backend).
+  const formatMoney = (value) => formatValorNaMoeda(value, currency);
+
+  // ===== CONVERSÃO ENTRE MOEDAS (só quando REALMENTE precisar somar
+  // itens que estão em moedas diferentes — cenário Premium) =====
+  const converterEntreMoedas = (value, deMoeda, paraMoeda) => {
+    if (value === null || value === undefined) return 0;
+    const raw = Number(value) || 0;
+
+    const origem = deMoeda || "BRL";
+    const destino = paraMoeda || currency;
+
+    if (origem === destino) return raw;
+
+    const rateOrigem = rates[origem] || 1; // 1 BRL -> origem
+    const rateDestino = rates[destino] || 1; // 1 BRL -> destino
+
+    const valorEmBRL = raw / rateOrigem;
+    return valorEmBRL * rateDestino;
+  };
+
+  // Converte pra moeda atual e já formata com símbolo — útil em somatórios
+  // (saldo total, KPIs) quando os itens podem estar em moedas diferentes.
+  const formatConvertendoParaAtual = (value, moedaDoItem) => {
+    const convertido = converterEntreMoedas(value, moedaDoItem || "BRL", currency);
+    return formatMoney(convertido);
   };
 
   return (
@@ -138,14 +149,15 @@ export function CurrencyProvider({ children }) {
       value={{
         currency,
         setCurrency,
-        formatFromBRL,
-        formatMoneyDirect,
-        convertFromBRLToCurrent,
-        getCurrencySymbol,
-        CURRENCY_SYMBOLS,
         rates,
         loadingRates,
         errorRates,
+        getCurrencySymbol,
+        formatValorNaMoeda,
+        formatMoney,
+        converterEntreMoedas,
+        formatConvertendoParaAtual,
+        CURRENCY_SYMBOLS,
       }}
     >
       {children}
