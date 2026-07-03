@@ -59,7 +59,12 @@ const CustomTooltip = ({ active, payload, label, formatMoney }) => {
 };
 
 function Relatorios() {
-  const { formatFromBRL } = useCurrency();
+  // 🛑 CORREÇÃO: formatFromBRL não existe no CurrencyProvider (nunca
+  // existiu — ver CurrencyProvider.jsx). Isso quebrava a tela inteira.
+  // Os números que vêm de /api/relatorios (saldo, receitas, despesas,
+  // resultado, categorias) são AGREGADOS já calculados pelo backend na
+  // moeda atual do usuário, então o formato certo aqui é formatMoney
+  // (formata na moeda atual, sem tentar converter de novo).
   const navigate = useNavigate();
   const { formatMoney } = useCurrency();
   const { t, idioma } = useIdioma(); // 👈 idioma para traduzir o mês
@@ -233,7 +238,7 @@ function Relatorios() {
                     <Wallet size={14} />
                     {t("relatorios.balance")}
                   </div>
-                  <p className="rel-resumo-valor">{formatFromBRL(saldo)}</p>
+                  <p className="rel-resumo-valor">{formatMoney(saldo)}</p>
                 </div>
 
                 <div className="rel-resumo-card receita">
@@ -241,7 +246,7 @@ function Relatorios() {
                     <ArrowUpCircle size={14} />
                     {t("relatorios.income")}
                   </div>
-                  <p className="rel-resumo-valor">{formatFromBRL(receitas)}</p>
+                  <p className="rel-resumo-valor">{formatMoney(receitas)}</p>
                 </div>
 
                 <div className="rel-resumo-card despesa">
@@ -249,7 +254,7 @@ function Relatorios() {
                     <ArrowDownCircle size={14} />
                     {t("relatorios.expenses")}
                   </div>
-                  <p className="rel-resumo-valor">{formatFromBRL(despesas)}</p>
+                  <p className="rel-resumo-valor">{formatMoney(despesas)}</p>
                 </div>
 
                 <div
@@ -261,7 +266,7 @@ function Relatorios() {
                     <PiggyBank size={14} />
                     {t("relatorios.result")}
                   </div>
-                  <p className="rel-resumo-valor">{formatFromBRL(resultado)}</p>
+                  <p className="rel-resumo-valor">{formatMoney(resultado)}</p>
                 </div>
               </section>
 
@@ -310,7 +315,7 @@ function Relatorios() {
                             tickLine={false}
                           />
                           <YAxis
-                            tickFormatter={(value) => formatFromBRL(value)}
+                            tickFormatter={(value) => formatMoney(value)}
                             className="rel-chart-axis"
                             axisLine={false}
                             tickLine={false}
@@ -318,7 +323,7 @@ function Relatorios() {
                           />
                           <Tooltip
                             content={
-                              <CustomTooltip formatMoney={formatFromBRL} />
+                              <CustomTooltip formatMoney={formatMoney} />
                             }
                             cursor={false}
                           />

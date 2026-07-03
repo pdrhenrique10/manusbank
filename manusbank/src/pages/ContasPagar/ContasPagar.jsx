@@ -24,15 +24,18 @@ import { API_URL } from "../../config/api";
 import { useCurrency } from "../../context/CurrencyProvider";
 import { useIdioma } from "../../context/IdiomaContext";
 
-function Money({ value }) {
-  const { formatFromBRL } = useCurrency();
-  return <span>{formatFromBRL(value)}</span>;
+// Cada conta guarda sua própria moeda (vinda do backend) — exibida sem
+// conversão. Ver CurrencyProvider: formatValorNaMoeda é o padrão pra
+// itens individuais.
+function Money({ value, moeda }) {
+  const { formatValorNaMoeda } = useCurrency();
+  return <span>{formatValorNaMoeda(value, moeda)}</span>;
 }
 
 function ContasPagar() {
   const navigate = useNavigate();
   const { t } = useIdioma();
-  const { getCurrencySymbol } = useCurrency();
+  const { formatMoney, converterEntreMoedas, currency, getCurrencySymbol } = useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
@@ -87,6 +90,7 @@ function ContasPagar() {
       const normalizadas = (dados || []).map((c) => ({
         ...c,
         valor: Number(c.valor) || 0,
+        moeda: c.moeda || "BRL", // 👈 garante que a moeda do item nunca se perde
       }));
       setContas(normalizadas);
       localStorage.setItem("contasPagar", JSON.stringify(normalizadas));
@@ -109,17 +113,22 @@ function ContasPagar() {
     }
   }, [sucesso]);
 
+  // Helper: valor do item convertido (número puro) para a moeda atual —
+  // usado só pra AGREGAR (gráfico, total). Nunca pra exibir o item sozinho.
+  const paraMoedaAtual = (item) =>
+    converterEntreMoedas(item.valor, item.moeda || "BRL", currency);
+
   const dadosGrafico = contas
     .filter((c) => c.status === "pendente")
     .map((c) => ({
       nome:
         c.titulo.length > 15 ? c.titulo.substring(0, 15) + "..." : c.titulo,
-      valor: Number(c.valor) || 0,
+      valor: paraMoedaAtual(c),
     }));
 
   const totalPagar = contas
     .filter((c) => c.status === "pendente")
-    .reduce((acc, c) => acc + (Number(c.valor) || 0), 0);
+    .reduce((acc, c) => acc + paraMoedaAtual(c), 0);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -173,7 +182,8 @@ function ContasPagar() {
       return;
     }
 
-    const valorEmReal = valorDigitado; // já está em BRL
+    // 👇 sem conversão — a moeda do item nunca muda na edição
+    // (o backend já garante isso em PUT /api/contas-pagar/:id)
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -192,7 +202,7 @@ function ContasPagar() {
           body: JSON.stringify({
             titulo: contaEditando.titulo,
             tipo: contaEditando.tipo,
-            valor: valorEmReal,
+            valor: valorDigitado,
             vencimento: contaEditando.vencimento,
             descricao: contaEditando.descricao,
           }),
@@ -209,6 +219,7 @@ function ContasPagar() {
       const atualizada = {
         ...resultado.conta,
         valor: Number(resultado.conta.valor) || 0,
+        moeda: resultado.conta.moeda || "BRL",
       };
       const contasAtualizadas = contas.map((c) =>
         c.id === atualizada.id ? atualizada : c
@@ -241,7 +252,8 @@ function ContasPagar() {
       return;
     }
 
-    const valorEmReal = valorDigitado; // já está em BRL
+    // 👇 valor digitado já está na moeda atualmente selecionada.
+    // Quem decide qual moeda gravar é o backend (moedaAtualDoUsuario).
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -252,7 +264,8 @@ function ContasPagar() {
       id: Date.now(),
       titulo: novaConta.titulo,
       tipo: novaConta.tipo,
-      valor: valorEmReal,
+      valor: valorDigitado,
+      moeda: currency,
       vencimento: novaConta.vencimento,
       descricao: novaConta.descricao,
       status: "pendente",
@@ -262,7 +275,7 @@ function ContasPagar() {
       const body = {
         titulo: novaConta.titulo,
         tipo: novaConta.tipo,
-        valor: valorEmReal,
+        valor: valorDigitado,
         vencimento: novaConta.vencimento,
         descricao: novaConta.descricao,
       };
@@ -299,6 +312,7 @@ function ContasPagar() {
       const contaComValor = {
         ...criada,
         valor: Number(criada.valor) || 0,
+        moeda: criada.moeda || "BRL",
       };
       setContas((prev) => [...prev, contaComValor]);
       localStorage.setItem(
@@ -363,6 +377,7 @@ function ContasPagar() {
       const contaAtualizada = {
         ...conta,
         valor: Number(conta.valor) || 0,
+        moeda: conta.moeda || "BRL",
       };
       const novas = contas.map((c) =>
         c.id === contaAtualizada.id ? contaAtualizada : c
@@ -459,8 +474,9 @@ function ContasPagar() {
                   <p className="cp-resumo-label">
                     {t("contasPagar.totalLabel")}
                   </p>
+                  {/* total é somatório convertido p/ moeda atual -> formatMoney */}
                   <p className="cp-resumo-valor">
-                    <Money value={totalPagar} />
+                    {formatMoney(totalPagar)}
                   </p>
                 </div>
               </div>
@@ -505,7 +521,7 @@ function ContasPagar() {
                         }}
                         labelStyle={{ color: "#f8fafc" }}
                         formatter={(value) => [
-                          <Money value={value} />,
+                          formatMoney(value),
                           t("contasPagar.chartValueLabel"),
                         ]}
                       />
@@ -601,7 +617,8 @@ function ContasPagar() {
                         <div className="cp-acoes">
                           <div className="cp-valor-e-remover">
                             <p className="cp-valor">
-                              <Money value={conta.valor} />
+                              {/* item exibido na SUA PRÓPRIA moeda, sem reconverter */}
+                              <Money value={conta.valor} moeda={conta.moeda} />
                             </p>
                             {isPendente && (
                               <button

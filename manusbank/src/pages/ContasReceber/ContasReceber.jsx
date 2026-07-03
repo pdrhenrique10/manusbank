@@ -24,20 +24,23 @@ import { API_URL } from "../../config/api";
 import { useCurrency } from "../../context/CurrencyProvider";
 import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
 
-function Money({ value }) {
-  const { formatFromBRL } = useCurrency();
-  return <span>{formatFromBRL(value)}</span>;
+// Cada conta guarda sua própria moeda (vinda do backend) — exibida sem
+// conversão. Ver CurrencyProvider: formatValorNaMoeda é o padrão pra
+// itens individuais.
+function Money({ value, moeda }) {
+  const { formatValorNaMoeda } = useCurrency();
+  return <span>{formatValorNaMoeda(value, moeda)}</span>;
 }
 
 function ContasReceber() {
   const navigate = useNavigate();
   const { t } = useIdioma(); // 👈 hook de tradução
-  const { 
-    formatMoney, 
-    convertToBRL, 
-    currency, 
-    setCurrency, 
-    getCurrencySymbol 
+  const {
+    formatMoney,
+    converterEntreMoedas,
+    currency,
+    setCurrency,
+    getCurrencySymbol,
   } = useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
@@ -90,6 +93,7 @@ function ContasReceber() {
       const normalizadas = (dados || []).map(c => ({
         ...c,
         valor: Number(c.valor) || 0,
+        moeda: c.moeda || "BRL", // 👈 garante que a moeda do item nunca se perde
       }));
       setContas(normalizadas);
       localStorage.setItem('contasReceber', JSON.stringify(normalizadas));
@@ -110,16 +114,21 @@ function ContasReceber() {
     }
   }, [sucesso]);
 
+  // Helper: valor do item convertido (número puro) para a moeda atual —
+  // usado só pra AGREGAR (gráfico, total). Nunca pra exibir o item sozinho.
+  const paraMoedaAtual = (item) =>
+    converterEntreMoedas(item.valor, item.moeda || "BRL", currency);
+
   const dadosGrafico = contas
     .filter(c => c.status === "pendente")
     .map(c => ({
       nome: c.cliente.length > 15 ? c.cliente.substring(0, 15) + "..." : c.cliente,
-      valor: Number(c.valor) || 0,
+      valor: paraMoedaAtual(c),
     }));
 
   const totalAberto = contas
     .filter(c => c.status === "pendente")
-    .reduce((acc, c) => acc + (Number(c.valor) || 0), 0);
+    .reduce((acc, c) => acc + paraMoedaAtual(c), 0);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -166,7 +175,8 @@ function ContasReceber() {
       return;
     }
 
-    const valorEmReal = convertToBRL(valorDigitado);
+    // 👇 sem conversão — a moeda do item nunca muda na edição
+    // (o backend já garante isso em PUT /api/contas-receber/:id)
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -182,7 +192,7 @@ function ContasReceber() {
         },
         body: JSON.stringify({
           cliente: contaEditando.cliente,
-          valor: valorEmReal,
+          valor: valorDigitado,
           vencimento: contaEditando.vencimento,
           descricao: contaEditando.descricao,
         }),
@@ -195,7 +205,11 @@ function ContasReceber() {
         return;
       }
 
-      const atualizada = { ...resultado.conta, valor: Number(resultado.conta.valor) || 0 };
+      const atualizada = {
+        ...resultado.conta,
+        valor: Number(resultado.conta.valor) || 0,
+        moeda: resultado.conta.moeda || "BRL",
+      };
       const contasAtualizadas = contas.map(c =>
         c.id === atualizada.id ? atualizada : c
       );
@@ -225,7 +239,8 @@ function ContasReceber() {
       return;
     }
 
-    const valorEmReal = convertToBRL(valorDigitado);
+    // 👇 valor digitado já está na moeda atualmente selecionada.
+    // Quem decide qual moeda gravar é o backend (moedaAtualDoUsuario).
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -235,7 +250,8 @@ function ContasReceber() {
     const novaContaObj = {
       id: Date.now(),
       cliente: novaConta.cliente,
-      valor: valorEmReal,
+      valor: valorDigitado,
+      moeda: currency,
       vencimento: novaConta.vencimento,
       descricao: novaConta.descricao,
       status: "pendente",
@@ -244,7 +260,7 @@ function ContasReceber() {
     try {
       const body = {
         cliente: novaConta.cliente,
-        valor: valorEmReal,
+        valor: valorDigitado,
         vencimento: novaConta.vencimento,
         descricao: novaConta.descricao,
       };
@@ -268,7 +284,11 @@ function ContasReceber() {
       }
 
       const criada = await resp.json();
-      const contaComValor = { ...criada, valor: Number(criada.valor) || 0 };
+      const contaComValor = {
+        ...criada,
+        valor: Number(criada.valor) || 0,
+        moeda: criada.moeda || "BRL",
+      };
       setContas(prev => [...prev, contaComValor]);
       localStorage.setItem('contasReceber', JSON.stringify([...contas, contaComValor]));
       setNovaConta({ cliente: "", valor: "", vencimento: "", descricao: "" });
@@ -310,10 +330,11 @@ function ContasReceber() {
       }
 
       const { conta } = await resp.json();
+      const contaComMoeda = { ...conta, valor: Number(conta.valor) || 0, moeda: conta.moeda || "BRL" };
       setContas(prev =>
-        prev.map(c => (c.id === conta.id ? { ...conta, valor: Number(conta.valor) || 0 } : c))
+        prev.map(c => (c.id === contaComMoeda.id ? contaComMoeda : c))
       );
-      localStorage.setItem('contasReceber', JSON.stringify(contas.map(c => c.id === conta.id ? { ...conta, valor: Number(conta.valor) || 0 } : c)));
+      localStorage.setItem('contasReceber', JSON.stringify(contas.map(c => c.id === contaComMoeda.id ? contaComMoeda : c)));
       setSucesso(t("contasReceber.markedAsPaid"));
     } catch (e) {
       console.error("Erro ao marcar conta como paga:", e);
@@ -391,8 +412,9 @@ function ContasReceber() {
                 </span>
                 <div>
                   <p className="cr-resumo-label">{t("contasReceber.totalLabel")}</p>
+                  {/* total é somatório convertido p/ moeda atual -> formatMoney */}
                   <p className="cr-resumo-valor">
-                    <Money value={totalAberto} />
+                    {formatMoney(totalAberto)}
                   </p>
                 </div>
               </div>
@@ -481,7 +503,8 @@ function ContasReceber() {
                         <div className="cr-acoes">
                           <div className="cr-valor-e-remover">
                             <p className="cr-valor">
-                              <Money value={conta.valor} />
+                              {/* item exibido na SUA PRÓPRIA moeda, sem reconverter */}
+                              <Money value={conta.valor} moeda={conta.moeda} />
                             </p>
                             {isPendente && (
                               <button className="cr-btn-editar" onClick={() => abrirModalEdicao(conta)} title={t("contasReceber.editTitle")}>

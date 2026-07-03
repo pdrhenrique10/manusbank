@@ -1,7 +1,7 @@
 import "./Planos.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, X } from "lucide-react";
+import { Check, X, ArrowLeft } from "lucide-react";
 
 const MOEDAS = [
   { codigo: "BRL", label: "Real (R$)" },
@@ -64,7 +64,7 @@ export default function Planos() {
             </li>
             <li className="feature-limitada">
               <X size={18} className="icon-x" />
-              Moeda fixa: <strong>{MOEDAS.find((m) => m.codigo === moedaSelecionada)?.label}</strong> (não pode trocar depois)
+              Moeda fixa: Sua preferência (não é possível trocar depois)
             </li>
           </ul>
 
@@ -78,7 +78,6 @@ export default function Planos() {
 
         {/* PLANO PREMIUM */}
         <div className="plano-card plano-card-destaque">
-          <span className="plano-badge">Mais popular</span>
           <h2>Premium</h2>
           <p className="plano-preco">R$ 19,90<span>/mês</span></p>
 
@@ -108,6 +107,10 @@ export default function Planos() {
             Assinar Premium
           </button>
         </div>
+
+        <button className="back-home-button" onClick={() => navigate("/")}>
+          <ArrowLeft size={16} /> Voltar à tela inicial
+        </button>
       </div>
     </div>
   );

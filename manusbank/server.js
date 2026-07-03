@@ -87,6 +87,77 @@ function normalizarDataReferencia(valor) {
   return dataHoje();
 }
 
+// ===== TAXAS DE CÂMBIO (NOVO) =====
+// O backend precisa da sua própria fonte de taxas — antes, só o
+// frontend buscava isso (via VITE_EXCHANGERATES_API_KEY, que só existe
+// no bundle do Vite e nunca chega no servidor). Sem taxas aqui, toda
+// soma que envolvia mais de uma moeda (saldo, relatórios) tratava
+// valores de moedas diferentes como se fossem números da mesma moeda.
+//
+// Convenção idêntica à do CurrencyProvider do frontend: cachedRates[X]
+// = quantas unidades de X equivalem a 1 BRL.
+let cachedRates = {
+  BRL: 1,
+  USD: 0.18,
+  EUR: 0.17,
+  GBP: 0.14,
+};
+let taxasCarregadasEm = null;
+
+async function atualizarTaxasCambio() {
+  const API_KEY = process.env.EXCHANGERATES_API_KEY;
+  if (!API_KEY) {
+    console.warn(
+      "⚠️  EXCHANGERATES_API_KEY não configurada no backend — usando taxas fixas de fallback (menos precisas)."
+    );
+    return;
+  }
+
+  try {
+    const url = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/BRL`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Falha ao buscar taxas de câmbio");
+
+    const data = await res.json();
+    if (data.result !== "success") throw new Error("Erro na resposta da API de câmbio");
+
+    cachedRates = {
+      BRL: data.conversion_rates.BRL ?? cachedRates.BRL,
+      USD: data.conversion_rates.USD ?? cachedRates.USD,
+      EUR: data.conversion_rates.EUR ?? cachedRates.EUR,
+      GBP: data.conversion_rates.GBP ?? cachedRates.GBP,
+    };
+    taxasCarregadasEm = new Date();
+    console.log("💱 Taxas de câmbio atualizadas no backend:", cachedRates);
+  } catch (err) {
+    console.error("Erro ao atualizar taxas de câmbio no backend:", err.message);
+  }
+}
+
+// Converte um valor de uma moeda pra outra, usando BRL como ponte
+// (mesmo princípio do converterEntreMoedas do CurrencyProvider).
+function converterValor(valor, deMoeda, paraMoeda) {
+  const numero = Number(valor) || 0;
+  const origem = MOEDAS_VALIDAS.includes(deMoeda) ? deMoeda : "BRL";
+  const destino = MOEDAS_VALIDAS.includes(paraMoeda) ? paraMoeda : "BRL";
+
+  if (origem === destino) return numero;
+
+  const rateOrigem = cachedRates[origem] || 1; // 1 BRL -> origem
+  const rateDestino = cachedRates[destino] || 1; // 1 BRL -> destino
+
+  const valorEmBRL = numero / rateOrigem;
+  return valorEmBRL * rateDestino;
+}
+
+function paraBRL(valor, deMoeda) {
+  return converterValor(valor, deMoeda, "BRL");
+}
+
+function deBRL(valorEmBRL, paraMoeda) {
+  return converterValor(valorEmBRL, "BRL", paraMoeda);
+}
+
 // ===== HELPERS DE PLANO/MOEDA =====
 function normalizarPlanoUsuario(usuario) {
   const plano = PLANOS_VALIDOS.includes(usuario.plano) ? usuario.plano : "gratis";
@@ -108,6 +179,41 @@ function normalizarPlanoUsuario(usuario) {
 // um campo "moeda" vindo do body do client pra criação desses itens.
 function moedaAtualDoUsuario(usuario) {
   return normalizarPlanoUsuario(usuario).moedaAtual;
+}
+
+// ===== SALDO (CORRIGIDO) =====
+// Antes: usuario.saldo era um contador incrementado/decrementado em
+// cada rota (+= / -=) sempre com o valor cru da transação, ignorando
+// a moeda dela. Se o usuário Premium trocasse de moeda ao longo do
+// tempo, esse contador virava uma soma de BRL + USD + EUR como se
+// fossem a mesma unidade — silenciosamente errado, sem nenhum erro
+// visível.
+//
+// Agora: o saldo NUNCA é incrementado manualmente. Ele é sempre
+// recalculado do zero a partir do histórico de transações (a fonte
+// de verdade), convertendo cada uma pra BRL antes de somar. Isso tem
+// uma vantagem extra: se o usuarios.json já tem saldo desalinhado por
+// causa do bug antigo, ele se autocorrige na primeira leitura — sem
+// precisar de migração manual nos dados existentes.
+function calcularSaldoBRL(usuario) {
+  const transacoes = usuario.transacoes || [];
+  return transacoes.reduce((acc, t) => {
+    const valorEmBRL = paraBRL(t.valor, t.moeda || "BRL");
+    if (t.tipo === "deposito" || t.tipo === "transferenciaEntrada") {
+      return acc + valorEmBRL;
+    }
+    if (t.tipo === "saque" || t.tipo === "transferenciaSaida") {
+      return acc - valorEmBRL;
+    }
+    return acc;
+  }, 0);
+}
+
+// Atualiza usuario.saldo (sempre em BRL) e devolve o valor em BRL —
+// chamar depois de qualquer alteração em transacoes.
+function recalcularEsalvarSaldo(usuario) {
+  usuario.saldo = calcularSaldoBRL(usuario);
+  return usuario.saldo;
 }
 
 // ===== LÓGICA DE PERÍODO =====
@@ -365,16 +471,25 @@ app.get("/api/dashboard", autenticar, (req, res) => {
     moeda: t.moeda || "BRL",
   }));
 
+  const moedaAtual = moedaAtualDoUsuario(req.usuario);
+
+  // 👇 saldo sempre recalculado a partir das transações (fonte de
+  // verdade), não do campo armazenado — evita arrastar qualquer
+  // desalinhamento antigo e já devolve na moeda atual do usuário.
+  const saldoEmBRL = calcularSaldoBRL(req.usuario);
+
   res.json({
     usuario: { nome: req.usuario.nome, email: req.usuario.email },
-    saldo: req.usuario.saldo || 0,
-    moedaAtual: moedaAtualDoUsuario(req.usuario),
+    saldo: deBRL(saldoEmBRL, moedaAtual),
+    moedaAtual,
     transacoes,
   });
 });
 
 // ===== RELATÓRIOS =====
 app.get("/api/relatorios", autenticar, (req, res) => {
+  const moedaAtual = moedaAtualDoUsuario(req.usuario);
+
   const transacoes = (req.usuario.transacoes || []).map((t) => ({
     ...t,
     moeda: t.moeda || "BRL",
@@ -416,7 +531,10 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   );
 
   transacoesFiltradas.forEach((t) => {
-    const valor = Number(t.valor) || 0;
+    // 👇 CORREÇÃO: converte cada transação da SUA moeda pra moeda
+    // atual do usuário antes de somar. Antes somava t.valor cru,
+    // misturando moedas diferentes como se fossem a mesma unidade.
+    const valor = converterValor(t.valor, t.moeda || "BRL", moedaAtual);
     const [ano, mes] = t.data.split("-").map(Number);
     const mesKey = `${ano}-${String(mes).padStart(2, "0")}`;
 
@@ -473,7 +591,7 @@ app.get("/api/relatorios", autenticar, (req, res) => {
     periodo,
     dataInicio,
     dataFim,
-    moedaAtual: moedaAtualDoUsuario(req.usuario),
+    moedaAtual,
     saldoAtual: totalReceitas - totalDespesas,
     totalEntradas: totalReceitas,
     totalGastos: totalDespesas,
@@ -496,6 +614,7 @@ app.get("/api/relatorios", autenticar, (req, res) => {
 });
 
 app.get("/api/relatorios/grafico", autenticar, (req, res) => {
+  const moedaAtual = moedaAtualDoUsuario(req.usuario);
   const transacoes = req.usuario.transacoes || [];
   const periodo = req.query.periodo || "mes";
   const hojeReferencia = normalizarDataReferencia(req.query.hoje);
@@ -517,7 +636,8 @@ app.get("/api/relatorios/grafico", autenticar, (req, res) => {
       dadosPorMes[chave] = { mes: nomeMes, entradas: 0, gastos: 0 };
     }
 
-    const valor = Number(t.valor) || 0;
+    // 👇 mesma correção: converte pra moeda atual antes de somar
+    const valor = converterValor(t.valor, t.moeda || "BRL", moedaAtual);
     if (tiposReceita.includes(t.tipo)) {
       dadosPorMes[chave].entradas += valor;
     } else if (tiposDespesa.includes(t.tipo)) {
@@ -535,7 +655,7 @@ app.get("/api/relatorios/grafico", autenticar, (req, res) => {
     if (!tiposDespesa.includes(t.tipo)) return;
 
     const categoria = t.categoria || t.descricao || "Outros";
-    const valor = Number(t.valor) || 0;
+    const valor = converterValor(t.valor, t.moeda || "BRL", moedaAtual);
     gastosPorCategoria[categoria] =
       (gastosPorCategoria[categoria] || 0) + valor;
   });
@@ -545,6 +665,7 @@ app.get("/api/relatorios/grafico", autenticar, (req, res) => {
     .sort((a, b) => b.valor - a.valor);
 
   res.json({
+    moedaAtual,
     comparativoMensal,
     gastosPorCategoria: categorias,
     totalEntradas: comparativoMensal.reduce(
@@ -587,31 +708,18 @@ app.post("/api/transacao", autenticar, (req, res) => {
   usuarios[index].transacoes = usuarios[index].transacoes || [];
   usuarios[index].transacoes.push(novaTransacao);
 
-  if (tipo === "deposito" || tipo === "transferenciaEntrada") {
-    usuarios[index].saldo = (usuarios[index].saldo || 0) + numeroValor;
-  } else {
-    usuarios[index].saldo = (usuarios[index].saldo || 0) - numeroValor;
-  }
+  // 👇 saldo recalculado do zero a partir das transações (ver
+  // calcularSaldoBRL) — não incrementamos mais manualmente.
+  recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
 
   res.json({
     sucesso: true,
     transacao: novaTransacao,
-    saldo: usuarios[index].saldo,
+    saldo: deBRL(usuarios[index].saldo, novaTransacao.moeda),
   });
 });
-
-function impactoNoSaldo(tipo, valor) {
-  const numeroValor = Number(valor) || 0;
-  if (tipo === "deposito" || tipo === "transferenciaEntrada") {
-    return numeroValor;
-  }
-  if (tipo === "saque" || tipo === "transferenciaSaida") {
-    return -numeroValor;
-  }
-  return 0;
-}
 
 app.put("/api/transacao/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
@@ -639,8 +747,6 @@ app.put("/api/transacao/:id", autenticar, (req, res) => {
   }
 
   const antiga = transacoes[transacaoIndex];
-  const impactoAntigo = impactoNoSaldo(antiga.tipo, antiga.valor);
-  const impactoNovo = impactoNoSaldo(tipo, numeroValor);
 
   const atualizada = {
     ...antiga,
@@ -655,15 +761,16 @@ app.put("/api/transacao/:id", autenticar, (req, res) => {
 
   transacoes[transacaoIndex] = atualizada;
   usuarios[index].transacoes = transacoes;
-  usuarios[index].saldo =
-    (usuarios[index].saldo || 0) - impactoAntigo + impactoNovo;
+
+  // 👇 recalculado do zero — não precisamos mais de impactoAntigo/impactoNovo
+  recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
 
   res.json({
     sucesso: true,
     transacao: atualizada,
-    saldo: usuarios[index].saldo,
+    saldo: deBRL(usuarios[index].saldo, atualizada.moeda),
   });
 });
 
@@ -684,20 +791,19 @@ app.delete("/api/transacao/:id", autenticar, (req, res) => {
   }
 
   const removida = transacoes.splice(transacaoIndex, 1)[0];
-
-  if (
-    removida.tipo === "deposito" ||
-    removida.tipo === "transferenciaEntrada"
-  ) {
-    usuarios[index].saldo -= removida.valor;
-  } else {
-    usuarios[index].saldo += removida.valor;
-  }
-
   usuarios[index].transacoes = transacoes;
+
+  // 👇 recalculado do zero, sem transação removida
+  const moedaAtual = moedaAtualDoUsuario(usuarios[index]);
+  recalcularEsalvarSaldo(usuarios[index]);
+
   salvarUsuarios(usuarios);
 
-  res.json({ sucesso: true, removida, saldo: usuarios[index].saldo });
+  res.json({
+    sucesso: true,
+    removida,
+    saldo: deBRL(usuarios[index].saldo, moedaAtual),
+  });
 });
 
 // ===== CONTAS A RECEBER =====
@@ -821,10 +927,16 @@ app.patch("/api/contas-receber/:id/pagar", autenticar, (req, res) => {
 
   usuarios[index].transacoes = usuarios[index].transacoes || [];
   usuarios[index].transacoes.push(novaTransacao);
-  usuarios[index].saldo = (usuarios[index].saldo || 0) + conta.valor;
+
+  // 👇 recalculado do zero, já considerando a moeda da conta
+  recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
-  res.json({ conta, transacao: novaTransacao, saldo: usuarios[index].saldo });
+  res.json({
+    conta,
+    transacao: novaTransacao,
+    saldo: deBRL(usuarios[index].saldo, moedaAtualDoUsuario(usuarios[index])),
+  });
 });
 
 app.delete("/api/contas-receber/:id", autenticar, (req, res) => {
@@ -961,10 +1073,16 @@ app.patch("/api/contas-pagar/:id/pagar", autenticar, (req, res) => {
 
   usuarios[index].transacoes = usuarios[index].transacoes || [];
   usuarios[index].transacoes.push(novaTransacao);
-  usuarios[index].saldo = (usuarios[index].saldo || 0) - conta.valor;
+
+  // 👇 recalculado do zero, já considerando a moeda da conta
+  recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
-  res.json({ conta, transacao: novaTransacao, saldo: usuarios[index].saldo });
+  res.json({
+    conta,
+    transacao: novaTransacao,
+    saldo: deBRL(usuarios[index].saldo, moedaAtualDoUsuario(usuarios[index])),
+  });
 });
 
 app.delete("/api/contas-pagar/:id", autenticar, (req, res) => {
@@ -1091,6 +1209,11 @@ app.delete("/api/metas/:id", autenticar, (req, res) => {
 });
 
 // ===== APORTAR NA META =====
+// Nota: este endpoint assume que "valor" já chega convertido pra
+// moeda ORIGINAL da meta — quem faz essa conversão é o frontend
+// (MetasFinanceiras.jsx), já que é lá que sabemos tanto a moeda
+// selecionada no momento do aporte quanto a moeda em que a meta foi
+// criada.
 app.patch("/api/metas/:id/aportar", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const { valor } = req.body;
@@ -1135,6 +1258,9 @@ app.patch("/api/metas/:id/desaportar", autenticar, (req, res) => {
 });
 
 // ===== INICIALIZAÇÃO DO SERVIDOR =====
+atualizarTaxasCambio();
+setInterval(atualizarTaxasCambio, 10 * 60 * 1000);
+
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📁 Usuários salvos em: ${USUARIOS_FILE}`);

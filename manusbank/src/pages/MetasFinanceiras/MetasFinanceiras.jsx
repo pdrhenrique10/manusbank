@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./MetasFinanceiras.css";
@@ -16,16 +16,18 @@ import { API_URL } from "../../config/api";
 import { useIdioma } from "../../context/IdiomaContext";
 import { useCurrency } from "../../context/CurrencyProvider";
 
-// Componente auxiliar para exibir valor já convertido
-function Money({ value }) {
-  const { formatFromBRL } = useCurrency();
-  return <span>{formatFromBRL(value)}</span>;
+// Cada meta guarda sua própria moeda (vinda do backend) — exibida sem
+// conversão. Ver CurrencyProvider: formatValorNaMoeda é o padrão pra
+// itens individuais.
+function Money({ value, moeda }) {
+  const { formatValorNaMoeda } = useCurrency();
+  return <span>{formatValorNaMoeda(value, moeda)}</span>;
 }
 
 function MetasFinanceiras() {
   const navigate = useNavigate();
   const { t } = useIdioma();
-  const { formatMoney, currency, rates } = useCurrency();
+  const { formatMoney, converterEntreMoedas, currency } = useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
@@ -42,21 +44,6 @@ function MetasFinanceiras() {
   const [sucesso, setSucesso] = useState("");
   const [carregando, setCarregando] = useState(true);
 
-  const moedaAnteriorRef = useRef(currency);
-
-  // 👇 Funções de conversão
-  const convertToBRL = (value, fromCurrency) => {
-    if (!fromCurrency || fromCurrency === "BRL") return value;
-    const rate = rates[fromCurrency] || 1;
-    return value * rate;
-  };
-
-  const convertFromBRL = (valueInBRL) => {
-    if (!currency || currency === "BRL") return valueInBRL;
-    const rate = rates[currency] || 1;
-    return valueInBRL / rate;
-  };
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -64,38 +51,21 @@ function MetasFinanceiras() {
       return;
     }
     carregarMetas(token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
-  // 👇 Efeito para recarregar e converter metas apenas quando a moeda muda
-  useEffect(() => {
-    if (moedaAnteriorRef.current !== currency && metas.length > 0) {
-      moedaAnteriorRef.current = currency;
-
-      const metasConvertidas = metas.map(meta => {
-        // 🛑 CORREÇÃO: se o backend não devolveu "moeda" (campo ausente),
-        // NÃO assumimos mais "BRL" às cegas — isso causava conversões erradas
-        // para quem usa o app em outra moeda (ex: USD) desde o início.
-        // Se não sabemos a moeda real do registro, assumimos que ele já
-        // está na moeda atualmente exibida (não força conversão indevida).
-        const metaMoeda = meta.moeda || currency;
-
-        if (metaMoeda !== currency) {
-          const valorAlvoEmBRL = convertToBRL(Number(meta.valorAlvo) || 0, metaMoeda);
-          const valorAtualEmBRL = convertToBRL(Number(meta.valorAtual) || 0, metaMoeda);
-          
-          return {
-            ...meta,
-            valorAlvo: convertFromBRL(valorAlvoEmBRL),
-            valorAtual: convertFromBRL(valorAtualEmBRL),
-            moeda: currency,
-          };
-        }
-        return meta;
-      });
-      
-      setMetas(metasConvertidas);
-    }
-  }, [currency, metas, rates]);
+  // 🛑 CORREÇÃO: removemos o antigo comportamento de reconverter e
+  // sobrescrever permanentemente valorAlvo/valorAtual toda vez que a
+  // moeda selecionada mudava. Isso causava dois problemas:
+  //  1) Perda de precisão acumulada (BRL->USD->BRL repetidas vezes
+  //     nunca volta ao valor exato, por causa de arredondamento).
+  //  2) Inconsistência entre sessões: como a conversão nunca era salva
+  //     no backend, ao recarregar a página os valores originais
+  //     voltavam e o processo de reconversão recomeçava do zero.
+  // Agora cada meta simplesmente guarda a moeda em que foi criada, e a
+  // exibição usa formatValorNaMoeda (sem tocar no valor armazenado).
+  // Trocar a moeda no seletor não deve mexer nos valores das metas —
+  // só na moeda de itens NOVOS criados dali em diante.
 
   async function carregarMetas(token) {
     try {
@@ -121,27 +91,18 @@ function MetasFinanceiras() {
       }
 
       const dados = await resp.json();
-      
-      const metasConvertidas = (dados || []).map(meta => {
-        // 🛑 CORREÇÃO: mesmo motivo do efeito acima — não assumir "BRL"
-        // quando o registro vindo da API não tem "moeda" definida.
-        const metaMoeda = meta.moeda || currency;
-        if (metaMoeda !== currency) {
-          const valorAlvoEmBRL = convertToBRL(Number(meta.valorAlvo) || 0, metaMoeda);
-          const valorAtualEmBRL = convertToBRL(Number(meta.valorAtual) || 0, metaMoeda);
-          
-          return {
-            ...meta,
-            valorAlvo: convertFromBRL(valorAlvoEmBRL),
-            valorAtual: convertFromBRL(valorAtualEmBRL),
-            moeda: currency,
-          };
-        }
-        return meta;
-      });
-      
-      setMetas(metasConvertidas);
-      localStorage.setItem("metasFinanceiras", JSON.stringify(metasConvertidas));
+
+      // 👇 preserva a moeda de cada meta tal como veio do backend,
+      // sem reconverter nada.
+      const metasNormalizadas = (dados || []).map((meta) => ({
+        ...meta,
+        valorAlvo: Number(meta.valorAlvo) || 0,
+        valorAtual: Number(meta.valorAtual) || 0,
+        moeda: meta.moeda || "BRL",
+      }));
+
+      setMetas(metasNormalizadas);
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metasNormalizadas));
     } catch (e) {
       console.error("Erro ao carregar metas:", e);
       const metasLocal = JSON.parse(localStorage.getItem("metasFinanceiras") || "[]");
@@ -159,6 +120,8 @@ function MetasFinanceiras() {
     }
   }, [sucesso]);
 
+  // Progresso (%) é adimensional — não precisa de conversão de moeda,
+  // só compara valorAtual/valorAlvo dentro da MESMA moeda do item.
   const dadosGrafico = metas.map((m) => {
     const objetivo = Number(m.valorAlvo) || 0;
     const atual = Number(m.valorAtual) || 0;
@@ -228,6 +191,10 @@ function MetasFinanceiras() {
       return;
     }
 
+    // 👇 não mandamos "moeda" aqui de propósito: o PUT /api/metas/:id
+    // aceita um campo moeda no body e, se ausente, mantém a moeda
+    // original da meta (meta.moeda || "BRL"). Não mandar o campo é
+    // como garantimos que a moeda não muda numa edição de valor/data.
     try {
       const resp = await fetch(`${API_URL}/api/metas/${metaEditando.id}`, {
         method: "PUT",
@@ -240,7 +207,6 @@ function MetasFinanceiras() {
           valorAlvo: valorNumero,
           dataMeta: metaEditando.dataMeta,
           descricao: metaEditando.descricao,
-          moeda: currency,
         }),
       });
 
@@ -251,8 +217,9 @@ function MetasFinanceiras() {
         return;
       }
 
+      const metaAtualizada = { ...resultado.meta, moeda: resultado.meta.moeda || "BRL" };
       const metasAtualizadas = metas.map((m) =>
-        m.id === resultado.meta.id ? { ...resultado.meta, moeda: currency } : m
+        m.id === metaAtualizada.id ? metaAtualizada : m
       );
       setMetas(metasAtualizadas);
       localStorage.setItem("metasFinanceiras", JSON.stringify(metasAtualizadas));
@@ -286,6 +253,11 @@ function MetasFinanceiras() {
       return;
     }
 
+    // 👇 a meta é criada na moeda ATUALMENTE selecionada — igual ao
+    // padrão de transações/contas. Mandamos "moeda: currency" porque
+    // (diferente das outras entidades) o endpoint POST /api/metas
+    // aceita moeda vinda do body em vez de decidir sozinho — então
+    // seguimos o contrato que o próprio backend espera aqui.
     const novaMetaObj = {
       id: Date.now(),
       titulo: novaMeta.titulo,
@@ -325,7 +297,7 @@ function MetasFinanceiras() {
       }
 
       const criada = await resp.json();
-      const metaComMoeda = { ...criada, moeda: currency };
+      const metaComMoeda = { ...criada, moeda: criada.moeda || currency };
       setMetas((prev) => [...prev, metaComMoeda]);
       localStorage.setItem("metasFinanceiras", JSON.stringify([...metas, metaComMoeda]));
       setNovaMeta({ titulo: "", valorAlvo: "", dataMeta: "", descricao: "" });
@@ -359,6 +331,19 @@ function MetasFinanceiras() {
       return;
     }
 
+    // 🛑 CORREÇÃO: o backend (/api/metas/:id/aportar) NÃO faz nenhuma
+    // conversão — ele só soma o valor recebido direto em valorAtual,
+    // ignorando qualquer campo "moeda" do body. Isso significa que se
+    // a meta foi criada em USD e o usuário está com EUR selecionado no
+    // momento do aporte, mandar o valor digitado (em EUR) faria o
+    // backend somar EUR puro dentro de um valorAtual que é em USD —
+    // corrompendo silenciosamente o progresso da meta.
+    // Por isso convertemos o valor digitado para a moeda ORIGINAL da
+    // meta ANTES de mandar pro backend.
+    const meta = metas.find((m) => m.id === metaId);
+    const moedaDaMeta = meta?.moeda || "BRL";
+    const valorNaMoedaDaMeta = converterEntreMoedas(valorNumero, currency, moedaDaMeta);
+
     try {
       const resp = await fetch(`${API_URL}/api/metas/${metaId}/aportar`, {
         method: "PATCH",
@@ -366,31 +351,28 @@ function MetasFinanceiras() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          valor: valorNumero,
-          moeda: currency,
-        }),
+        body: JSON.stringify({ valor: valorNaMoedaDaMeta }),
       });
 
       if (!resp.ok) {
         setMetas((prev) =>
           prev.map((m) =>
-            m.id === metaId ? { ...m, valorAtual: (m.valorAtual || 0) + valorNumero } : m
+            m.id === metaId ? { ...m, valorAtual: (m.valorAtual || 0) + valorNaMoedaDaMeta } : m
           )
         );
         localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
-          m.id === metaId ? { ...m, valorAtual: (m.valorAtual || 0) + valorNumero } : m
+          m.id === metaId ? { ...m, valorAtual: (m.valorAtual || 0) + valorNaMoedaDaMeta } : m
         )));
         setSucesso(t("metasFinanceiras.aporteSuccessLocal", { valor: formatMoney(valorNumero) }));
         setValorAporte("");
         return;
       }
 
-      const { meta } = await resp.json();
-      const metaComMoeda = { ...meta, moeda: currency };
-      setMetas((prev) => prev.map((m) => (m.id === meta.id ? metaComMoeda : m)));
+      const { meta: metaAtualizada } = await resp.json();
+      const metaComMoeda = { ...metaAtualizada, moeda: metaAtualizada.moeda || moedaDaMeta };
+      setMetas((prev) => prev.map((m) => (m.id === metaComMoeda.id ? metaComMoeda : m)));
       localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
-        m.id === meta.id ? metaComMoeda : m
+        m.id === metaComMoeda.id ? metaComMoeda : m
       )));
       setSucesso(t("metasFinanceiras.aporteSuccess", { valor: formatMoney(valorNumero) }));
       setValorAporte("");
@@ -418,6 +400,12 @@ function MetasFinanceiras() {
       return;
     }
 
+    // mesmo raciocínio do handleAportar: converter para a moeda ORIGINAL
+    // da meta antes de mandar, já que o backend não converte nada.
+    const meta = metas.find((m) => m.id === metaId);
+    const moedaDaMeta = meta?.moeda || "BRL";
+    const valorNaMoedaDaMeta = converterEntreMoedas(valorNumero, currency, moedaDaMeta);
+
     try {
       const resp = await fetch(`${API_URL}/api/metas/${metaId}/desaportar`, {
         method: "PATCH",
@@ -425,33 +413,30 @@ function MetasFinanceiras() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          valor: valorNumero,
-          moeda: currency,
-        }),
+        body: JSON.stringify({ valor: valorNaMoedaDaMeta }),
       });
 
       if (!resp.ok) {
         setMetas((prev) =>
           prev.map((m) =>
             m.id === metaId
-              ? { ...m, valorAtual: Math.max(0, (m.valorAtual || 0) - valorNumero) }
+              ? { ...m, valorAtual: Math.max(0, (m.valorAtual || 0) - valorNaMoedaDaMeta) }
               : m
           )
         );
         localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
-          m.id === metaId ? { ...m, valorAtual: Math.max(0, (m.valorAtual || 0) - valorNumero) } : m
+          m.id === metaId ? { ...m, valorAtual: Math.max(0, (m.valorAtual || 0) - valorNaMoedaDaMeta) } : m
         )));
         setSucesso(t("metasFinanceiras.desaporteSuccessLocal", { valor: formatMoney(valorNumero) }));
         setValorAporte("");
         return;
       }
 
-      const { meta } = await resp.json();
-      const metaComMoeda = { ...meta, moeda: currency };
-      setMetas((prev) => prev.map((m) => (m.id === meta.id ? metaComMoeda : m)));
+      const { meta: metaAtualizada } = await resp.json();
+      const metaComMoeda = { ...metaAtualizada, moeda: metaAtualizada.moeda || moedaDaMeta };
+      setMetas((prev) => prev.map((m) => (m.id === metaComMoeda.id ? metaComMoeda : m)));
       localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
-        m.id === meta.id ? metaComMoeda : m
+        m.id === metaComMoeda.id ? metaComMoeda : m
       )));
       setSucesso(t("metasFinanceiras.desaporteSuccess", { valor: formatMoney(valorNumero) }));
       setValorAporte("");
@@ -623,7 +608,8 @@ function MetasFinanceiras() {
                           </p>
                           {meta.descricao && <p className="mf-descricao">{meta.descricao}</p>}
                           <p className="mf-valores">
-                            <Money value={atual} /> {t("metasFinanceiras.of")} <Money value={objetivo} />
+                            <Money value={atual} moeda={meta.moeda} /> {t("metasFinanceiras.of")}{" "}
+                            <Money value={objetivo} moeda={meta.moeda} />
                           </p>
                           <div className="meta-progress">
                             <div
