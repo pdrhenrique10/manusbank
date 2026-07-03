@@ -1,5 +1,5 @@
 // src/components/Money.jsx
-import { useCurrency } from "../hooks/useCurrency";
+import { useCurrency } from "../context/CurrencyProvider";
 
 export default function Money({ value, className = "" }) {
   const { formatMoney } = useCurrency();

@@ -43,6 +43,7 @@ export default function Planos() {
         </select>
       </div>
 
+      {/* GRID APENAS COM OS CARDS */}
       <div className="planos-grid">
         {/* PLANO GRÁTIS */}
         <div className="plano-card">
@@ -52,15 +53,11 @@ export default function Planos() {
           <ul className="plano-features">
             <li>
               <Check size={18} className="icon-check" />
-              Controle de receitas e despesas
+              Todo o essencial para organizar suas finanças
             </li>
             <li>
               <Check size={18} className="icon-check" />
-              Contas a pagar e receber
-            </li>
-            <li>
-              <Check size={18} className="icon-check" />
-              Metas financeiras
+              Seleção de idioma
             </li>
             <li className="feature-limitada">
               <X size={18} className="icon-x" />
@@ -107,11 +104,12 @@ export default function Planos() {
             Assinar Premium
           </button>
         </div>
-
-        <button className="back-home-button" onClick={() => navigate("/")}>
-          <ArrowLeft size={16} /> Voltar à tela inicial
-        </button>
       </div>
+
+      {/* BOTÃO FORA DO GRID: Agora ele se alinha com o container principal */}
+      <button className="back-home-button" onClick={() => navigate("/")}>
+        <ArrowLeft size={16} /> Voltar à tela inicial
+      </button>
     </div>
   );
 }

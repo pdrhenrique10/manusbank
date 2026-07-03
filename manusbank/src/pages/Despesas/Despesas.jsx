@@ -58,7 +58,6 @@ function Despesas() {
     formatValorNaMoeda,
     converterEntreMoedas,
     currency,
-    setCurrency,
     getCurrencySymbol,
   } = useCurrency();
 
@@ -114,13 +113,13 @@ function Despesas() {
       const todasTransacoes = dados.transacoes || [];
 
       const apenasDespesas = todasTransacoes
-        .filter(t => t.tipo === "saque" || t.tipo === "transferenciaSaida")
-        .map(t => ({
-          id: t.id,
-          nome: t.descricao || t("despesas.defaultName"),
-          valor: Number(t.valor) || 0,
-          moeda: t.moeda || "BRL", // 👈 preserva a moeda do item, vinda do backend
-          data: extrairData(t.data),
+        .filter(tr => tr.tipo === "saque" || tr.tipo === "transferenciaSaida")
+        .map(tr => ({
+          id: tr.id,
+          nome: tr.descricao || "Despesa",
+          valor: Number(tr.valor) || 0,
+          moeda: tr.moeda || "BRL",
+          data: extrairData(tr.data),
         }));
 
       setDespesas(apenasDespesas);

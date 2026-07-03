@@ -11,6 +11,7 @@ import MetasFinanceiras from "./pages/MetasFinanceiras/MetasFinanceiras";
 import Relatorios from "./pages/Relatorios/Relatorios";
 import Configuracoes from "./pages/Configuracoes/Configuracoes";
 import Planos from "./pages/Planos/Planos";
+import TrocarPlano from "./pages/TrocarPlano/TrocarPlano";
 import { ThemeProvider } from "./hooks/useTheme";
 import { CurrencyProvider } from "./context/CurrencyProvider";
 
@@ -26,38 +27,15 @@ export default function App() {
           <Route path="/planos" element={<Planos />} />
 
   
-          <Route 
-            path="/dashboard" 
-            element={<CurrencyProvider><Dashboard /></CurrencyProvider>} 
-          />
-          <Route 
-            path="/receitas" 
-            element={<CurrencyProvider><Receitas /></CurrencyProvider>} 
-          />
-          <Route 
-            path="/despesas" 
-            element={<CurrencyProvider><Despesas /></CurrencyProvider>} 
-          />
-          <Route 
-            path="/contas-a-receber" 
-            element={<CurrencyProvider><ContasReceber /></CurrencyProvider>} 
-          />
-          <Route 
-            path="/contas-a-pagar" 
-            element={<CurrencyProvider><ContasPagar /></CurrencyProvider>} 
-          />
-          <Route 
-            path="/metasfinanceiras" 
-            element={<CurrencyProvider><MetasFinanceiras /></CurrencyProvider>} 
-          />
-          <Route 
-            path="/relatorios" 
-            element={<CurrencyProvider><Relatorios /></CurrencyProvider>} 
-          />
-          <Route 
-            path="/configuracoes" 
-            element={<CurrencyProvider><Configuracoes /></CurrencyProvider>} 
-          />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/receitas" element={<Receitas />} />
+          <Route path="/despesas" element={<Despesas />} />
+          <Route path="/contas-a-receber" element={<ContasReceber />} />
+          <Route path="/contas-a-pagar" element={<ContasPagar />} />
+          <Route path="/metasfinanceiras" element={<MetasFinanceiras />} />
+          <Route path="/relatorios" element={<Relatorios />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/trocar-plano" element={<TrocarPlano />} />
         </Routes>
                 </ThemeProvider>
     </BrowserRouter>

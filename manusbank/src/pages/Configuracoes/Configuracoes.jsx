@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import { useTheme } from "../../hooks/useTheme";
 import { useCurrency } from "../../context/CurrencyProvider";
 import { useIdioma } from "../../context/IdiomaContext";
+import { API_URL } from "../../config/api";
 import "./Configuracoes.css";
 import {
   LogOut,
@@ -19,6 +20,8 @@ import {
   Palette,
   Wallet,
   Languages,
+  Crown,
+  Lock,
 } from "lucide-react";
 
 function Configuracoes() {
@@ -30,6 +33,16 @@ function Configuracoes() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+
+  // 👇 plano vem do backend — é ele quem decide de verdade se a
+  // troca de moeda é permitida (o front nunca deve confiar só em si mesmo).
+  const [plano, setPlano] = useState("gratis");
+  const [carregandoPlano, setCarregandoPlano] = useState(true);
+  const [trocandoMoeda, setTrocandoMoeda] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [moedaPendente, setMoedaPendente] = useState(null);
+  const [erro, setErro] = useState("");
+  const [sucesso, setSucesso] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -53,7 +66,66 @@ function Configuracoes() {
       });
     }
     setLoading(false);
+
+    // 👇 busca o plano e a moeda REAIS do backend. Antes, o seletor de
+    // moeda só olhava pro estado local do CurrencyProvider (localStorage),
+    // que podia estar completamente fora de sincronia com o que o
+    // backend tinha registrado — inclusive permitindo que uma conta
+    // grátis "trocasse" de moeda só na aparência, sem o backend nunca
+    // saber disso.
+    async function carregarPlano() {
+      try {
+        setCarregandoPlano(true);
+        const resp = await fetch(`${API_URL}/api/usuario/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (resp.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
+          return;
+        }
+
+        if (!resp.ok) return;
+
+        const dados = await resp.json();
+        setPlano(dados.plano || "gratis");
+
+        // moeda "de verdade": pra conta grátis é a moeda fixa; pra
+        // premium é a moeda atual escolhida. Sincroniza o contexto
+        // global (CurrencyProvider) com essa verdade, se estiver diferente.
+        const moedaReal =
+          dados.plano === "gratis"
+            ? dados.moedaFixa || dados.moedaAtual || "BRL"
+            : dados.moedaAtual || "BRL";
+
+        if (moedaReal && moedaReal !== currency) {
+          setCurrency(moedaReal);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar plano do usuário:", e);
+      } finally {
+        setCarregandoPlano(false);
+      }
+    }
+
+    carregarPlano();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, t]);
+
+  useEffect(() => {
+    if (sucesso) {
+      const timer = setTimeout(() => setSucesso(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [sucesso]);
+
+  useEffect(() => {
+    if (erro) {
+      const timer = setTimeout(() => setErro(""), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [erro]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -68,6 +140,100 @@ function Configuracoes() {
 
   const cancelLogout = () => {
     setShowModal(false);
+  };
+
+  // Persiste a moeda no backend e só então atualiza o contexto global —
+  // nunca o contrário, pra não deixar o front "achar" que mudou quando
+  // o backend recusou.
+  async function persistirMoeda(novaMoeda) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    setTrocandoMoeda(true);
+    setErro("");
+    setSucesso("");
+
+    try {
+      const resp = await fetch(`${API_URL}/api/usuario/moeda`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ moeda: novaMoeda }),
+      });
+
+      const dados = await resp.json();
+
+      if (!resp.ok) {
+        // 403 = backend também bloqueou (plano grátis) — fallback de
+        // segurança caso o estado de "plano" no front esteja atrasado.
+        if (resp.status === 403) {
+          setPlano("gratis");
+          setMoedaPendente(novaMoeda);
+          setShowUpgradeModal(true);
+          return;
+        }
+        setErro(dados.erro || t("configuracoes.errorCurrency"));
+        return;
+      }
+
+      setCurrency(novaMoeda);
+
+      // mantém o localStorage("user") coerente, já que outras telas
+      // podem ler moedaAtual de lá.
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ ...parsed, moedaAtual: dados.moedaAtual })
+          );
+        } catch (e) {
+          // ignora — não é crítico
+        }
+      }
+
+      setSucesso(t("configuracoes.currencyUpdated"));
+    } catch (e) {
+      console.error("Erro ao trocar moeda:", e);
+      setErro(t("configuracoes.errorCurrency"));
+    } finally {
+      setTrocandoMoeda(false);
+    }
+  }
+
+  // Handler do <select> de moeda — decide bloquear ou trocar de verdade.
+  const handleCurrencyChange = (e) => {
+    const novaMoeda = e.target.value;
+    if (novaMoeda === currency) return;
+
+    if (plano === "gratis") {
+      // não troca nada — o <select> continua controlado por "currency",
+      // então ele automaticamente volta a mostrar o valor antigo.
+      setMoedaPendente(novaMoeda);
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    persistirMoeda(novaMoeda);
+  };
+
+  const fecharUpgradeModal = () => {
+    setShowUpgradeModal(false);
+    setMoedaPendente(null);
+  };
+
+  // Não assina mais aqui — só leva pra tela dedicada de troca de plano,
+  // onde a assinatura de fato acontece (com opção real de cancelar,
+  // que volta pra Configurações sem persistir nada).
+  const handleIrParaPlanos = () => {
+    setShowUpgradeModal(false);
+    navigate("/trocar-plano", { state: { moedaPendente } });
   };
 
   if (loading) {
@@ -108,6 +274,9 @@ function Configuracoes() {
             </p>
           </header>
 
+          {erro && <p className="erro-msg">{erro}</p>}
+          {sucesso && <p className="sucesso-msg">{sucesso}</p>}
+
           {/* Conta */}
           <section className="config-section">
             <h2>
@@ -142,6 +311,18 @@ function Configuracoes() {
                 <LogIn size={16} className="config-icon" /> {t("configuracoes.loginType")}:
               </div>
               <span className="config-value">{t("configuracoes.emailPassword")}</span>
+            </div>
+            <div className="config-row">
+              <div className="config-text">
+                <Crown size={16} className="config-icon" /> {t("configuracoes.plan")}:
+              </div>
+              <span className="config-value">
+                {carregandoPlano
+                  ? t("geral.loading")
+                  : plano === "premium"
+                  ? t("configuracoes.planPremium")
+                  : t("configuracoes.planFree")}
+              </span>
             </div>
             <div className="config-row">
               <div className="config-text">
@@ -219,12 +400,17 @@ function Configuracoes() {
               <div className="config-row">
                 <div className="config-text">
                   <Wallet size={16} className="config-icon" /> {t("configuracoes.defaultCurrency")}:
+                  {plano === "gratis" && !carregandoPlano && (
+                    <Lock size={13} className="config-lock-icon" title={t("configuracoes.currencyLocked")} />
+                  )}
                 </div>
                 <div className="theme-toggle-wrapper">
                   <select
                     className="currency-select"
                     value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
+                    onChange={handleCurrencyChange}
+                    disabled={carregandoPlano || trocandoMoeda}
+                    style={{ opacity: trocandoMoeda ? 0.6 : 1 }}
                   >
                     <option value="BRL">{t("configuracoes.real")}</option>
                     <option value="USD">{t("configuracoes.dollar")}</option>
@@ -233,20 +419,25 @@ function Configuracoes() {
                   </select>
                 </div>
               </div>
+              {plano === "gratis" && !carregandoPlano && (
+                <p className="config-hint">
+                  {t("configuracoes.currencyLockedHint")}
+                </p>
+              )}
             </div>
           </section>
         </div>
       </main>
 
-      {/* Modal de logout */}
+{/* Modal de logout */}
       {showModal && (
         <div className="logout-modal-overlay" onClick={cancelLogout}>
           <div className="logout-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={cancelLogout}>
-              <X size={20} />
+            <button className="modal-close-btn" onClick={cancelLogout} aria-label="Fechar">
+              <X size={18} />
             </button>
-            <div className="modal-icon-wrapper">
-              <AlertTriangle size={40} className="modal-alert-icon" />
+            <div className="modal-icon-wrapper danger-glow">
+              <AlertTriangle size={36} className="modal-alert-icon" />
             </div>
             <h3 className="modal-title">{t("configuracoes.modalTitle")}</h3>
             <p className="modal-description">
@@ -257,7 +448,38 @@ function Configuracoes() {
                 {t("geral.cancel")}
               </button>
               <button className="modal-btn-confirm" onClick={confirmLogout}>
-                <LogOut size={18} /> {t("configuracoes.logoutButton")}
+                <LogOut size={16} /> {t("configuracoes.logoutButton")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de upgrade de plano */}
+      {showUpgradeModal && (
+        <div className="premium-modal-overlay" onClick={fecharUpgradeModal}>
+          <div className="premium-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="premium-modal-close-btn" onClick={fecharUpgradeModal} aria-label="Fechar">
+              <X size={18} />
+            </button>
+            <div className="premium-modal-icon-wrapper premium-glow">
+              <Crown size={36} className="premium-modal-icon" />
+            </div>
+            <h3 className="premium-modal-title">{t("configuracoes.upgradeModalTitle")}</h3>
+            <p className="premium-modal-description">
+              {t("configuracoes.upgradeModalDescription")}
+            </p>
+            {erro && <p className="erro-msg">{erro}</p>}
+            <div className="premium-modal-actions">
+              <button className="premium-modal-btn-cancel" onClick={fecharUpgradeModal}>
+                {t("geral.cancel")}
+              </button>
+              <button
+                className="premium-modal-btn-confirm"
+                onClick={handleIrParaPlanos}
+              >
+                <Crown size={16} />
+                {t("configuracoes.upgradeButton")}
               </button>
             </div>
           </div>

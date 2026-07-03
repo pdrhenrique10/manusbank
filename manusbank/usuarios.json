@@ -1,9 +1,42 @@
 [
   {
-    "id": 1782855915615,
-    "nome": "Pedro Henrique",
-    "email": "pedro@gmail.com",
+    "id": 1783103553632,
+    "nome": "pedro grátis",
+    "email": "pedrofree@gmail.com",
     "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
+    "plano": "premium",
+    "moedaAtual": "USD",
+    "moedaFixa": null,
+    "saldo": 0,
+    "transacoes": [],
+    "contasReceber": [
+      {
+        "id": 3,
+        "cliente": "pix",
+        "valor": 1,
+        "moeda": "USD",
+        "vencimento": "2026-07-04",
+        "descricao": "",
+        "status": "pago",
+        "dataRecebimento": "2026-07-03",
+        "dataUltimaCobranca": null
+      }
+    ],
+    "nextContaReceberId": 4,
+    "contasPagar": [],
+    "nextContaPagarId": 2,
+    "metas": [],
+    "nextMetaId": 2,
+    "criadoEm": "2026-07-03T18:32:33.632Z"
+  },
+  {
+    "id": 1783111178911,
+    "nome": "lukinhas",
+    "email": "lukinhas@gmail.com",
+    "senha": "b41ee7e38ecfe7c418da7ed94389037108ed34457f159636c7bcec2d2a382991",
+    "plano": "gratis",
+    "moedaAtual": "BRL",
+    "moedaFixa": "BRL",
     "saldo": 0,
     "transacoes": [],
     "contasReceber": [],
@@ -12,86 +45,6 @@
     "nextContaPagarId": 1,
     "metas": [],
     "nextMetaId": 1,
-    "criadoEm": "2026-06-30T21:45:15.615Z"
-  },
-  {
-    "id": 1782857642632,
-    "nome": "Testes",
-    "email": "testes@gmail.com",
-    "senha": "289160db0d9f39f9ae1754c4ec9c16f90b50e32e09c5fb5481ae642b3d3d1a36",
-    "saldo": 1.8189894035458565e-12,
-    "transacoes": [],
-    "contasReceber": [],
-    "nextContaReceberId": 3,
-    "contasPagar": [],
-    "nextContaPagarId": 3,
-    "metas": [],
-    "nextMetaId": 11,
-    "criadoEm": "2026-06-30T22:14:02.632Z"
-  },
-  {
-    "id": 1782866421844,
-    "nome": "Guilherme",
-    "email": "gui@gmail.com",
-    "senha": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
-    "saldo": 290,
-    "transacoes": [
-      {
-        "id": 1782866444501,
-        "tipo": "deposito",
-        "valor": 340,
-        "descricao": "Salário Senai",
-        "data": "2026-07-15",
-        "categoria": "Salário Senai"
-      },
-      {
-        "id": 1782866460846,
-        "tipo": "saque",
-        "valor": 50,
-        "descricao": "Aliança",
-        "data": "2026-07-14",
-        "categoria": "Aliança"
-      }
-    ],
-    "contasReceber": [
-      {
-        "id": 1,
-        "cliente": "Venda do Celular",
-        "valor": 2000,
-        "vencimento": "2026-06-17",
-        "descricao": "",
-        "status": "pendente",
-        "dataRecebimento": null,
-        "dataUltimaCobranca": null
-      }
-    ],
-    "nextContaReceberId": 2,
-    "contasPagar": [
-      {
-        "id": 1,
-        "titulo": "Compra de um Celular",
-        "tipo": "geral",
-        "valor": 1245,
-        "vencimento": "2026-06-24",
-        "descricao": "",
-        "status": "pendente",
-        "dataPagamento": null,
-        "dataCriacao": "2026-06-30"
-      }
-    ],
-    "nextContaPagarId": 2,
-    "metas": [
-      {
-        "id": 1,
-        "titulo": "Carro",
-        "valorAlvo": 120000,
-        "valorAtual": 93001,
-        "dataMeta": "2028-12-25",
-        "descricao": "",
-        "dataCriacao": "2026-06-30"
-      }
-    ],
-    "nextMetaId": 2,
-    "criadoEm": "2026-07-01T00:40:21.844Z"
+    "criadoEm": "2026-07-03T20:39:38.911Z"
   }
 ]

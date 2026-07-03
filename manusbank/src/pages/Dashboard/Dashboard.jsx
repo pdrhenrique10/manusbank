@@ -29,12 +29,18 @@ function formatarDataString(dataString) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { formatFromBRL } = useCurrency(); // <<< troquei aqui
+  // 🛑 formatFromBRL não existe no CurrencyProvider (nunca existiu).
+  // formatMoney: formata um valor que JÁ está na moeda atual (usado nos
+  // agregados que o backend devolve prontos: saldo, receitas/gastos do mês).
+  // formatValorNaMoeda: formata um valor na moeda do PRÓPRIO item (usado
+  // nas listas, onde cada transação/conta carrega sua moeda de origem).
+  const { formatMoney, formatValorNaMoeda } = useCurrency();
   const { t } = useIdioma();
 
   const [usuario, setUsuario] = useState(null);
   const [transacoes, setTransacoes] = useState([]);
   const [contasReceber, setContasReceber] = useState([]);
+  const [saldo, setSaldo] = useState(0);
   const [receitasMesAtual, setReceitasMesAtual] = useState(0);
   const [gastosMesAtual, setGastosMesAtual] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -47,7 +53,6 @@ export default function Dashboard() {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const hoje = dataHojeLocal();
     const { dataInicio, dataFim } = janelaMesAtual();
 
     const fetchDashboard = async () => {
@@ -63,6 +68,13 @@ export default function Dashboard() {
         const dados = await resp.json();
         setUsuario(dados.usuario);
         setTransacoes(dados.transacoes || []);
+        // 👇 o backend já calcula o saldo certo (convertendo cada
+        // transação da SUA moeda antes de somar, e devolvendo o total
+        // na moeda atual do usuário). Usamos o valor pronto em vez de
+        // recalcular aqui — recalcular no front, somando t.valor cru
+        // de transações que podem estar em moedas diferentes, foi
+        // exatamente o mesmo bug que existia no backend antes.
+        setSaldo(Number(dados.saldo) || 0);
       } catch (error) {
         console.error("Erro ao carregar dashboard:", error);
       }
@@ -76,6 +88,7 @@ export default function Dashboard() {
         );
         if (resp.ok) {
           const dados = await resp.json();
+          // 👇 também já vêm convertidos pra moeda atual pelo backend
           setReceitasMesAtual(
             Number(dados.totalEntradas || dados.totalReceitas || 0)
           );
@@ -117,17 +130,6 @@ export default function Dashboard() {
   }, []);
 
   const hoje = dataHojeLocal();
-
-  const saldoAtual = transacoes
-    .filter((t) => t.data && t.data <= hoje)
-    .reduce((acc, tMov) => {
-      const valor = Number(tMov.valor || 0);
-      const isEntrada =
-        tMov.tipo === "deposito" ||
-        tMov.tipo === "transferenciaEntrada" ||
-        tMov.tipo === "entrada";
-      return acc + (isEntrada ? valor : -valor);
-    }, 0);
 
   const contasPendentes = contasReceber.filter(
     (conta) => conta.status === "pendente"
@@ -244,7 +246,8 @@ export default function Dashboard() {
             <div className="iconBox greenBg">
               <Wallet size={18} />
             </div>
-            <h2>{formatFromBRL(saldoAtual)}</h2>
+            {/* saldo já vem pronto (e correto) do backend, na moeda atual */}
+            <h2>{formatMoney(saldo)}</h2>
             <span>{t("dashboard.balance")}</span>
             <p>{t("dashboard.balanceDesc")}</p>
           </div>
@@ -253,7 +256,7 @@ export default function Dashboard() {
             <div className="iconBox blueBg">
               <ArrowUpRight size={18} />
             </div>
-            <h2>{formatFromBRL(receitasMesAtual)}</h2>
+            <h2>{formatMoney(receitasMesAtual)}</h2>
             <span>{t("dashboard.monthIncome")}</span>
             <p>{t("dashboard.incomeDesc")}</p>
           </div>
@@ -262,7 +265,7 @@ export default function Dashboard() {
             <div className="iconBox redBg">
               <ArrowDownRight size={18} />
             </div>
-            <h2>{formatFromBRL(gastosMesAtual)}</h2>
+            <h2>{formatMoney(gastosMesAtual)}</h2>
             <span>{t("dashboard.monthExpenses")}</span>
             <p>{t("dashboard.expensesDesc")}</p>
           </div>
@@ -312,7 +315,8 @@ export default function Dashboard() {
                         {formatarDataString(conta.vencimento || conta.data)}
                       </span>
                     </div>
-                    <b>{formatFromBRL(conta.valor)}</b>
+                    {/* cada conta exibida na SUA PRÓPRIA moeda, sem reconverter */}
+                    <b>{formatValorNaMoeda(conta.valor, conta.moeda)}</b>
                   </div>
                 ))}
               </div>
@@ -384,7 +388,8 @@ export default function Dashboard() {
                         }
                       >
                         {entrada ? "+" : "-"}{" "}
-                        {formatFromBRL(tMov.valor)}
+                        {/* cada movimentação exibida na SUA PRÓPRIA moeda */}
+                        {formatValorNaMoeda(tMov.valor, tMov.moeda)}
                       </b>
                     </div>
                   );

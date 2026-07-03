@@ -39,7 +39,6 @@ function ContasReceber() {
     formatMoney,
     converterEntreMoedas,
     currency,
-    setCurrency,
     getCurrencySymbol,
   } = useCurrency();
 

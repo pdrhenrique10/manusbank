@@ -97,7 +97,7 @@ a {
 
 .navbar-links a:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.05);
+  text-decoration: underline;
 }
 
 /* ─── HERO ───────────────────────────────── */
@@ -302,6 +302,70 @@ a {
   color: #64748b;
 }
 
+/* ==========================================================================
+   ANIMAÇÕES DE ENTRADA — LANDING PAGE (HOME) [SUAVIZADO]
+   ========================================================================== */
+
+/* 1. Definições dos movimentos */
+@keyframes homeFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px); /* Aumentado levemente para dar mais percepção de espaço */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes navbarSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2. Animação da Navbar (Mais sutil e rápida que o resto da página) */
+.navbar {
+  animation: navbarSlideDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* 3. Efeito Cascata no Hero — Duração estendida para suavizar o movimento */
+.hero-impact {
+  opacity: 0;
+  animation: homeFadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.1s;
+}
+
+.title {
+  opacity: 0;
+  animation: homeFadeInUp 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.2s;
+}
+
+.description {
+  opacity: 0;
+  animation: homeFadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.3s;
+}
+
+.buttons {
+  opacity: 0;
+  animation: homeFadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.4s;
+}
+
+/* 4. Entrada para as seções de Funcionalidades */
+.section-header, 
+.grid-3 {
+  opacity: 0;
+  animation: homeFadeInUp 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.5s;
+}
 /* ─── RESPONSIVIDADE ────────────────────── */
 @media (max-width: 860px) {
   .navbar {

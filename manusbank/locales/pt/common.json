@@ -312,6 +312,9 @@
     "notInformed": "Não informado",
     "loginType": "Tipo de login",
     "emailPassword": "Email/Senha",
+    "plan": "Plano",
+    "planPremium": "Premium",
+    "planFree": "Grátis",
     "logout": "Sair da conta",
     "logoutButton": "Sair",
     "appearance": "Aparência",
@@ -328,12 +331,22 @@
     "french": "Francês",
     "currency": "Moeda",
     "defaultCurrency": "Moeda padrão",
+    "currencyLocked": "Moeda bloqueada no plano grátis",
+    "currencyLockedHint": "Assine o Premium para trocar a moeda padrão da sua conta.",
+    "currencyUpdated": "Moeda atualizada com sucesso!",
+    "errorCurrency": "Não foi possível atualizar a moeda. Tente novamente.",
     "real": "Real (R$)",
     "dollar": "Dólar ($)",
     "euro": "Euro (€)",
     "pound": "Libra (£)",
     "modalTitle": "Sair da conta",
     "modalDescription": "Tem certeza que deseja sair? Você precisará fazer login novamente para acessar o sistema.",
+    "upgradeModalTitle": "Troque de moeda com o Premium",
+    "upgradeModalDescription": "Contas do plano grátis usam uma moeda fixa, definida no cadastro. Assine o Premium para trocar de moeda sempre que quiser.",
+    "upgradeButton": "Assinar Premium",
+    "upgrading": "Assinando...",
+    "upgradeSuccess": "Assinatura Premium ativada com sucesso!",
+    "errorUpgrade": "Não foi possível concluir o upgrade. Tente novamente.",
     "authenticatedUser": "Usuário autenticado",
     "userNotFound": "Não foi possível carregar os dados do usuário."
   },
@@ -344,15 +357,15 @@
     "cancel": "Cancelar",
     "noData": "Nenhuma transação no período."
   },
-"sidebar": {
-  "appName": "ManusFinance",
-  "dashboard": "Página inicial",
-  "fixedIncomes": "Rendas Fixas",
-  "fixedExpenses": "Despesas Fixas",
-  "nonFixedIncomes": "Ganhos não fixos",
-  "nonFixedExpenses": "Gastos não fixos",
-  "goals": "Metas Financeiras",
-  "reports": "Relatórios",
-  "settings": "Configurações"
-}
+  "sidebar": {
+    "appName": "ManusFinance",
+    "dashboard": "Página inicial",
+    "fixedIncomes": "Rendas Fixas",
+    "fixedExpenses": "Despesas Fixas",
+    "nonFixedIncomes": "Ganhos não fixos",
+    "nonFixedExpenses": "Gastos não fixos",
+    "goals": "Metas Financeiras",
+    "reports": "Relatórios",
+    "settings": "Configurações"
+  }
 }

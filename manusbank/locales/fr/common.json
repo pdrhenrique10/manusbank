@@ -312,6 +312,9 @@
     "notInformed": "Non renseigné",
     "loginType": "Type de connexion",
     "emailPassword": "E-mail/Mot de passe",
+    "plan": "Forfait",
+    "planPremium": "Premium",
+    "planFree": "Gratuit",
     "logout": "Se déconnecter",
     "logoutButton": "Déconnexion",
     "appearance": "Apparence",
@@ -328,12 +331,22 @@
     "french": "Français",
     "currency": "Devise",
     "defaultCurrency": "Devise par défaut",
+    "currencyLocked": "Devise verrouillée sur le forfait gratuit",
+    "currencyLockedHint": "Passez au Premium pour changer la devise par défaut de votre compte.",
+    "currencyUpdated": "Devise mise à jour avec succès !",
+    "errorCurrency": "Impossible de mettre à jour la devise. Réessayez.",
     "real": "Real (R$)",
     "dollar": "Dollar ($)",
     "euro": "Euro (€)",
     "pound": "Livre sterling (£)",
     "modalTitle": "Se déconnecter",
     "modalDescription": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour accéder au système.",
+    "upgradeModalTitle": "Changez de devise avec le Premium",
+    "upgradeModalDescription": "Les comptes du forfait gratuit utilisent une devise fixe, définie à l'inscription. Passez au Premium pour changer de devise quand vous le souhaitez.",
+    "upgradeButton": "Passer au Premium",
+    "upgrading": "Activation en cours...",
+    "upgradeSuccess": "Abonnement Premium activé avec succès !",
+    "errorUpgrade": "Impossible de terminer la mise à niveau. Réessayez.",
     "authenticatedUser": "Utilisateur authentifié",
     "userNotFound": "Impossible de charger les données de l'utilisateur."
   },
@@ -344,15 +357,15 @@
     "cancel": "Annuler",
     "noData": "Aucune transaction sur la période."
   },
-"sidebar": {
-  "appName": "ManusFinance",
-  "dashboard": "Page d'accueil",
-  "fixedIncomes": "Revenus Fixes",
-  "fixedExpenses": "Dépenses Fixes",
-  "nonFixedIncomes": "Gains non fixes",
-  "nonFixedExpenses": "Dépenses non fixes",
-  "goals": "Objectifs Financiers",
-  "reports": "Rapports",
-  "settings": "Paramètres"
-}
+  "sidebar": {
+    "appName": "ManusFinance",
+    "dashboard": "Page d'accueil",
+    "fixedIncomes": "Revenus Fixes",
+    "fixedExpenses": "Dépenses Fixes",
+    "nonFixedIncomes": "Gains non fixes",
+    "nonFixedExpenses": "Dépenses non fixes",
+    "goals": "Objectifs Financiers",
+    "reports": "Rapports",
+    "settings": "Paramètres"
+  }
 }

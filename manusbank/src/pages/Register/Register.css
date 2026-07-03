@@ -348,19 +348,50 @@ select.input-field option {
   cursor: not-allowed;
 }
 
-/* ==========================================
-   ANIMAÇÕES
-   ========================================== */
+/* ==========================================================================
+   ANIMAÇÕES DE ENTRADA — SIMPLES, NATURAIS E FLUIDAS
+   ========================================================================== */
 
-@keyframes slideDownMsg {
+/* 1. Definição do movimento (Apenas um leve fade com deslocamento curto) */
+@keyframes naturalFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(10px); /* Movimento bem curto para não ser agressivo */
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 2. O Cartão Principal entra rápido e suave */
+.login-card {
+  animation: naturalFadeIn 0.5s ease-out forwards;
+}
+
+/* 3. Lado Esquerdo (Conteúdo do Formulário entra em um bloco só para evitar distrações) */
+.login-title,
+.form-group,
+.login-button,
+.register-link,
+.back-home-button {
+  opacity: 0;
+  animation: naturalFadeIn 0.4s ease-out forwards;
+}
+
+/* Apenas um leve atraso para o formulário surgir logo após o card se estabilizar */
+.login-title       { animation-delay: 0.15s; }
+.form-group        { animation-delay: 0.20s; }
+.login-button      { animation-delay: 0.25s; }
+.register-link     { animation-delay: 0.30s; }
+.back-home-button  { animation-delay: 0.35s; }
+
+/* 4. Lado Direito (Painel da Marca acompanha o ritmo do formulário) */
+.login-logo,
+.login-brand-name {
+  opacity: 0;
+  animation: naturalFadeIn 0.4s ease-out forwards;
+  animation-delay: 0.25s;
 }
 
 /* ----- RESPONSIVIDADE (MOBILE) ----- */

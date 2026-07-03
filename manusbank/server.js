@@ -7,9 +7,20 @@ import { fileURLToPath } from "url";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
+
+// ===== CARREGAMENTO DO .env (CORRIGIDO) =====
+try {
+  const envPath = path.join(__dirname, ".env");
+  process.loadEnvFile(envPath);
+  console.log("✅ .env carregado de:", envPath);
+} catch (err) {
+  console.warn("⚠️  Não consegui carregar o .env:", err.message);
+}
+
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "troque-esta-chave-em-producao";
 
@@ -587,12 +598,15 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   const taxaEconomia =
     totalReceitas > 0 ? (sobra / totalReceitas) * 100 : 0;
 
+  const saldoRealBRL = calcularSaldoBRL(req.usuario);
+  const saldoNaMoedaAtual = deBRL(saldoRealBRL, moedaAtual);
+
   res.json({
     periodo,
     dataInicio,
     dataFim,
     moedaAtual,
-    saldoAtual: totalReceitas - totalDespesas,
+    saldoAtual: saldoNaMoedaAtual,
     totalEntradas: totalReceitas,
     totalGastos: totalDespesas,
     totalReceitas,
@@ -1107,7 +1121,7 @@ app.get("/api/metas", autenticar, (req, res) => {
 });
 
 app.post("/api/metas", autenticar, (req, res) => {
-  const { titulo, valorAlvo, dataMeta, descricao, moeda } = req.body;
+  const { titulo, valorAlvo, dataMeta, descricao } = req.body;
   if (!titulo || !valorAlvo || !dataMeta) {
     return res.status(400).json({
       erro: "Título, valor alvo e data são obrigatórios",
@@ -1124,7 +1138,7 @@ app.post("/api/metas", autenticar, (req, res) => {
     valorAtual: 0,
     dataMeta: String(dataMeta).slice(0, 10),
     descricao: descricao || "",
-    moeda: moeda || "BRL",
+    moeda: moedaAtualDoUsuario(usuarios[index]),
     dataCriacao: dataHoje(),
   };
 
@@ -1138,7 +1152,7 @@ app.post("/api/metas", autenticar, (req, res) => {
 
 app.put("/api/metas/:id", autenticar, (req, res) => {
   const id = Number(req.params.id);
-  const { titulo, valorAlvo, dataMeta, descricao, moeda } = req.body;
+  const { titulo, valorAlvo, dataMeta, descricao } = req.body;
 
   if (!titulo || !valorAlvo || !dataMeta) {
     return res.status(400).json({
@@ -1180,7 +1194,7 @@ app.put("/api/metas/:id", autenticar, (req, res) => {
     valorAlvo: numeroValorAlvo,
     dataMeta: String(dataMeta).slice(0, 10),
     descricao: descricao ?? meta.descricao ?? "",
-    moeda: moeda || meta.moeda || "BRL",
+    moeda: meta.moeda || "BRL",
   };
 
   metas[metaIndex] = atualizada;

@@ -43,7 +43,7 @@ function Money({ value, moeda }) {
 function Receitas() {
   const navigate = useNavigate();
   const { t } = useIdioma();
-  const { formatMoney, currency, getCurrencySymbol, formatConvertendoParaAtual } =
+  const { formatMoney, currency, getCurrencySymbol } =
     useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
@@ -96,13 +96,13 @@ function Receitas() {
 
         const dados = await resp.json();
         const receitasBackend = (dados.transacoes || [])
-          .filter((t) => t.tipo === "deposito" || t.tipo === "transferenciaEntrada")
-          .map((t) => ({
-            id: t.id,
-            nome: t.descricao || t("receitas.defaultName"),
-            valor: Number(t.valor) || 0,
-            moeda: t.moeda || "BRL",
-            data: extrairData(t.data),
+          .filter((tr) => tr.tipo === "deposito" || tr.tipo === "transferenciaEntrada")
+          .map((tr) => ({
+            id: tr.id,
+            nome: tr.descricao || "Receita",
+            valor: Number(tr.valor) || 0,
+            moeda: tr.moeda || "BRL",
+            data: extrairData(tr.data),
           }));
 
         setReceitas(receitasBackend);
@@ -128,18 +128,16 @@ function Receitas() {
     carregarReceitas(token);
   }, [navigate, carregarReceitas]);
 
+  const { converterEntreMoedas } = useCurrency();
+
   const dadosGrafico = receitas.map((r) => ({
     nome: r.nome.length > 15 ? r.nome.substring(0, 15) + "..." : r.nome,
-    // gráfico soma tudo convertido pra moeda atual, pra não misturar escalas
-    valor: formatConvertendoParaAtual
-      ? Number(r.valor) || 0
-      : Number(r.valor) || 0,
+    valor: converterEntreMoedas(r.valor, r.moeda || "BRL", currency),
   }));
 
   // Total: converte cada item pra moeda atual antes de somar (cobre o caso
   // Premium de ter itens antigos em moedas diferentes; no plano grátis é
   // sempre a mesma moeda, então a conversão vira um no-op).
-  const { converterEntreMoedas } = useCurrency();
   const totalReceitas = receitas.reduce(
     (acc, r) => acc + converterEntreMoedas(r.valor, r.moeda || "BRL", currency),
     0

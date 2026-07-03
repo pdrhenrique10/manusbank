@@ -312,6 +312,9 @@
     "notInformed": "Not informed",
     "loginType": "Login type",
     "emailPassword": "Email/Password",
+    "plan": "Plan",
+    "planPremium": "Premium",
+    "planFree": "Free",
     "logout": "Logout",
     "logoutButton": "Logout",
     "generalSettings": "General Settings",
@@ -328,12 +331,22 @@
     "french": "French",
     "currency": "Currency",
     "defaultCurrency": "Default currency",
+    "currencyLocked": "Currency locked on the free plan",
+    "currencyLockedHint": "Upgrade to Premium to change your account's default currency.",
+    "currencyUpdated": "Currency updated successfully!",
+    "errorCurrency": "Couldn't update the currency. Please try again.",
     "real": "Brazilian Real (R$)",
     "dollar": "US Dollar ($)",
     "euro": "Euro (€)",
     "pound": "British Pound (£)",
     "modalTitle": "Logout",
     "modalDescription": "Are you sure you want to leave? You will need to login again to access the system.",
+    "upgradeModalTitle": "Switch currencies with Premium",
+    "upgradeModalDescription": "Free accounts use a fixed currency, set at sign-up. Upgrade to Premium to switch currencies whenever you want.",
+    "upgradeButton": "Upgrade to Premium",
+    "upgrading": "Upgrading...",
+    "upgradeSuccess": "Premium subscription activated successfully!",
+    "errorUpgrade": "Couldn't complete the upgrade. Please try again.",
     "authenticatedUser": "Authenticated user",
     "userNotFound": "Could not load user data."
   },
@@ -345,14 +358,14 @@
     "noData": "No transactions in the period."
   },
   "sidebar": {
-  "appName": "ManusFinance",
-  "dashboard": "Dashboard",
-  "fixedIncomes": "Fixed Incomes",
-  "fixedExpenses": "Fixed Expenses",
-  "nonFixedIncomes": "Non‑fixed Incomes",
-  "nonFixedExpenses": "Non‑fixed Expenses",
-  "goals": "Financial Goals",
-  "reports": "Reports",
-  "settings": "Settings"
-}
+    "appName": "ManusFinance",
+    "dashboard": "Dashboard",
+    "fixedIncomes": "Fixed Incomes",
+    "fixedExpenses": "Fixed Expenses",
+    "nonFixedIncomes": "Non‑fixed Incomes",
+    "nonFixedExpenses": "Non‑fixed Expenses",
+    "goals": "Financial Goals",
+    "reports": "Reports",
+    "settings": "Settings"
+  }
 }

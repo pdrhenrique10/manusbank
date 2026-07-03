@@ -274,7 +274,6 @@ function MetasFinanceiras() {
         valorAlvo: valorNumero,
         dataMeta: novaMeta.dataMeta,
         descricao: novaMeta.descricao,
-        moeda: currency,
       };
 
       const resp = await fetch(`${API_URL}/api/metas`, {
