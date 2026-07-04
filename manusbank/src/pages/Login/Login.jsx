@@ -148,7 +148,7 @@ export default function Login() {
             <input
               type="email"
               id="email"
-              placeholder="E-mail"
+              placeholder="O email que você cadastrou"
               className={`input-field ${error && !email.trim() ? "input-error" : ""}`}
               autoComplete="off"
               value={email}

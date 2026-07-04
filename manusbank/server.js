@@ -27,6 +27,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "troque-esta-chave-em-producao";
 const MOEDAS_VALIDAS = ["BRL", "USD", "EUR", "GBP"];
 const PLANOS_VALIDOS = ["gratis", "premium"];
 
+// Limites do plano grátis (Premium = ilimitado nesses dois pontos)
+const LIMITE_HISTORICO_GRATIS = 3; // últimos 3 meses (contando o atual)
+const LIMITE_METAS_GRATIS = 3;
+
 if (!fs.existsSync(USUARIOS_FILE)) {
   fs.writeFileSync(USUARIOS_FILE, JSON.stringify([], null, 2));
 }
@@ -98,91 +102,25 @@ function normalizarDataReferencia(valor) {
   return dataHoje();
 }
 
-// ===== TAXAS DE CÂMBIO (NOVO) =====
-// O backend precisa da sua própria fonte de taxas — antes, só o
-// frontend buscava isso (via VITE_EXCHANGERATES_API_KEY, que só existe
-// no bundle do Vite e nunca chega no servidor). Sem taxas aqui, toda
-// soma que envolvia mais de uma moeda (saldo, relatórios) tratava
-// valores de moedas diferentes como se fossem números da mesma moeda.
-//
-// Convenção idêntica à do CurrencyProvider do frontend: cachedRates[X]
-// = quantas unidades de X equivalem a 1 BRL.
-let cachedRates = {
-  BRL: 1,
-  USD: 0.18,
-  EUR: 0.17,
-  GBP: 0.14,
-};
-let taxasCarregadasEm = null;
-
-async function atualizarTaxasCambio() {
-  const API_KEY = process.env.EXCHANGERATES_API_KEY;
-  if (!API_KEY) {
-    console.warn(
-      "⚠️  EXCHANGERATES_API_KEY não configurada no backend — usando taxas fixas de fallback (menos precisas)."
-    );
-    return;
-  }
-
-  try {
-    const url = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/BRL`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Falha ao buscar taxas de câmbio");
-
-    const data = await res.json();
-    if (data.result !== "success") throw new Error("Erro na resposta da API de câmbio");
-
-    cachedRates = {
-      BRL: data.conversion_rates.BRL ?? cachedRates.BRL,
-      USD: data.conversion_rates.USD ?? cachedRates.USD,
-      EUR: data.conversion_rates.EUR ?? cachedRates.EUR,
-      GBP: data.conversion_rates.GBP ?? cachedRates.GBP,
-    };
-    taxasCarregadasEm = new Date();
-    console.log("💱 Taxas de câmbio atualizadas no backend:", cachedRates);
-  } catch (err) {
-    console.error("Erro ao atualizar taxas de câmbio no backend:", err.message);
-  }
-}
-
-// Converte um valor de uma moeda pra outra, usando BRL como ponte
-// (mesmo princípio do converterEntreMoedas do CurrencyProvider).
-function converterValor(valor, deMoeda, paraMoeda) {
-  const numero = Number(valor) || 0;
-  const origem = MOEDAS_VALIDAS.includes(deMoeda) ? deMoeda : "BRL";
-  const destino = MOEDAS_VALIDAS.includes(paraMoeda) ? paraMoeda : "BRL";
-
-  if (origem === destino) return numero;
-
-  const rateOrigem = cachedRates[origem] || 1; // 1 BRL -> origem
-  const rateDestino = cachedRates[destino] || 1; // 1 BRL -> destino
-
-  const valorEmBRL = numero / rateOrigem;
-  return valorEmBRL * rateDestino;
-}
-
-function paraBRL(valor, deMoeda) {
-  return converterValor(valor, deMoeda, "BRL");
-}
-
-function deBRL(valorEmBRL, paraMoeda) {
-  return converterValor(valorEmBRL, "BRL", paraMoeda);
-}
-
 // ===== HELPERS DE PLANO/MOEDA =====
+// A moeda é fixa pra sempre, escolhida no cadastro — nunca muda depois,
+// em nenhum plano. Não existe mais sistema de conversão: todo valor
+// gravado numa conta já está, por definição, na moeda dessa conta.
+//
+// ⚠️ Nota sobre dados legados: se esta conta já existia ANTES dessa
+// trava (quando Premium podia trocar de moeda livremente) e tem
+// transações registradas em mais de uma moeda diferente entre si, os
+// somatórios abaixo (saldo, relatórios) vão tratá-las como se fossem
+// todas a mesma unidade — não há mais conversão de segurança. Se isso
+// for uma preocupação real, migre/audite usuarios.json antes de usar
+// esta versão em produção.
 function normalizarPlanoUsuario(usuario) {
   const plano = PLANOS_VALIDOS.includes(usuario.plano) ? usuario.plano : "gratis";
   const moedaAtual = MOEDAS_VALIDAS.includes(usuario.moedaAtual)
     ? usuario.moedaAtual
     : "BRL";
-  const moedaFixa =
-    plano === "gratis"
-      ? MOEDAS_VALIDAS.includes(usuario.moedaFixa)
-        ? usuario.moedaFixa
-        : moedaAtual
-      : null;
 
-  return { plano, moedaAtual, moedaFixa };
+  return { plano, moedaAtual };
 }
 
 // Moeda que deve ser gravada em qualquer item novo (transação, conta a pagar/receber).
@@ -192,38 +130,29 @@ function moedaAtualDoUsuario(usuario) {
   return normalizarPlanoUsuario(usuario).moedaAtual;
 }
 
-// ===== SALDO (CORRIGIDO) =====
-// Antes: usuario.saldo era um contador incrementado/decrementado em
-// cada rota (+= / -=) sempre com o valor cru da transação, ignorando
-// a moeda dela. Se o usuário Premium trocasse de moeda ao longo do
-// tempo, esse contador virava uma soma de BRL + USD + EUR como se
-// fossem a mesma unidade — silenciosamente errado, sem nenhum erro
-// visível.
-//
-// Agora: o saldo NUNCA é incrementado manualmente. Ele é sempre
-// recalculado do zero a partir do histórico de transações (a fonte
-// de verdade), convertendo cada uma pra BRL antes de somar. Isso tem
-// uma vantagem extra: se o usuarios.json já tem saldo desalinhado por
-// causa do bug antigo, ele se autocorrige na primeira leitura — sem
-// precisar de migração manual nos dados existentes.
-function calcularSaldoBRL(usuario) {
+// ===== SALDO =====
+// O saldo NUNCA é incrementado manualmente. Ele é sempre recalculado
+// do zero a partir do histórico de transações (a fonte de verdade),
+// somando os valores diretamente (sem conversão — todos assumidos na
+// mesma moeda da conta).
+function calcularSaldo(usuario) {
   const transacoes = usuario.transacoes || [];
   return transacoes.reduce((acc, t) => {
-    const valorEmBRL = paraBRL(t.valor, t.moeda || "BRL");
+    const valor = Number(t.valor) || 0;
     if (t.tipo === "deposito" || t.tipo === "transferenciaEntrada") {
-      return acc + valorEmBRL;
+      return acc + valor;
     }
     if (t.tipo === "saque" || t.tipo === "transferenciaSaida") {
-      return acc - valorEmBRL;
+      return acc - valor;
     }
     return acc;
   }, 0);
 }
 
-// Atualiza usuario.saldo (sempre em BRL) e devolve o valor em BRL —
-// chamar depois de qualquer alteração em transacoes.
+// Atualiza usuario.saldo e devolve o valor — chamar depois de qualquer
+// alteração em transacoes.
 function recalcularEsalvarSaldo(usuario) {
-  usuario.saldo = calcularSaldoBRL(usuario);
+  usuario.saldo = calcularSaldo(usuario);
   return usuario.saldo;
 }
 
@@ -326,8 +255,9 @@ app.post("/api/register", (req, res) => {
     email,
     senha: criptografarSenha(senha),
     plano: planoFinal,
+    // 👇 moeda escolhida no cadastro é definitiva — nunca muda depois,
+    // nem no plano grátis nem no Premium. Ver rota PATCH /api/usuario/moeda.
     moedaAtual: moedaFinal,
-    moedaFixa: planoFinal === "gratis" ? moedaFinal : null,
     saldo: 0,
     transacoes: [],
     contasReceber: [],
@@ -393,7 +323,7 @@ app.post("/api/logout", (req, res) => {
 
 // ===== ROTAS DE PLANO/MOEDA =====
 app.get("/api/usuario/me", autenticar, (req, res) => {
-  const { plano, moedaAtual, moedaFixa } = normalizarPlanoUsuario(req.usuario);
+  const { plano, moedaAtual } = normalizarPlanoUsuario(req.usuario);
 
   res.json({
     id: req.usuario.id,
@@ -401,40 +331,17 @@ app.get("/api/usuario/me", autenticar, (req, res) => {
     email: req.usuario.email,
     plano,
     moedaAtual,
-    moedaFixa,
   });
 });
 
+// 🛑 MOEDA TRAVADA DEFINITIVAMENTE: independente do plano (grátis ou
+// premium), a moeda escolhida no cadastro não pode mais ser alterada.
+// Quem quiser usar outra moeda precisa criar outra conta.
 app.patch("/api/usuario/moeda", autenticar, (req, res) => {
-  const { moeda } = req.body;
-
-  if (!MOEDAS_VALIDAS.includes(moeda)) {
-    return res.status(400).json({ erro: "Moeda inválida" });
-  }
-
-  const usuarios = carregarUsuarios();
-  const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
-
-  if (index === -1) {
-    return res.status(404).json({ erro: "Usuário não encontrado" });
-  }
-
-  const { plano } = normalizarPlanoUsuario(usuarios[index]);
-
-  if (plano === "gratis") {
-    return res.status(403).json({
-      erro:
-        "Usuários do plano grátis não podem trocar de moeda. Faça upgrade para o Premium.",
-    });
-  }
-
-  usuarios[index].plano = plano;
-  usuarios[index].moedaAtual = moeda;
-  usuarios[index].moedaFixa = null;
-
-  salvarUsuarios(usuarios);
-
-  res.json({ sucesso: true, moedaAtual: usuarios[index].moedaAtual });
+  return res.status(403).json({
+    erro:
+      "A moeda da conta é definida no cadastro e não pode ser alterada. Para usar outra moeda, crie uma nova conta.",
+  });
 });
 
 app.patch("/api/usuario/plano", autenticar, (req, res) => {
@@ -451,27 +358,18 @@ app.patch("/api/usuario/plano", autenticar, (req, res) => {
     return res.status(404).json({ erro: "Usuário não encontrado" });
   }
 
-  const usuario = usuarios[index];
-  const atual = normalizarPlanoUsuario(usuario);
-
-  if (plano === "gratis" && atual.plano === "premium") {
-    usuario.moedaFixa = atual.moedaAtual;
-  }
-
-  if (plano === "premium") {
-    usuario.moedaFixa = null;
-  }
-
-  usuario.plano = plano;
-  usuario.moedaAtual = atual.moedaAtual;
+  // Trocar de plano não mexe na moeda — ela é fixa desde o cadastro,
+  // em qualquer plano.
+  usuarios[index].plano = plano;
 
   salvarUsuarios(usuarios);
 
+  const { moedaAtual } = normalizarPlanoUsuario(usuarios[index]);
+
   res.json({
     sucesso: true,
-    plano: usuario.plano,
-    moedaAtual: usuario.moedaAtual,
-    moedaFixa: usuario.moedaFixa,
+    plano: usuarios[index].plano,
+    moedaAtual,
   });
 });
 
@@ -486,12 +384,12 @@ app.get("/api/dashboard", autenticar, (req, res) => {
 
   // 👇 saldo sempre recalculado a partir das transações (fonte de
   // verdade), não do campo armazenado — evita arrastar qualquer
-  // desalinhamento antigo e já devolve na moeda atual do usuário.
-  const saldoEmBRL = calcularSaldoBRL(req.usuario);
+  // desalinhamento antigo.
+  const saldo = calcularSaldo(req.usuario);
 
   res.json({
     usuario: { nome: req.usuario.nome, email: req.usuario.email },
-    saldo: deBRL(saldoEmBRL, moedaAtual),
+    saldo,
     moedaAtual,
     transacoes,
   });
@@ -542,10 +440,7 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   );
 
   transacoesFiltradas.forEach((t) => {
-    // 👇 CORREÇÃO: converte cada transação da SUA moeda pra moeda
-    // atual do usuário antes de somar. Antes somava t.valor cru,
-    // misturando moedas diferentes como se fossem a mesma unidade.
-    const valor = converterValor(t.valor, t.moeda || "BRL", moedaAtual);
+    const valor = Number(t.valor) || 0;
     const [ano, mes] = t.data.split("-").map(Number);
     const mesKey = `${ano}-${String(mes).padStart(2, "0")}`;
 
@@ -598,15 +493,14 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   const taxaEconomia =
     totalReceitas > 0 ? (sobra / totalReceitas) * 100 : 0;
 
-  const saldoRealBRL = calcularSaldoBRL(req.usuario);
-  const saldoNaMoedaAtual = deBRL(saldoRealBRL, moedaAtual);
+  const saldoAtual = calcularSaldo(req.usuario);
 
   res.json({
     periodo,
     dataInicio,
     dataFim,
     moedaAtual,
-    saldoAtual: saldoNaMoedaAtual,
+    saldoAtual,
     totalEntradas: totalReceitas,
     totalGastos: totalDespesas,
     totalReceitas,
@@ -627,8 +521,38 @@ app.get("/api/relatorios", autenticar, (req, res) => {
   });
 });
 
+// ===== HISTÓRICO DE MESES COM RELATÓRIOS =====
+// Grátis: só os últimos LIMITE_HISTORICO_GRATIS meses. Premium: tudo
+// desde o cadastro.
+app.get("/api/relatorios/meses-disponiveis", autenticar, (req, res) => {
+  const { plano } = normalizarPlanoUsuario(req.usuario);
+  const transacoes = req.usuario.transacoes || [];
+  const mesesSet = new Set();
+
+  transacoes.forEach((t) => {
+    if (t.data && /^\d{4}-\d{2}-\d{2}$/.test(t.data)) {
+      mesesSet.add(t.data.slice(0, 7)); // "YYYY-MM"
+    }
+  });
+
+  const todosOsMeses = Array.from(mesesSet).sort().reverse(); // mais recente primeiro
+
+  const limitado =
+    plano === "gratis" && todosOsMeses.length > LIMITE_HISTORICO_GRATIS;
+  const meses =
+    plano === "gratis"
+      ? todosOsMeses.slice(0, LIMITE_HISTORICO_GRATIS)
+      : todosOsMeses;
+
+  res.json({
+    meses,
+    plano,
+    limitado,
+    totalDisponivel: todosOsMeses.length,
+  });
+});
+
 app.get("/api/relatorios/grafico", autenticar, (req, res) => {
-  const moedaAtual = moedaAtualDoUsuario(req.usuario);
   const transacoes = req.usuario.transacoes || [];
   const periodo = req.query.periodo || "mes";
   const hojeReferencia = normalizarDataReferencia(req.query.hoje);
@@ -650,8 +574,7 @@ app.get("/api/relatorios/grafico", autenticar, (req, res) => {
       dadosPorMes[chave] = { mes: nomeMes, entradas: 0, gastos: 0 };
     }
 
-    // 👇 mesma correção: converte pra moeda atual antes de somar
-    const valor = converterValor(t.valor, t.moeda || "BRL", moedaAtual);
+    const valor = Number(t.valor) || 0;
     if (tiposReceita.includes(t.tipo)) {
       dadosPorMes[chave].entradas += valor;
     } else if (tiposDespesa.includes(t.tipo)) {
@@ -669,7 +592,7 @@ app.get("/api/relatorios/grafico", autenticar, (req, res) => {
     if (!tiposDespesa.includes(t.tipo)) return;
 
     const categoria = t.categoria || t.descricao || "Outros";
-    const valor = converterValor(t.valor, t.moeda || "BRL", moedaAtual);
+    const valor = Number(t.valor) || 0;
     gastosPorCategoria[categoria] =
       (gastosPorCategoria[categoria] || 0) + valor;
   });
@@ -679,7 +602,7 @@ app.get("/api/relatorios/grafico", autenticar, (req, res) => {
     .sort((a, b) => b.valor - a.valor);
 
   res.json({
-    moedaAtual,
+    moedaAtual: moedaAtualDoUsuario(req.usuario),
     comparativoMensal,
     gastosPorCategoria: categorias,
     totalEntradas: comparativoMensal.reduce(
@@ -722,8 +645,6 @@ app.post("/api/transacao", autenticar, (req, res) => {
   usuarios[index].transacoes = usuarios[index].transacoes || [];
   usuarios[index].transacoes.push(novaTransacao);
 
-  // 👇 saldo recalculado do zero a partir das transações (ver
-  // calcularSaldoBRL) — não incrementamos mais manualmente.
   recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
@@ -731,7 +652,7 @@ app.post("/api/transacao", autenticar, (req, res) => {
   res.json({
     sucesso: true,
     transacao: novaTransacao,
-    saldo: deBRL(usuarios[index].saldo, novaTransacao.moeda),
+    saldo: usuarios[index].saldo,
   });
 });
 
@@ -776,7 +697,6 @@ app.put("/api/transacao/:id", autenticar, (req, res) => {
   transacoes[transacaoIndex] = atualizada;
   usuarios[index].transacoes = transacoes;
 
-  // 👇 recalculado do zero — não precisamos mais de impactoAntigo/impactoNovo
   recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
@@ -784,7 +704,7 @@ app.put("/api/transacao/:id", autenticar, (req, res) => {
   res.json({
     sucesso: true,
     transacao: atualizada,
-    saldo: deBRL(usuarios[index].saldo, atualizada.moeda),
+    saldo: usuarios[index].saldo,
   });
 });
 
@@ -807,8 +727,6 @@ app.delete("/api/transacao/:id", autenticar, (req, res) => {
   const removida = transacoes.splice(transacaoIndex, 1)[0];
   usuarios[index].transacoes = transacoes;
 
-  // 👇 recalculado do zero, sem transação removida
-  const moedaAtual = moedaAtualDoUsuario(usuarios[index]);
   recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
@@ -816,7 +734,7 @@ app.delete("/api/transacao/:id", autenticar, (req, res) => {
   res.json({
     sucesso: true,
     removida,
-    saldo: deBRL(usuarios[index].saldo, moedaAtual),
+    saldo: usuarios[index].saldo,
   });
 });
 
@@ -942,14 +860,13 @@ app.patch("/api/contas-receber/:id/pagar", autenticar, (req, res) => {
   usuarios[index].transacoes = usuarios[index].transacoes || [];
   usuarios[index].transacoes.push(novaTransacao);
 
-  // 👇 recalculado do zero, já considerando a moeda da conta
   recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
   res.json({
     conta,
     transacao: novaTransacao,
-    saldo: deBRL(usuarios[index].saldo, moedaAtualDoUsuario(usuarios[index])),
+    saldo: usuarios[index].saldo,
   });
 });
 
@@ -1088,14 +1005,13 @@ app.patch("/api/contas-pagar/:id/pagar", autenticar, (req, res) => {
   usuarios[index].transacoes = usuarios[index].transacoes || [];
   usuarios[index].transacoes.push(novaTransacao);
 
-  // 👇 recalculado do zero, já considerando a moeda da conta
   recalcularEsalvarSaldo(usuarios[index]);
 
   salvarUsuarios(usuarios);
   res.json({
     conta,
     transacao: novaTransacao,
-    saldo: deBRL(usuarios[index].saldo, moedaAtualDoUsuario(usuarios[index])),
+    saldo: usuarios[index].saldo,
   });
 });
 
@@ -1120,6 +1036,7 @@ app.get("/api/metas", autenticar, (req, res) => {
   res.json(metasComMoeda);
 });
 
+// Grátis: até LIMITE_METAS_GRATIS metas. Premium: ilimitado.
 app.post("/api/metas", autenticar, (req, res) => {
   const { titulo, valorAlvo, dataMeta, descricao } = req.body;
   if (!titulo || !valorAlvo || !dataMeta) {
@@ -1130,6 +1047,20 @@ app.post("/api/metas", autenticar, (req, res) => {
 
   const usuarios = carregarUsuarios();
   const index = usuarios.findIndex((u) => u.email === req.usuarioEmail);
+
+  if (index === -1) {
+    return res.status(404).json({ erro: "Usuário não encontrado" });
+  }
+
+  const { plano } = normalizarPlanoUsuario(usuarios[index]);
+  const metasAtuais = usuarios[index].metas || [];
+
+  if (plano === "gratis" && metasAtuais.length >= LIMITE_METAS_GRATIS) {
+    return res.status(403).json({
+      erro: `O plano grátis permite até ${LIMITE_METAS_GRATIS} metas. Faça upgrade para o Premium para criar metas ilimitadas.`,
+      limiteAtingido: true,
+    });
+  }
 
   const novaMeta = {
     id: req.usuario.nextMetaId ?? 1,
@@ -1223,11 +1154,6 @@ app.delete("/api/metas/:id", autenticar, (req, res) => {
 });
 
 // ===== APORTAR NA META =====
-// Nota: este endpoint assume que "valor" já chega convertido pra
-// moeda ORIGINAL da meta — quem faz essa conversão é o frontend
-// (MetasFinanceiras.jsx), já que é lá que sabemos tanto a moeda
-// selecionada no momento do aporte quanto a moeda em que a meta foi
-// criada.
 app.patch("/api/metas/:id/aportar", autenticar, (req, res) => {
   const id = Number(req.params.id);
   const { valor } = req.body;
@@ -1272,9 +1198,6 @@ app.patch("/api/metas/:id/desaportar", autenticar, (req, res) => {
 });
 
 // ===== INICIALIZAÇÃO DO SERVIDOR =====
-atualizarTaxasCambio();
-setInterval(atualizarTaxasCambio, 10 * 60 * 1000);
-
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📁 Usuários salvos em: ${USUARIOS_FILE}`);

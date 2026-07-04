@@ -4,7 +4,7 @@
 
 .sidebar {
   width: 280px;
-  height: 100vh;
+  height: 100%;
   background: var(--bg-card);
   backdrop-filter: blur(10px);
   border-right: 1px solid var(--border-soft);
@@ -36,16 +36,16 @@
 }
 
 /* ==========================================================================
-   TOPO DA SIDEBAR
+   TOPO DA SIDEBAR — agora só o botão de recolher/expandir
+   (logo e nome do site foram pra Navbar)
    ========================================================================== */
 
 .sidebarTop {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 24px 20px;
+  padding: 20px;
   border-bottom: 1px solid var(--border-soft);
-  min-height: 85px;
+  min-height: 64px;
 }
 
 /* ==========================================================================
@@ -74,43 +74,6 @@
 
 .menuButton:active {
   transform: translateY(0);
-}
-
-/* ==========================================================================
-   LOGO
-   ========================================================================== */
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.logo:hover {
-  transform: translateX(2px);
-}
-
-.logo-image {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
-
-.logo h2 {
-  background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
 }
 
 /* ==========================================================================
@@ -163,59 +126,6 @@
 }
 
 /* ==========================================================================
-   RODAPÉ DA SIDEBAR
-   ========================================================================== */
-
-.sidebarFooter {
-  padding: 20px 16px;
-  border-top: 1px solid var(--border-soft);
-  margin-top: auto;
-}
-
-.sidebarFooter .userInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.sidebarFooter .userInfo:hover {
-  background: rgba(56, 189, 248, 0.08);
-  transform: translateX(2px);
-}
-
-.sidebarFooter .userAvatar {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-  color: #fff;
-}
-
-.sidebarFooter .userDetails {
-  flex: 1;
-}
-
-.sidebarFooter .userName {
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.sidebarFooter .userEmail {
-  color: var(--text-secondary);
-  font-size: 11px;
-}
-
-/* ==========================================================================
    ESTADO ENCOLHIDO (Fixado para o JavaScript funcionar em Desktop)
    ========================================================================== */
 
@@ -223,9 +133,7 @@
   width: 90px;
 }
 
-.sidebar.collapsed .logo h2,
-.sidebar.collapsed .sidebarMenu a span,
-.sidebar.collapsed .sidebarFooter .userDetails {
+.sidebar.collapsed .sidebarMenu a span {
   display: none;
 }
 
@@ -247,14 +155,9 @@
   border-top: 2px solid var(--accent-blue);
 }
 
-.sidebar.collapsed .sidebarTop,
-.sidebar.collapsed .logo,
-.sidebar.collapsed .sidebarFooter .userInfo {
-  justify-content: center;
-}
-
 .sidebar.collapsed .sidebarTop {
-  padding: 24px 12px;
+  justify-content: center;
+  padding: 20px 12px;
 }
 
 /* ==========================================================================
@@ -263,19 +166,17 @@
 
 @media (max-width: 1024px) {
   .sidebar { width: 90px; }
-  .logo h2, .sidebarMenu a span, .sidebarFooter .userDetails { display: none; }
+  .sidebarMenu a span { display: none; }
   .sidebarMenu a { justify-content: center; padding: 0; }
   .sidebarMenu a:hover { transform: translateX(0); }
   .sidebarMenu a svg { min-width: 24px; }
   .sidebarMenu a.active { border-left: none; border-top: 2px solid var(--accent-blue); }
-  .sidebarTop, .logo, .sidebarFooter .userInfo { justify-content: center; }
-  .sidebarTop { padding: 24px 12px; }
+  .sidebarTop { justify-content: center; padding: 20px 12px; }
 }
 
 @media (max-width: 768px) {
   .sidebar { width: 70px; }
   .menuButton { width: 36px; height: 36px; }
-  .logo-image { width: 32px; height: 32px; }
   .sidebarMenu a { height: 44px; }
   .sidebarMenu a svg { min-width: 20px; }
 }
@@ -283,7 +184,6 @@
 @media (max-width: 480px) {
   .sidebar { width: 60px; }
   .menuButton { width: 32px; height: 32px; }
-  .logo-image { width: 28px; height: 28px; }
   .sidebarMenu a { height: 40px; }
   .sidebarMenu a svg { min-width: 18px; }
 }

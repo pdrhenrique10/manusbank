@@ -154,7 +154,7 @@ export default function Register() {
             <input
               type="text"
               id="name"
-              placeholder="Digite seu nome"
+              placeholder="Seu nome aqui"
               className={`input-field ${error && !name.trim() ? "input-error" : ""}`}
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -167,7 +167,7 @@ export default function Register() {
             <input
               type="email"
               id="email"
-              placeholder="Digite seu e-mail"
+              placeholder="Exemplo: seunome@gmail.com"
               className={`input-field ${error && !email.trim() ? "input-error" : ""}`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -236,15 +236,9 @@ export default function Register() {
       </option>
     ))}
   </select>
-  {isGratis ? (
-    <small className="moeda-aviso">
-      No plano grátis essa escolha é definitiva assim que você criar a conta. Pra trocar depois, você vai precisar assinar o Premium.
-    </small>
-  ) : (
     <small className="moeda-aviso moeda-aviso-premium">
-      Plano Premium: você pode trocar de moeda quando quiser, direto nas configurações.
+    Escolha bem, pois depois não será possivel alterar futuramente!
     </small>
-  )}
 </div>
 
           <button

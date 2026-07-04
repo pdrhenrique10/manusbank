@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 import {
@@ -8,39 +7,14 @@ import {
   WalletCards,
   Target,
   BarChart3,
-  PanelLeftClose,
-  PanelLeftOpen,
   Settings
 } from "lucide-react";
 import { API_URL } from "../../config/api";
-import { useIdioma } from "../../context/IdiomaContext"; // 👈 importa tradução
-
-const SIDEBAR_KEY = "sidebarCollapsed";
+import { useIdioma } from "../../context/IdiomaContext";
 
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    try {
-      const saved = localStorage.getItem(SIDEBAR_KEY);
-      return saved === "true";
-    } catch {
-      return false;
-    }
-  });
-
   const navigate = useNavigate();
-  const { t } = useIdioma(); // 👈 hook de tradução
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(SIDEBAR_KEY, String(isCollapsed));
-    } catch {
-      // ignora erro de storage
-    }
-  }, [isCollapsed]);
-
-  function handleToggleSidebar() {
-    setIsCollapsed((prev) => !prev);
-  }
+  const { t } = useIdioma();
 
   async function handleLogout() {
     try {
@@ -64,18 +38,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
-      <div className="sidebarTop">
-        <button className="menuButton" onClick={handleToggleSidebar}>
-          {isCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
-        </button>
-
-        <div className="logo">
-          <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="logo-image" />
-          <h2>{t("sidebar.appName")}</h2>
-        </div>
-      </div>
-
+    <aside className="sidebar">
       <nav className="sidebarMenu">
         <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
           <LayoutDashboard size={19} />

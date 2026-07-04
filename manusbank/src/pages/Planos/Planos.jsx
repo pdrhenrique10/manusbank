@@ -1,7 +1,7 @@
 import "./Planos.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, X, ArrowLeft } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
 
 const MOEDAS = [
   { codigo: "BRL", label: "Real (R$)" },
@@ -22,25 +22,16 @@ export default function Planos() {
 
   return (
     <div className="planos-page">
+      {/* Elementos visuais para preencher as laterais vazias (Agora dentro do contêiner pai) */}
+      <div className="bg-glow bg-glow-left"></div> 
+      <div className="bg-glow bg-glow-right"></div>
+
+      {/* CABEÇALHO */}
       <div className="planos-header">
         <h1>
           Escolha o plano ideal pra você<span className="planos-dot">.</span>
         </h1>
         <p>Comece grátis ou libere o controle total das suas finanças.</p>
-      </div>
-
-      <div className="planos-moeda-select">
-        <label>Em qual moeda você organiza suas finanças?</label>
-        <select
-          value={moedaSelecionada}
-          onChange={(e) => setMoedaSelecionada(e.target.value)}
-        >
-          {MOEDAS.map((m) => (
-            <option key={m.codigo} value={m.codigo}>
-              {m.label}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* GRID APENAS COM OS CARDS */}
@@ -59,9 +50,13 @@ export default function Planos() {
               <Check size={18} className="icon-check" />
               Seleção de idioma
             </li>
-            <li className="feature-limitada">
-              <X size={18} className="icon-x" />
-              Moeda fixa: Sua preferência (não é possível trocar depois)
+            <li>
+              <Check size={18} className="icon-check" />
+              Até 3 metas financeiras
+            </li>
+            <li>
+              <Check size={18} className="icon-check" />
+              Histórico de relatórios dos últimos 3 meses
             </li>
           </ul>
 
@@ -85,11 +80,11 @@ export default function Planos() {
             </li>
             <li>
               <Check size={18} className="icon-check" />
-              Troque de moeda quando quiser
+              Metas financeiras ilimitadas
             </li>
             <li>
               <Check size={18} className="icon-check" />
-              Cotações atualizadas automaticamente
+              Histórico completo de relatórios, desde o cadastro
             </li>
             <li>
               <Check size={18} className="icon-check" />
@@ -106,7 +101,7 @@ export default function Planos() {
         </div>
       </div>
 
-      {/* BOTÃO FORA DO GRID: Agora ele se alinha com o container principal */}
+      {/* BOTÃO VOLTAR */}
       <button className="back-home-button" onClick={() => navigate("/")}>
         <ArrowLeft size={16} /> Voltar à tela inicial
       </button>

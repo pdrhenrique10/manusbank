@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
-import Sidebar from "../../components/Sidebar/Sidebar";
 import { API_URL } from "../../config/api";
 import { dataHojeLocal, janelaMesAtual } from "../../utils/periodo";
 import { useCurrency } from "../../context/CurrencyProvider";
@@ -29,11 +28,6 @@ function formatarDataString(dataString) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  // 🛑 formatFromBRL não existe no CurrencyProvider (nunca existiu).
-  // formatMoney: formata um valor que JÁ está na moeda atual (usado nos
-  // agregados que o backend devolve prontos: saldo, receitas/gastos do mês).
-  // formatValorNaMoeda: formata um valor na moeda do PRÓPRIO item (usado
-  // nas listas, onde cada transação/conta carrega sua moeda de origem).
   const { formatMoney, formatValorNaMoeda } = useCurrency();
   const { t } = useIdioma();
 
@@ -68,12 +62,6 @@ export default function Dashboard() {
         const dados = await resp.json();
         setUsuario(dados.usuario);
         setTransacoes(dados.transacoes || []);
-        // 👇 o backend já calcula o saldo certo (convertendo cada
-        // transação da SUA moeda antes de somar, e devolvendo o total
-        // na moeda atual do usuário). Usamos o valor pronto em vez de
-        // recalcular aqui — recalcular no front, somando t.valor cru
-        // de transações que podem estar em moedas diferentes, foi
-        // exatamente o mesmo bug que existia no backend antes.
         setSaldo(Number(dados.saldo) || 0);
       } catch (error) {
         console.error("Erro ao carregar dashboard:", error);
@@ -88,7 +76,6 @@ export default function Dashboard() {
         );
         if (resp.ok) {
           const dados = await resp.json();
-          // 👇 também já vêm convertidos pra moeda atual pelo backend
           setReceitasMesAtual(
             Number(dados.totalEntradas || dados.totalReceitas || 0)
           );
@@ -190,219 +177,210 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="mainLayout">
-        <Sidebar />
-        <main className="dashboard">
-          <div className="loadingBox">{t("geral.loading")}</div>
-        </main>
-      </div>
+      <main className="dashboard">
+        <div className="loadingBox">{t("geral.loading")}</div>
+      </main>
     );
   }
 
   return (
-    <div className="mainLayout">
-      <Sidebar />
-      <main className="dashboard">
-        <div className="top">
-          <div>
-            <h1>{t("dashboard.title")}</h1>
-            <p>
-              {t("dashboard.subtitle", {
-                nome: usuario?.nome || usuario?.email || "Sua conta",
-              })}
-            </p>
+    <main className="dashboard">
+      <div className="top">
+        <div>
+          <h1>{t("dashboard.title")}</h1>
+          <p>
+            {t("dashboard.subtitle", {
+              nome: usuario?.nome || usuario?.email || "Sua conta",
+            })}
+          </p>
+        </div>
+      </div>
+
+      <section className="heroPanel">
+        <div>
+          <span className="eyebrow">{t("dashboard.situation")}</span>
+          <h2>
+            {temDados
+              ? contasPendentes.length > 0
+                ? t("dashboard.heroPending", { count: contasPendentes.length })
+                : t("dashboard.heroNoPending")
+              : t("dashboard.heroNoData")}
+          </h2>
+          <p>
+            {temDados
+              ? t("dashboard.heroHasData")
+              : t("dashboard.heroNoDataSub")}
+          </p>
+        </div>
+
+        <button
+          className="heroButton"
+          type="button"
+          onClick={() => navigate("/receitas")}
+        >
+          <Plus size={18} />
+          {t("dashboard.registerIncome")}
+        </button>
+      </section>
+
+      <section className="cards">
+        <div className="card green">
+          <div className="iconBox greenBg">
+            <Wallet size={18} />
+          </div>
+          <h2>{formatMoney(saldo)}</h2>
+          <span>{t("dashboard.balance")}</span>
+          <p>{t("dashboard.balanceDesc")}</p>
+        </div>
+
+        <div className="card blue">
+          <div className="iconBox blueBg">
+            <ArrowUpRight size={18} />
+          </div>
+          <h2>{formatMoney(receitasMesAtual)}</h2>
+          <span>{t("dashboard.monthIncome")}</span>
+          <p>{t("dashboard.incomeDesc")}</p>
+        </div>
+
+        <div className="card red">
+          <div className="iconBox redBg">
+            <ArrowDownRight size={18} />
+          </div>
+          <h2>{formatMoney(gastosMesAtual)}</h2>
+          <span>{t("dashboard.monthExpenses")}</span>
+          <p>{t("dashboard.expensesDesc")}</p>
+        </div>
+      </section>
+
+      <section className="quickActions">
+        {acoesRapidas.map((acao) => {
+          const Icon = acao.icon;
+          return (
+            <button
+              key={acao.label}
+              type="button"
+              onClick={() => navigate(acao.path)}
+            >
+              <Icon size={17} />
+              {acao.label}
+            </button>
+          );
+        })}
+      </section>
+
+      <section className="dashboardGrid">
+        <div className="panel">
+          <div className="panelHeader">
+            <div>
+              <h3>{t("dashboard.pending")}</h3>
+              <p>{t("dashboard.pendingDesc")}</p>
+            </div>
+            <Clock3 size={18} />
+          </div>
+
+          {contasPendentes.length > 0 ? (
+            <div className="taskList">
+              {contasPendentes.slice(0, 4).map((conta) => (
+                <div
+                  className="taskItem"
+                  key={conta.id || conta._id || conta.cliente}
+                >
+                  <div>
+                    <strong>
+                      {conta.cliente ||
+                        conta.descricao ||
+                        conta.nome ||
+                        t("dashboard.pendingFallback")}
+                    </strong>
+                    <span>
+                      {formatarDataString(conta.vencimento || conta.data)}
+                    </span>
+                  </div>
+                  <b>{formatValorNaMoeda(conta.valor, conta.moeda)}</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="emptyState">
+              <CheckCircle2 size={22} />
+              <p>{t("dashboard.noPending")}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="panel">
+          <div className="panelHeader">
+            <div>
+              <h3>{t("dashboard.firstSteps")}</h3>
+              <p>{t("dashboard.firstStepsDesc")}</p>
+            </div>
+            <ListChecks size={18} />
+          </div>
+
+          <div className="setupList">
+            {passosIniciais.map((passo) => (
+              <button
+                key={passo.title}
+                type="button"
+                onClick={() => navigate(passo.path)}
+              >
+                <strong>{passo.title}</strong>
+                <span>{passo.text}</span>
+              </button>
+            ))}
           </div>
         </div>
 
-        <section className="heroPanel">
-          <div>
-            <span className="eyebrow">{t("dashboard.situation")}</span>
-            <h2>
-              {temDados
-                ? contasPendentes.length > 0
-                  ? t("dashboard.heroPending", { count: contasPendentes.length })
-                  : t("dashboard.heroNoPending")
-                : t("dashboard.heroNoData")}
-            </h2>
-            <p>
-              {temDados
-                ? t("dashboard.heroHasData")
-                : t("dashboard.heroNoDataSub")}
-            </p>
+        <div className="panel wide">
+          <div className="panelHeader">
+            <div>
+              <h3>{t("dashboard.lastMovements")}</h3>
+              <p>{t("dashboard.lastMovementsDesc")}</p>
+            </div>
           </div>
 
-          <button
-            className="heroButton"
-            type="button"
-            onClick={() => navigate("/receitas")}
-          >
-            <Plus size={18} />
-            {t("dashboard.registerIncome")}
-          </button>
-        </section>
-
-        <section className="cards">
-          <div className="card green">
-            <div className="iconBox greenBg">
-              <Wallet size={18} />
-            </div>
-            {/* saldo já vem pronto (e correto) do backend, na moeda atual */}
-            <h2>{formatMoney(saldo)}</h2>
-            <span>{t("dashboard.balance")}</span>
-            <p>{t("dashboard.balanceDesc")}</p>
-          </div>
-
-          <div className="card blue">
-            <div className="iconBox blueBg">
-              <ArrowUpRight size={18} />
-            </div>
-            <h2>{formatMoney(receitasMesAtual)}</h2>
-            <span>{t("dashboard.monthIncome")}</span>
-            <p>{t("dashboard.incomeDesc")}</p>
-          </div>
-
-          <div className="card red">
-            <div className="iconBox redBg">
-              <ArrowDownRight size={18} />
-            </div>
-            <h2>{formatMoney(gastosMesAtual)}</h2>
-            <span>{t("dashboard.monthExpenses")}</span>
-            <p>{t("dashboard.expensesDesc")}</p>
-          </div>
-        </section>
-
-        <section className="quickActions">
-          {acoesRapidas.map((acao) => {
-            const Icon = acao.icon;
-            return (
-              <button
-                key={acao.label}
-                type="button"
-                onClick={() => navigate(acao.path)}
-              >
-                <Icon size={17} />
-                {acao.label}
-              </button>
-            );
-          })}
-        </section>
-
-        <section className="dashboardGrid">
-          <div className="panel">
-            <div className="panelHeader">
-              <div>
-                <h3>{t("dashboard.pending")}</h3>
-                <p>{t("dashboard.pendingDesc")}</p>
-              </div>
-              <Clock3 size={18} />
-            </div>
-
-            {contasPendentes.length > 0 ? (
-              <div className="taskList">
-                {contasPendentes.slice(0, 4).map((conta) => (
+          {ultimasMovimentacoes.length > 0 ? (
+            <div className="movementList">
+              {ultimasMovimentacoes.map((tMov) => {
+                const entrada =
+                  tMov.tipo === "deposito" ||
+                  tMov.tipo === "transferenciaEntrada";
+                return (
                   <div
-                    className="taskItem"
-                    key={conta.id || conta._id || conta.cliente}
+                    className="movementItem"
+                    key={
+                      tMov.id ||
+                      tMov._id ||
+                      `${tMov.data}-${tMov.valor}`
+                    }
                   >
                     <div>
                       <strong>
-                        {conta.cliente ||
-                          conta.descricao ||
-                          conta.nome ||
-                          t("dashboard.pendingFallback")}
+                        {tMov.descricao ||
+                          tMov.categoria ||
+                          t("dashboard.movementFallback")}
                       </strong>
-                      <span>
-                        {formatarDataString(conta.vencimento || conta.data)}
-                      </span>
+                      <span>{formatarDataString(tMov.data)}</span>
                     </div>
-                    {/* cada conta exibida na SUA PRÓPRIA moeda, sem reconverter */}
-                    <b>{formatValorNaMoeda(conta.valor, conta.moeda)}</b>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="emptyState">
-                <CheckCircle2 size={22} />
-                <p>{t("dashboard.noPending")}</p>
-              </div>
-            )}
-          </div>
-
-          <div className="panel">
-            <div className="panelHeader">
-              <div>
-                <h3>{t("dashboard.firstSteps")}</h3>
-                <p>{t("dashboard.firstStepsDesc")}</p>
-              </div>
-              <ListChecks size={18} />
-            </div>
-
-            <div className="setupList">
-              {passosIniciais.map((passo) => (
-                <button
-                  key={passo.title}
-                  type="button"
-                  onClick={() => navigate(passo.path)}
-                >
-                  <strong>{passo.title}</strong>
-                  <span>{passo.text}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="panel wide">
-            <div className="panelHeader">
-              <div>
-                <h3>{t("dashboard.lastMovements")}</h3>
-                <p>{t("dashboard.lastMovementsDesc")}</p>
-              </div>
-            </div>
-
-            {ultimasMovimentacoes.length > 0 ? (
-              <div className="movementList">
-                {ultimasMovimentacoes.map((tMov) => {
-                  const entrada =
-                    tMov.tipo === "deposito" ||
-                    tMov.tipo === "transferenciaEntrada";
-                  return (
-                    <div
-                      className="movementItem"
-                      key={
-                        tMov.id ||
-                        tMov._id ||
-                        `${tMov.data}-${tMov.valor}`
+                    <b
+                      className={
+                        entrada ? "positiveValue" : "negativeValue"
                       }
                     >
-                      <div>
-                        <strong>
-                          {tMov.descricao ||
-                            tMov.categoria ||
-                            t("dashboard.movementFallback")}
-                        </strong>
-                        <span>{formatarDataString(tMov.data)}</span>
-                      </div>
-                      <b
-                        className={
-                          entrada ? "positiveValue" : "negativeValue"
-                        }
-                      >
-                        {entrada ? "+" : "-"}{" "}
-                        {/* cada movimentação exibida na SUA PRÓPRIA moeda */}
-                        {formatValorNaMoeda(tMov.valor, tMov.moeda)}
-                      </b>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="emptyState">
-                <p>{t("dashboard.noMovements")}</p>
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
-    </div>
+                      {entrada ? "+" : "-"}{" "}
+                      {formatValorNaMoeda(tMov.valor, tMov.moeda)}
+                    </b>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="emptyState">
+              <p>{t("dashboard.noMovements")}</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
   );
 }

@@ -6,34 +6,70 @@
   box-sizing: border-box;
 }
 
-/* Container Principal (Mesmo fundo do site) */
+/* Container Principal (Com as mesmas auras e contenção de blur) */
 .login-page-container {
-  width: 100vw;
+  position: relative; /* Essencial para as luzes laterais */
+  overflow: hidden;    /* Evita barras de rolagem indesejadas pelo blur */
+  width: 100%;
   min-height: 100vh;
   background: #060d28;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: "DM Sans", system-ui, sans-serif;
-  padding: 20px;
+  padding: 24px 20px;
 }
 
-/* Cartão dividido ao meio - AGORA USA VARIÁVEIS */
+/* ==========================================================================
+   ESTILIZAÇÃO DAS AURAS LATERAIS (PADRÃO PREMIUM)
+   ========================================================================== */
+.login-page-container::before,
+.login-page-container::after {
+  content: "";
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Aura Azul na Esquerda */
+.login-page-container::before {
+  top: 15%;
+  left: -180px;
+  background: #3b82f6;
+}
+
+/* Aura Roxa na Direita */
+.login-page-container::after {
+  bottom: 15%;
+  right: -180px;
+  background: #6366f1;
+}
+
+/* Cartão dividido ao meio */
 .login-card {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   width: 100%;
   max-width: 900px;
-  height: 500px;
+  height: auto;
+  min-height: 550px; /* Removido height fixo de 500px para não esmagar no mobile */
   background: var(--bg-card, #0a0f25);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
 }
 
 /* ----- LADO ESQUERDO (Formulário) ----- */
 .login-form-panel {
-  padding: 48px 56px;
+  padding: clamp(32px, 5vw, 48px) clamp(24px, 6vw, 56px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -42,9 +78,9 @@
 .login-title {
   font-family: "Sora", sans-serif;
   font-weight: 700;
-  font-size: 32px;
+  font-size: clamp(26px, 4vw, 32px);
   color: var(--text-primary, #ffffff);
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   letter-spacing: -0.5px;
 }
 
@@ -60,33 +96,37 @@
 }
 
 .form-group label {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary, #94a3b8);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* INPUTS - AGORA USAM VARIÁVEIS COM FALLBACK ESCURO */
+/* INPUTS */
 .input-field {
   width: 100%;
-  height: 48px;
+  height: 46px;
   padding: 0 16px;
   border-radius: 12px;
-  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
-  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
+  background: var(--bg-input, rgba(255, 255, 255, 0.04));
   color: var(--text-primary, #f1f5f9);
-  font-size: 15px;
+  font-size: 14.5px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
   font-family: "DM Sans", sans-serif;
 }
 
 .input-field::placeholder {
-  color: var(--text-secondary, #64748b);
+  color: #475569;
 }
 
 .input-field:focus {
   border-color: #3b82f6;
-  background: var(--bg-input-focus, rgba(255, 255, 255, 0.08));
+  background: var(--bg-input-focus, rgba(255, 255, 255, 0.07));
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
 }
 
 /* Campo de senha com ícone */
@@ -118,9 +158,9 @@
   color: var(--text-primary, #f1f5f9);
 }
 
-/* Botão de Login (Degradê Azul Padrão) */
+/* Botão de Login (Degradê Padrão Otimizado) */
 .login-button {
-  margin-top: 12px;
+  margin-top: 8px;
   width: 100%;
   height: 50px;
   border: none;
@@ -131,11 +171,18 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
 }
 
-.login-button:hover {
+.login-button:hover:not(:disabled) {
   box-shadow: 0 5px 20px rgba(37, 99, 235, 0.45);
+  opacity: 0.95;
+}
+
+.login-button.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .register-link {
@@ -154,11 +201,12 @@
 
 .register-link span:hover {
   text-decoration: underline;
+  color: #60a5fa;
 }
 
-/* ----- LADO DIREITO (Logo do Site) ----- */
+/* ----- LADO DIREITO (Logo da Marca) ----- */
 .login-image-panel {
-  background: var(--bg-card, #0a0f25);
+  background: linear-gradient(145deg, rgba(10, 15, 37, 0.4) 0%, rgba(6, 13, 40, 0.8) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,8 +218,8 @@
 .login-image-panel::after {
   content: "";
   position: absolute;
-  width: 300px;
-  height: 300px;
+  width: 350px;
+  height: 350px;
   background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
   border-radius: 50%;
   top: 50%;
@@ -189,11 +237,12 @@
 }
 
 .login-logo {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   border-radius: 24px;
   object-fit: cover;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .login-brand-name {
@@ -204,7 +253,7 @@
   letter-spacing: -0.3px;
 }
 
-/* ─── BOTÃO VOLTAR PARA HOME ─────────────── */
+/* BOTÃO VOLTAR PARA HOME */
 .back-home-button {
   display: flex;
   align-items: center;
@@ -214,7 +263,7 @@
   margin-top: 16px;
   padding: 10px 0;
   background: transparent;
-  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.06));
   border-radius: 12px;
   color: var(--text-secondary, #94a3b8);
   font-family: "DM Sans", sans-serif;
@@ -226,14 +275,13 @@
 
 .back-home-button:hover {
   color: var(--text-primary, #f1f5f9);
-  border-color: var(--border-soft, rgba(255, 255, 255, 0.2));
-  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-soft, rgba(255, 255, 255, 0.15));
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* ==========================================
    MENSAGENS DE ERRO E SUCESSO
    ========================================== */
-
 .message-box {
   display: flex;
   align-items: center;
@@ -243,50 +291,27 @@
   margin-bottom: 16px;
   font-size: 14px;
   font-weight: 500;
-  animation: slideDownMsg 0.3s ease forwards;
+  animation: slideDownMsg 0.25s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards;
 }
 
-.message-icon {
-  flex-shrink: 0;
-}
-
-/* Caixa de Erro */
 .error-box {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
   color: #fca5a5;
 }
 
-.error-box .message-icon {
-  color: #ef4444;
-}
-
-/* Caixa de Sucesso */
 .success-box {
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
   color: #86efac;
 }
 
-.success-box .message-icon {
-  color: #22c55e;
-}
-
-/* Input com erro (borda vermelha) */
 .input-error {
   border-color: #ef4444 !important;
-  background: rgba(239, 68, 68, 0.05) !important;
+  background: rgba(239, 68, 68, 0.03) !important;
 }
 
-.input-error:focus {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
-}
-
-/* ==========================================
-   LOADING SPINNER NO BOTÃO
-   ========================================== */
-
+/* LOADING SPINNER DO BOTÃO */
 .loading-spinner {
   display: inline-block;
   width: 20px;
@@ -301,26 +326,18 @@
   to { transform: rotate(360deg); }
 }
 
-/* Botão desabilitado */
 .login-button:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.login-button.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ==========================================
-   ANIMAÇÕES
-   ========================================== */
-
-@keyframes slideDownMsg {
+/* ==========================================================================
+   ANIMAÇÕES DE ENTRADA (CASCATA ACELERADA)
+   ========================================================================== */
+@keyframes naturalFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -328,23 +345,55 @@
   }
 }
 
+@keyframes slideDownMsg {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-card,
+.login-title,
+.form-group,
+.login-button,
+.register-link,
+.back-home-button,
+.login-logo,
+.login-brand-name {
+  opacity: 0;
+  animation-name: naturalFadeIn;
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  animation-fill-mode: forwards;
+}
+
+.login-card { animation-delay: 0s; }
+.login-title { animation-delay: 0.08s; }
+.form-group { animation-delay: 0.14s; }
+.login-button { animation-delay: 0.20s; }
+.register-link { animation-delay: 0.26s; }
+.back-home-button { animation-delay: 0.32s; }
+
+.login-logo { animation-delay: 0.20s; }
+.login-brand-name { animation-delay: 0.26s; }
+
 /* ----- RESPONSIVIDADE (MOBILE) ----- */
 @media (max-width: 860px) {
+  .login-page-container::before,
+  .login-page-container::after {
+    width: 280px;
+    height: 280px;
+    filter: blur(90px);
+    opacity: 0.08;
+  }
+  .login-page-container::before { top: 5%; left: -120px; }
+  .login-page-container::after { bottom: 5%; right: -120px; }
+
   .login-card {
     grid-template-columns: 1fr;
-    height: auto;
-    max-width: 450px;
+    max-width: 460px;
+    min-height: auto;
   }
   
   .login-image-panel {
     display: none;
-  }
-
-  .login-form-panel {
-    padding: 40px 24px;
-  }
-
-  .login-title {
-    font-size: 26px;
   }
 }

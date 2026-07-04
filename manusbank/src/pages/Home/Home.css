@@ -44,8 +44,8 @@ a {
   z-index: 0;
 }
 
-/* ─── NAVBAR ─────────────────────────────── */
-.navbar {
+/* ─── NAVBAR (MODERNA E TRANSPARENTE) ─────────────────── */
+body .navbar {
   position: fixed;
   top: 0;
   left: 0;
@@ -56,8 +56,16 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgb(6, 13, 40);
+  
+  /* Linha divisória inferior quase invisível */
+  border-bottom: 1px solid rgba(12, 0, 0, 0.05) !important;
+  
+  /* Cor de fundo escura com transparência (30% de opacidade para notar a diferença) */
+  background: rgba(6, 13, 40, 0.3) !important;
+  
+  /* O efeito de vidro fosco que desfoca o que passa por trás */
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
 }
 
 .navbar-brand {
@@ -67,13 +75,16 @@ a {
   font-family: "Sora", sans-serif;
   font-weight: 700;
   font-size: 18px;
+  color: #ffffff; /* Garante destaque no logo */
+  letter-spacing: -0.5px;
 }
 
 .logo-image {
-  width: 30px;
-  height: 30px;
+  width: 32px; /* Aumentado levemente para melhor balanço visual */
+  height: 32px;
   border-radius: 8px;
   object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo-sm {
@@ -83,23 +94,45 @@ a {
 
 .navbar-links {
   display: flex;
-  gap: 8px;
+  gap: 4px; /* Ajustado para melhor espaçamento de botões fluídos */
 }
 
 .navbar-links a {
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
+  position: relative;
+  display: inline-block;
   color: #94a3b8;
-  transition: all 0.3s ease;
+  font-size: 14.5px; /* Fonte levemente menor para um ar mais minimalista */
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px; /* Cantos arredondados sutil ao hover */
+  transition: color 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
 }
 
+/* Efeito de hover moderno nos links da navbar */
 .navbar-links a:hover {
-  color: #ffffff;
-  text-decoration: underline;
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.04); /* Sutil bloco cinza de fundo */
 }
 
+/* Indicador de linha embaixo se mantido (Ajustado para combinar com o novo hover) */
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 40%; /* Um pouco menor para ficar elegante */
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  transition: transform 0.25s ease;
+  border-radius: 999px;
+}
+
+.navbar-links a:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
 /* ─── HERO ───────────────────────────────── */
 .hero {
   position: relative;
@@ -114,6 +147,7 @@ a {
   align-items: center;
   justify-content: center;
   text-align: center;
+
 }
 
 .title {
@@ -365,6 +399,59 @@ a {
   opacity: 0;
   animation: homeFadeInUp 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   animation-delay: 0.5s;
+}
+
+/* ===========================================================
+   SCROLL REVEAL (SEM JAVASCRIPT)
+   =========================================================== */
+
+@keyframes revealOnScroll {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(.98);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* REMOVIDOS DAQUI: .hero-impact, .title, .description 
+   Agora eles rodam livremente a animação "homeFadeInUp" ao entrar na página!
+*/
+.section,       /* Anima a seção como um todo */
+.section-header,
+.card,
+.footer {
+  animation: revealOnScroll linear;
+  animation-timeline: view();
+
+  /* começa quando 15% do elemento entra na tela
+     termina quando 35% já entrou */
+  animation-range: entry 15% cover 35%;
+  animation-fill-mode: both;
+}
+
+/* ─── RESPONSIVIDADE ────────────────────── */
+@media (max-width: 860px) {
+  .navbar {
+    padding: 0 16px;
+  }
+  
+  .hero {
+    padding: 100px 20px 40px;
+  }
+
+  .section {
+    min-height: auto;
+    padding: 64px 20px;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
 /* ─── RESPONSIVIDADE ────────────────────── */
 @media (max-width: 860px) {

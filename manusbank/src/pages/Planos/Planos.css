@@ -1,9 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght=400;600;700&family=DM+Sans:wght=400;500;600&display=swap');
 
 /* ==========================================================================
-   RESET ESCOPADO — antes era `* { ... }` global, que vazava pro app
-   inteiro assim que essa página era visitada uma vez. Agora só afeta
-   elementos dentro de .planos-page.
+   RESET ESCOPADO — Consistência isolada sem vazar para o app
    ========================================================================== */
 .planos-page,
 .planos-page * {
@@ -13,9 +11,7 @@
 }
 
 /* ==========================================================================
-   VARIÁVEIS LOCAIS — declaradas em .planos-page (não em :root), então
-   não vazam pro resto do app e também não são sobrescritas por
-   variáveis de mesmo nome definidas em Configuracoes.css.
+   VARIÁVEIS LOCAIS E CONTÊINER PRINCIPAL
    ========================================================================== */
 .planos-page {
   --text-primary: #ffffff;
@@ -25,30 +21,76 @@
   --bg-input: rgba(255, 255, 255, 0.05);
   --bg-input-focus: rgba(255, 255, 255, 0.08);
 
-  width: 100vw;
+  position: relative; /* Necessário para posicionar os brilhos de fundo */
+  overflow: hidden;    /* Evita que o blur crie barras de rolagem estranhas */
+  width: 100%;
   min-height: 100vh;
   background: #060d28;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  padding: 48px 20px;
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+/* ==========================================================================
+   ESTILIZAÇÃO DAS AURAS LATERAIS (PREENCHIMENTO DE ESPAÇO)
+   ========================================================================== */
+.bg-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  filter: blur(120px); /* Cria o efeito de fumaça/luz suave */
+  opacity: 0.15;        /* Intensidade sutil para não distrair a leitura */
+  pointer-events: none; /* Garante que o usuário consiga clicar na tela normalmente */
+  z-index: 0;           /* Fica atrás de todo o conteúdo de texto e cartões */
+}
+
+/* Brilho Azul/Ciano na Esquerda */
+.bg-glow-left {
+  top: 20%;
+  left: -150px;
+  background: #3b82f6;
+}
+
+/* Brilho Roxo/Indigo na Direita */
+.bg-glow-right {
+  bottom: 20%;
+  right: -150px;
+  background: #6366f1;
+}
+
+/* Garante que os elementos de conteúdo fiquem por cima do brilho */
+.trocar-plano-header,
+.erro-msg,
+.trocar-plano-grid,
+.trocar-plano-back-button {
+  position: relative;
+  z-index: 1;
+}
+/* ----- CABEÇALHO ----- */
+.planos-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: "DM Sans", system-ui, sans-serif;
-  padding: 60px 20px;
-}
-
-/* ----- CABEÇALHO ----- */
-.planos-header {
+  justify-content: center;
   text-align: center;
-  max-width: 560px;
-  margin-bottom: 36px;
+  width: 100%;
+  max-width: 700px;
 }
 
 .planos-header h1 {
   font-family: "Sora", sans-serif;
   font-weight: 700;
-  font-size: 34px;
+  font-size: clamp(26px, 5vw, 34px); /* Tamanho fluido */
   color: var(--text-primary);
   letter-spacing: -0.5px;
   margin-bottom: 12px;
+  line-height: 1.2;
 }
 
 .planos-dot {
@@ -56,58 +98,9 @@
 }
 
 .planos-header p {
-  font-size: 15px;
+  font-size: clamp(14px, 2.5vw, 15px);
   color: var(--text-secondary);
   line-height: 1.5;
-}
-
-/* ----- SELETOR DE MOEDA ----- */
-.planos-moeda-select {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 48px;
-  width: 100%;
-  max-width: 280px;
-}
-
-.planos-moeda-select label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-align: center;
-}
-
-.planos-moeda-select select {
-  width: 100%;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border-soft);
-  background: var(--bg-input);
-  color: var(--text-primary);
-  font-size: 15px;
-  font-family: "DM Sans", sans-serif;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 40px;
-  transition: border-color 0.2s;
-}
-
-.planos-moeda-select select:focus {
-  border-color: #3b82f6;
-  background-color: var(--bg-input-focus);
-}
-
-.planos-moeda-select select option {
-  background: #0a0f25;
-  color: #f1f5f9;
 }
 
 /* ----- GRID DE PLANOS ----- */
@@ -117,7 +110,6 @@
   gap: 24px;
   width: 100%;
   max-width: 780px;
-  margin-bottom: 40px;
 }
 
 /* ----- CARD DE PLANO ----- */
@@ -126,15 +118,17 @@
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: 24px;
-  padding: 40px 32px;
+  padding: clamp(28px, 5vw, 40px) clamp(20px, 4vw, 32px);
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.plano-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 25px 60px rgb(0, 1, 37);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+@media (hover: hover) {
+  .plano-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .plano-card h2 {
@@ -149,7 +143,7 @@
 .plano-preco {
   font-family: "Sora", sans-serif;
   font-weight: 700;
-  font-size: 32px;
+  font-size: clamp(28px, 4vw, 32px);
   color: var(--text-primary);
   margin-bottom: 28px;
 }
@@ -168,10 +162,11 @@
   background: linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, var(--bg-card) 100%);
 }
 
-.plano-card-destaque:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 25px 60px rgba(37, 99, 235, 0.25);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+@media (hover: hover) {
+  .plano-card-destaque:hover {
+    box-shadow: 0 25px 60px rgba(37, 99, 235, 0.20);
+    border-color: #60a5fa;
+  }
 }
 
 /* ----- LISTA DE FEATURES ----- */
@@ -196,17 +191,13 @@
 .icon-check {
   color: #22c55e;
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 3px;
 }
 
 .icon-x {
   color: #ef4444;
   flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.feature-limitada {
-  color: var(--text-secondary);
+  margin-top: 3px;
 }
 
 /* ----- BOTÕES DOS CARDS ----- */
@@ -219,7 +210,7 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  transition: all 0.2s;
 }
 
 .plano-btn-primario {
@@ -227,8 +218,11 @@
   color: #ffffff;
 }
 
-.plano-btn-primario:hover {
-  box-shadow: 0 5px 20px rgba(37, 99, 235, 0.45);
+@media (hover: hover) {
+  .plano-btn-primario:hover {
+    box-shadow: 0 5px 20px rgba(37, 99, 235, 0.45);
+    opacity: 0.95;
+  }
 }
 
 .plano-btn-secundario {
@@ -237,9 +231,11 @@
   color: var(--text-primary);
 }
 
-.plano-btn-secundario:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.25);
+@media (hover: hover) {
+  .plano-btn-secundario:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
 }
 
 /* ----- BOTÃO VOLTAR PARA HOME ----- */
@@ -249,8 +245,8 @@
   justify-content: center;
   gap: 8px;
   width: max-content;
-  margin: 0 auto;
-  padding: 8px 18px;
+  margin: 12px auto 0 auto;
+  padding: 10px 22px;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 30px;
@@ -262,21 +258,22 @@
   transition: all 0.2s ease;
 }
 
-.back-home-button:hover {
-  color: #f1f5f9;
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.02);
+@media (hover: hover) {
+  .back-home-button:hover {
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.02);
+  }
 }
 
 /* ==========================================================================
-   ANIMAÇÕES DE ENTRADA (FADE & SLIDE UP)
+   ANIMAÇÕES DE ENTRADA OTIMIZADAS, RÁPIDAS E SUAVES (CASCATA ACELERADA)
    ========================================================================== */
 
-/* 1. Definição da animação base */
 @keyframes planosFadeInUp {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -284,51 +281,55 @@
   }
 }
 
-/* 2. Aplicação do efeito nos elementos com atraso (delay) controlado */
-.planos-header {
-  animation: planosFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.planos-moeda-select {
-  opacity: 0; /* Começa invisível até a animação iniciar */
-  animation: planosFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.1s;
-}
-
-.planos-grid {
-  opacity: 0;
-  animation: planosFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.2s;
-}
-
+.planos-header,
+.planos-moeda-select,
+.planos-grid,
+.plano-card,
 .back-home-button {
   opacity: 0;
-  animation: planosFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.35s;
+  animation-name: planosFadeInUp;
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); /* Curva Premium */
+  animation-fill-mode: forwards;
 }
 
-/* 3. Ajuste fino para os cards dentro do grid entrarem em sincronia */
-.plano-card {
-  opacity: 0;
-  animation: planosFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.planos-header { animation-delay: 0s; }
+.planos-moeda-select { animation-delay: 0.08s; }
+.planos-grid { animation-delay: 0.16s; }
+
+/* Cascata interna dos cartões dentro do grid */
+.plano-card:nth-child(1) { animation-delay: 0.24s; }
+.plano-card:nth-child(2) { animation-delay: 0.32s; }
+
+.back-home-button { animation-delay: 0.40s; }
+
+/* Acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  .planos-header, .planos-moeda-select, .planos-grid, .plano-card, .back-home-button {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
-/* O primeiro card entra junto com o grid, o segundo card um milissegundo depois */
-.plano-card:nth-child(1) { animation-delay: 0.25s; }
-.plano-card:nth-child(2) { animation-delay: 0.3s; }
-/* ----- RESPONSIVIDADE (MOBILE) ----- */
+/* ----- RESPONSIVIDADE (MOBILE E ADAPTAÇÃO DAS LATERAIS) ----- */
 @media (max-width: 860px) {
+  .planos-page {
+    padding: 40px 16px;
+    gap: 24px;
+  }
+
+  .bg-glow {
+    width: 280px;
+    height: 280px;
+    filter: blur(90px);
+    opacity: 0.08;
+  }
+  .bg-glow-left { top: 5%; left: -120px; }
+  .bg-glow-right { bottom: 5%; right: -120px; }
+
   .planos-grid {
     grid-template-columns: 1fr;
-    max-width: 380px;
-    margin-bottom: 32px;
-  }
-
-  .planos-header h1 {
-    font-size: 26px;
-  }
-
-  .plano-card {
-    padding: 32px 24px;
+    max-width: 400px;
   }
 }

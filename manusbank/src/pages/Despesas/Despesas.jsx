@@ -1,13 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Despesas.css";
 import {
   Plus,
   X,
-  Wallet,
   TrendingDown,
-  CreditCard,
   Trash2,
   Pencil,
 } from "lucide-react";
@@ -22,7 +19,7 @@ import {
 } from "recharts";
 import { API_URL } from "../../config/api";
 import { useCurrency } from "../../context/CurrencyProvider";
-import { useIdioma } from "../../context/IdiomaContext"; // 👈 tradução
+import { useIdioma } from "../../context/IdiomaContext";
 
 function extrairData(isoString) {
   if (!isoString) return new Date().toISOString().substring(0, 10);
@@ -42,9 +39,8 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
-// 👇 Cada despesa já guarda sua própria moeda (vinda do backend).
-// Por isso usamos formatValorNaMoeda (SEM conversão) — é o valor
-// que já está na moeda certa, só precisa do símbolo e da formatação.
+// Cada despesa já guarda sua própria moeda (vinda do backend).
+// formatValorNaMoeda não converte — só formata o valor que já está certo.
 function Money({ value, moeda }) {
   const { formatValorNaMoeda } = useCurrency();
   return <span>{formatValorNaMoeda(value, moeda)}</span>;
@@ -52,14 +48,8 @@ function Money({ value, moeda }) {
 
 function Despesas() {
   const navigate = useNavigate();
-  const { t } = useIdioma(); // 👈 hook de tradução
-  const {
-    formatMoney,
-    formatValorNaMoeda,
-    converterEntreMoedas,
-    currency,
-    getCurrencySymbol,
-  } = useCurrency();
+  const { t } = useIdioma();
+  const { formatMoney, currency, getCurrencySymbol } = useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
@@ -150,20 +140,14 @@ function Despesas() {
     }
   }, [sucesso]);
 
-  // Helper: valor do item convertido (número puro) para a moeda atualmente
-  // selecionada. Usa converterEntreMoedas, que retorna número, não string
-  // formatada — evita parsing frágil de string de volta pra número.
-  const paraMoedaAtual = (item) =>
-    converterEntreMoedas(item.valor, item.moeda || "BRL", currency);
-
+  // 👇 Sem conversão: a moeda é fixa por conta, então todo item de
+  // "despesas" já está na mesma moeda. Somamos e exibimos direto.
   const dadosGrafico = despesas.map(d => ({
     nome: d.nome.length > 15 ? d.nome.substring(0, 15) + "..." : d.nome,
-    valor: paraMoedaAtual(d),
+    valor: d.valor,
   }));
 
-  // total é um somatório: cada item pode ter sido criado numa moeda
-  // diferente, então convertemos todos para a moeda atual antes de somar.
-  const totalDespesas = despesas.reduce((acc, d) => acc + paraMoedaAtual(d), 0);
+  const totalDespesas = despesas.reduce((acc, d) => acc + (Number(d.valor) || 0), 0);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -191,9 +175,6 @@ function Despesas() {
       return;
     }
 
-    // 👇 NÃO convertemos mais para BRL aqui. O valor digitado já está
-    // na moeda atualmente selecionada pelo usuário, e é o backend quem
-    // decide/grava qual é essa moeda (moedaAtualDoUsuario). Ver server.js.
     const dataFormatada = novaDespesa.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -303,8 +284,6 @@ function Despesas() {
       return;
     }
 
-    // 👇 sem conversão para BRL — moeda do item nunca muda na edição
-    // (o próprio backend já garante isso em PUT /api/transacao/:id)
     const dataFormatada = despesaEditando.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -341,7 +320,6 @@ function Despesas() {
               ...d,
               nome: despesaEditando.nome,
               valor: valorDigitado,
-              // moeda permanece a mesma do item original — não sobrescrever
               data: dataFormatada,
             }
           : d
@@ -366,167 +344,145 @@ function Despesas() {
     setModalEdicaoAberto(true);
   };
 
-  if (carregando) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>{t("geral.loading")}</main>
-      </div>
-    );
-  }
-
-  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
-
   return (
-    <div
-      style={{ display: "flex", minHeight: "100vh" }}
-      className={modalAbertoOuEditando ? "modo-modal" : ""}
-    >
-      <Sidebar />
-      <main style={{ flex: 1, padding: "20px" }}>
-        <div className="despesas-container">
-          <div className="despesas-card">
-            <header className="despesas-header">
-              <h1>{t("despesas.title")}</h1>
-              <p className="subtitle">{t("despesas.subtitle")}</p>
-            </header>
+    <main style={{ flex: 1, padding: "20px" }}>
+      <div className="despesas-container">
+        <div className="despesas-card">
+          <header className="despesas-header">
+            <h1>{t("despesas.title")}</h1>
+            <p className="subtitle">{t("despesas.subtitle")}</p>
+          </header>
 
-            {erro && <p className="erro-msg">{erro}</p>}
-            {sucesso && <p className="sucesso-msg">{sucesso}</p>}
+          {erro && <p className="erro-msg">{erro}</p>}
+          {sucesso && <p className="sucesso-msg">{sucesso}</p>}
 
-            <div className="resumo-card">
-              <div className="resumo-item">
-                <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
-                  {getCurrencySymbol()}
-                </span>
-                <div>
-                  <p className="resumo-label">{t("despesas.totalLabel")}</p>
-                  {/* total já é um somatório convertido p/ moeda atual, então usamos formatMoney */}
-                  <p className="despesas-valor">
-                    {formatMoney(totalDespesas)}
-                  </p>
-                </div>
-              </div>
-              <div className="resumo-item-secundario">
-                <TrendingDown size={20} />
-                <p className="resumo-secundario-label">
-                  {t("despesas.countLabel", { count: despesas.length })}
+          <div className="resumo-card">
+            <div className="resumo-item">
+              <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
+                {getCurrencySymbol()}
+              </span>
+              <div>
+                <p className="resumo-label">{t("despesas.totalLabel")}</p>
+                <p className="despesas-valor">
+                  {formatMoney(totalDespesas)}
                 </p>
               </div>
             </div>
-
-            <button className="btn-nova-despesa" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> {t("despesas.newButton")}
-            </button>
-
-            <section className="grafico-section">
-              <h2>{t("despesas.chartTitle")}</h2>
-              <div className="grafico-container">
-                {despesas.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={dadosGrafico}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                      <XAxis dataKey="nome" stroke="#94a3b8" />
-                      <YAxis stroke="#94a3b8" />
-                      <Tooltip
-                        contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
-                        labelStyle={{ color: "#f8fafc" }}
-                        formatter={(value) => [formatMoney(value), t("despesas.chartValueLabel")]}
-                        cursor={false}
-                      />
-                      <Bar dataKey="valor" fill="#ef4444" radius={[8, 8, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="grafico-vazio"><p>{t("despesas.noDataChart")}</p></div>
-                )}
-              </div>
-            </section>
-
-            <section className="lista-despesas">
-              <h2>{t("despesas.listTitle")}</h2>
-              <div className="lista-container">
-                {despesas.length > 0 ? (
-                  despesas.map(despesa => (
-                    <div key={despesa.id} className="despesa-item">
-                      <div className="despesa-info">
-                        <h3>{despesa.nome}</h3>
-                        <p className="despesa-data">{formatarData(despesa.data)}</p>
-                      </div>
-                      <div className="despesa-right">
-                        <p className="despesa-valor">
-                          {/* cada item exibido na SUA PRÓPRIA moeda, sem reconverter */}
-                          <Money value={despesa.valor} moeda={despesa.moeda} />
-                        </p>
-                        <button className="btn-editar-despesa" onClick={() => abrirModalEdicao(despesa)} title={t("despesas.editTitle")}>
-                          <Pencil size={16} />
-                        </button>
-                        <button className="btn-remover-despesa" onClick={() => handleRemoverDespesa(despesa.id)} title={t("despesas.deleteTitle")}>
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="lista-vazia"><p>{t("despesas.noDataList")}</p></div>
-                )}
-              </div>
-            </section>
+            <div className="resumo-item-secundario">
+              <TrendingDown size={20} />
+              <p className="resumo-secundario-label">
+                {t("despesas.countLabel", { count: despesas.length })}
+              </p>
+            </div>
           </div>
 
-          {/* Modal de criação */}
-          {modalAberto && (
-            <div className="modal-overlay" onClick={fecharModal}>
-              <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
-                <button className="modal-fechar" onClick={fecharModal}><X size={24} /></button>
-                <h2>{t("despesas.modalCreate")}</h2>
-                <form className="forma-despesa" onSubmit={handleAdicionarDespesa}>
-                  <div className="form-group">
-                    <label htmlFor="nome">{t("despesas.formName")}</label>
-                    <input type="text" id="nome" name="nome" placeholder={t("despesas.formNamePlaceholder")} autoComplete="off" value={novaDespesa.nome} onChange={handleInputChange} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="valor">{t("despesas.formValue")}</label>
-                    <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaDespesa.valor} onChange={handleInputChange} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="data">{t("despesas.formDate")}</label>
-                    <input type="date" id="data" name="data" autoComplete="off" value={novaDespesa.data} onChange={handleInputChange} />
-                  </div>
-                  <button type="submit" className="btn-salvar">{t("despesas.saveButton")}</button>
-                </form>
-              </div>
-            </div>
-          )}
+          <button className="btn-nova-despesa" onClick={() => setModalAberto(true)}>
+            <Plus size={20} /> {t("despesas.newButton")}
+          </button>
 
-          {/* Modal de edição */}
-          {modalEdicaoAberto && despesaEditando && (
-            <div className="modal-overlay" onClick={fecharModalEdicao}>
-              <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
-                <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
-                <h2>{t("despesas.modalEdit")}</h2>
-                <form className="forma-despesa" onSubmit={handleEditarDespesa}>
-                  <div className="form-group">
-                    <label htmlFor="edit-nome">{t("despesas.formName")}</label>
-                    <input type="text" id="edit-nome" name="nome" autoComplete="off" value={despesaEditando.nome} onChange={handleEdicaoChange} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="edit-valor">{t("despesas.formValue")}</label>
-                    <input type="number" id="edit-valor" name="valor" step="0.01" min="0" autoComplete="off" value={despesaEditando.valor} onChange={handleEdicaoChange} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="edit-data">{t("despesas.formDate")}</label>
-                    <input type="date" id="edit-data" name="data" autoComplete="off" value={despesaEditando.data} onChange={handleEdicaoChange} />
-                  </div>
-                  <button type="submit" className="btn-salvar">{t("despesas.saveEditButton")}</button>
-                </form>
-              </div>
+          <section className="grafico-section">
+            <h2>{t("despesas.chartTitle")}</h2>
+            <div className="grafico-container">
+              {despesas.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={dadosGrafico}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="nome" stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" />
+                    <Tooltip
+                      contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                      labelStyle={{ color: "#f8fafc" }}
+                      formatter={(value) => [formatMoney(value), t("despesas.chartValueLabel")]}
+                      cursor={false}
+                    />
+                    <Bar dataKey="valor" fill="#ef4444" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="grafico-vazio"><p>{t("despesas.noDataChart")}</p></div>
+              )}
             </div>
-          )}
+          </section>
 
+          <section className="lista-despesas">
+            <h2>{t("despesas.listTitle")}</h2>
+            <div className="lista-container">
+              {despesas.length > 0 ? (
+                despesas.map(despesa => (
+                  <div key={despesa.id} className="despesa-item">
+                    <div className="despesa-info">
+                      <h3>{despesa.nome}</h3>
+                      <p className="despesa-data">{formatarData(despesa.data)}</p>
+                    </div>
+                    <div className="despesa-right">
+                      <p className="despesa-valor">
+                        <Money value={despesa.valor} moeda={despesa.moeda} />
+                      </p>
+                      <button className="btn-editar-despesa" onClick={() => abrirModalEdicao(despesa)} title={t("despesas.editTitle")}>
+                        <Pencil size={16} />
+                      </button>
+                      <button className="btn-remover-despesa" onClick={() => handleRemoverDespesa(despesa.id)} title={t("despesas.deleteTitle")}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="lista-vazia"><p>{t("despesas.noDataList")}</p></div>
+              )}
+            </div>
+          </section>
         </div>
-      </main>
-    </div>
+
+        {modalAberto && (
+          <div className="modal-overlay" onClick={fecharModal}>
+            <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
+              <button className="modal-fechar" onClick={fecharModal}><X size={24} /></button>
+              <h2>{t("despesas.modalCreate")}</h2>
+              <form className="forma-despesa" onSubmit={handleAdicionarDespesa}>
+                <div className="form-group">
+                  <label htmlFor="nome">{t("despesas.formName")}</label>
+                  <input type="text" id="nome" name="nome" placeholder={t("despesas.formNamePlaceholder")} autoComplete="off" value={novaDespesa.nome} onChange={handleInputChange} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="valor">{t("despesas.formValue")}</label>
+                  <input type="number" id="valor" name="valor" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaDespesa.valor} onChange={handleInputChange} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="data">{t("despesas.formDate")}</label>
+                  <input type="date" id="data" name="data" autoComplete="off" value={novaDespesa.data} onChange={handleInputChange} />
+                </div>
+                <button type="submit" className="btn-salvar">{t("despesas.saveButton")}</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {modalEdicaoAberto && despesaEditando && (
+          <div className="modal-overlay" onClick={fecharModalEdicao}>
+            <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
+              <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
+              <h2>{t("despesas.modalEdit")}</h2>
+              <form className="forma-despesa" onSubmit={handleEditarDespesa}>
+                <div className="form-group">
+                  <label htmlFor="edit-nome">{t("despesas.formName")}</label>
+                  <input type="text" id="edit-nome" name="nome" autoComplete="off" value={despesaEditando.nome} onChange={handleEdicaoChange} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-valor">{t("despesas.formValue")}</label>
+                  <input type="number" id="edit-valor" name="valor" step="0.01" min="0" autoComplete="off" value={despesaEditando.valor} onChange={handleEdicaoChange} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-data">{t("despesas.formDate")}</label>
+                  <input type="date" id="edit-data" name="data" autoComplete="off" value={despesaEditando.data} onChange={handleEdicaoChange} />
+                </div>
+                <button type="submit" className="btn-salvar">{t("despesas.saveEditButton")}</button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
 

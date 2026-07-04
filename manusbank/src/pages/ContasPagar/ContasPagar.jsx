@@ -429,25 +429,9 @@ function ContasPagar() {
     }
   };
 
-  if (carregando) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>
-          {t("geral.loading")}
-        </main>
-      </div>
-    );
-  }
-
   const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
-    <div
-      style={{ display: "flex", minHeight: "100vh" }}
-      className={modalAbertoOuEditando ? "modo-modal" : ""}
-    >
-      <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="cp-container">
           <div className="cp-card">
@@ -849,7 +833,6 @@ function ContasPagar() {
           )}
         </div>
       </main>
-    </div>
   );
 }
 

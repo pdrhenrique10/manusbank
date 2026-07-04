@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Receitas.css";
 import { Plus, X, Trash2, Pencil, TrendingUp } from "lucide-react";
 import {
@@ -43,8 +42,7 @@ function Money({ value, moeda }) {
 function Receitas() {
   const navigate = useNavigate();
   const { t } = useIdioma();
-  const { formatMoney, currency, getCurrencySymbol } =
-    useCurrency();
+  const { formatMoney, currency, getCurrencySymbol } = useCurrency();
 
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
@@ -128,20 +126,14 @@ function Receitas() {
     carregarReceitas(token);
   }, [navigate, carregarReceitas]);
 
-  const { converterEntreMoedas } = useCurrency();
-
+  // 👇 Sem conversão: a moeda é fixa por conta, então todo item de
+  // "receitas" já está na mesma moeda. Somamos e exibimos direto.
   const dadosGrafico = receitas.map((r) => ({
     nome: r.nome.length > 15 ? r.nome.substring(0, 15) + "..." : r.nome,
-    valor: converterEntreMoedas(r.valor, r.moeda || "BRL", currency),
+    valor: r.valor,
   }));
 
-  // Total: converte cada item pra moeda atual antes de somar (cobre o caso
-  // Premium de ter itens antigos em moedas diferentes; no plano grátis é
-  // sempre a mesma moeda, então a conversão vira um no-op).
-  const totalReceitas = receitas.reduce(
-    (acc, r) => acc + converterEntreMoedas(r.valor, r.moeda || "BRL", currency),
-    0
-  );
+  const totalReceitas = receitas.reduce((acc, r) => acc + (Number(r.valor) || 0), 0);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -169,8 +161,6 @@ function Receitas() {
       return;
     }
 
-    // Não converte mais pra BRL. O valor é salvo exatamente como digitado —
-    // o backend etiqueta a moeda automaticamente com base no usuário logado.
     const dataFormatada = novaReceita.data.substring(0, 10);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -314,7 +304,6 @@ function Receitas() {
               ...r,
               nome: receitaEditando.nome,
               valor: Number(resultado.transacao?.valor) || valorDigitado,
-              // moeda não muda na edição — segue a moeda original do item
               moeda: resultado.transacao?.moeda || r.moeda,
               data: dataFormatada,
             }
@@ -340,232 +329,218 @@ function Receitas() {
     setModalEdicaoAberto(true);
   };
 
-  if (carregando) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>{t("geral.loading")}</main>
-      </div>
-    );
-  }
-
-  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
-
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }} className={modalAbertoOuEditando ? "modo-modal" : ""}>
-      <Sidebar />
-      <main style={{ flex: 1, padding: "20px" }}>
-        <div className="receitas-container">
-          <div className="receitas-card">
-            <header className="receitas-header">
-              <h1>{t("receitas.title")}</h1>
-              <p className="substring">{t("receitas.subtitle")}</p>
-            </header>
+    <main style={{ flex: 1, padding: "20px" }}>
+      <div className="receitas-container">
+        <div className="receitas-card">
+          <header className="receitas-header">
+            <h1>{t("receitas.title")}</h1>
+            <p className="substring">{t("receitas.subtitle")}</p>
+          </header>
 
-            {erro && <p className="erro-msg">{erro}</p>}
-            {sucesso && <p className="sucesso-msg">{sucesso}</p>}
+          {erro && <p className="erro-msg">{erro}</p>}
+          {sucesso && <p className="sucesso-msg">{sucesso}</p>}
 
-            <div className="resumo-card">
-              <div className="resumo-item">
-                <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
-                  {getCurrencySymbol()}
-                </span>
-                <div>
-                  <p className="resumo-label">{t("receitas.totalLabel")}</p>
-                  <p className="resumo-valor">{formatMoney(totalReceitas)}</p>
-                </div>
-              </div>
-              <div className="resumo-item-secundario">
-                <TrendingUp size={20} />
-                <p className="resumo-secundario-label">
-                  {t("receitas.countLabel", { count: receitas.length })}
-                </p>
+          <div className="resumo-card">
+            <div className="resumo-item">
+              <span style={{ fontSize: 24, fontWeight: 'bold', display: 'inline-block' }}>
+                {getCurrencySymbol()}
+              </span>
+              <div>
+                <p className="resumo-label">{t("receitas.totalLabel")}</p>
+                <p className="resumo-valor">{formatMoney(totalReceitas)}</p>
               </div>
             </div>
-
-            <button className="btn-nova-receita" onClick={() => setModalAberto(true)}>
-              <Plus size={20} /> {t("receitas.newButton")}
-            </button>
-
-            <section className="grafico-section">
-              <h2>{t("receitas.chartTitle")}</h2>
-              <div className="grafico-container">
-                {receitas.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={dadosGrafico} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <CartesianGrid vertical={false} stroke="rgba(148, 163, 184, 0.12)" strokeDasharray="3 3" />
-                      <XAxis dataKey="nome" stroke="#94a3b8" tickLine={false} axisLine={false} />
-                      <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} />
-                      <Tooltip
-                        cursor={false}
-                        contentStyle={{
-                          backgroundColor: "#0f172a",
-                          border: "1px solid #334155",
-                          borderRadius: "12px",
-                          boxShadow: "0 10px 20px rgba(0,0,0,.25)",
-                        }}
-                        labelStyle={{ color: "#f8fafc" }}
-                        formatter={(value) => [formatMoney(value), t("receitas.chartValueLabel")]}
-                      />
-                      <Bar dataKey="valor" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="grafico-vazio">
-                    <p>{t("receitas.noDataChart")}</p>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <section className="lista-receitas">
-              <h2>{t("receitas.listTitle")}</h2>
-              <div className="lista-container">
-                {receitas.length > 0 ? (
-                  receitas.map((receita) => (
-                    <div key={receita.id} className="receita-item">
-                      <div className="receita-info">
-                        <h3>{receita.nome}</h3>
-                        <p className="receita-data">{formatarData(receita.data)}</p>
-                      </div>
-                      <div className="receita-actions">
-                        <p className="receita-valor">
-                          <Money value={receita.valor} moeda={receita.moeda} />
-                        </p>
-                        <button
-                          className="btn-editar-receita"
-                          onClick={() => abrirModalEdicao(receita)}
-                          title={t("receitas.editTitle")}
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          className="btn-remover-receita"
-                          onClick={() => handleRemoverReceita(receita.id)}
-                          title={t("receitas.deleteTitle")}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="lista-vazia">
-                    <p>{t("receitas.noDataList")}</p>
-                  </div>
-                )}
-              </div>
-            </section>
+            <div className="resumo-item-secundario">
+              <TrendingUp size={20} />
+              <p className="resumo-secundario-label">
+                {t("receitas.countLabel", { count: receitas.length })}
+              </p>
+            </div>
           </div>
 
-          {modalAberto && (
-            <div className="modal-overlay" onClick={fecharModal}>
-              <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-fechar" onClick={fecharModal}>
-                  <X size={24} />
-                </button>
-                <h2>{t("receitas.modalCreate")}</h2>
-                <form className="forma-receita" onSubmit={handleAdicionarReceita}>
-                  <div className="form-group">
-                    <label htmlFor="nome">{t("receitas.formName")}</label>
-                    <input
-                      type="text"
-                      id="nome"
-                      name="nome"
-                      placeholder={t("receitas.formNamePlaceholder")}
-                      autoComplete="off"
-                      value={novaReceita.nome}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="valor">
-                      {t("receitas.formValue")} ({getCurrencySymbol()})
-                    </label>
-                    <input
-                      type="number"
-                      id="valor"
-                      name="valor"
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0"
-                      autoComplete="off"
-                      value={novaReceita.valor}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="data">{t("receitas.formDate")}</label>
-                    <input
-                      type="date"
-                      id="data"
-                      name="data"
-                      autoComplete="off"
-                      value={novaReceita.data}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <button type="submit" className="btn-salvar">
-                    {t("receitas.saveButton")}
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
+          <button className="btn-nova-receita" onClick={() => setModalAberto(true)}>
+            <Plus size={20} /> {t("receitas.newButton")}
+          </button>
 
-          {modalEdicaoAberto && receitaEditando && (
-            <div className="modal-overlay" onClick={fecharModalEdicao}>
-              <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-fechar" onClick={fecharModalEdicao}>
-                  <X size={24} />
-                </button>
-                <h2>{t("receitas.modalEdit")}</h2>
-                <form className="forma-receita" onSubmit={handleEditarReceita}>
-                  <div className="form-group">
-                    <label htmlFor="edit-nome">{t("receitas.formName")}</label>
-                    <input
-                      type="text"
-                      id="edit-nome"
-                      name="nome"
-                      autoComplete="off"
-                      value={receitaEditando.nome}
-                      onChange={handleEdicaoChange}
+          <section className="grafico-section">
+            <h2>{t("receitas.chartTitle")}</h2>
+            <div className="grafico-container">
+              {receitas.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={dadosGrafico} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid vertical={false} stroke="rgba(148, 163, 184, 0.12)" strokeDasharray="3 3" />
+                    <XAxis dataKey="nome" stroke="#94a3b8" tickLine={false} axisLine={false} />
+                    <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} />
+                    <Tooltip
+                      cursor={false}
+                      contentStyle={{
+                        backgroundColor: "#0f172a",
+                        border: "1px solid #334155",
+                        borderRadius: "12px",
+                        boxShadow: "0 10px 20px rgba(0,0,0,.25)",
+                      }}
+                      labelStyle={{ color: "#f8fafc" }}
+                      formatter={(value) => [formatMoney(value), t("receitas.chartValueLabel")]}
                     />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="edit-valor">{t("receitas.formValue")}</label>
-                    <input
-                      type="number"
-                      id="edit-valor"
-                      name="valor"
-                      step="0.01"
-                      min="0"
-                      autoComplete="off"
-                      value={receitaEditando.valor}
-                      onChange={handleEdicaoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="edit-data">{t("receitas.formDate")}</label>
-                    <input
-                      type="date"
-                      id="edit-data"
-                      name="data"
-                      autoComplete="off"
-                      value={receitaEditando.data}
-                      onChange={handleEdicaoChange}
-                    />
-                  </div>
-                  <button type="submit" className="btn-salvar">
-                    {t("receitas.saveEditButton")}
-                  </button>
-                </form>
-              </div>
+                    <Bar dataKey="valor" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="grafico-vazio">
+                  <p>{t("receitas.noDataChart")}</p>
+                </div>
+              )}
             </div>
-          )}
+          </section>
+
+          <section className="lista-receitas">
+            <h2>{t("receitas.listTitle")}</h2>
+            <div className="lista-container">
+              {receitas.length > 0 ? (
+                receitas.map((receita) => (
+                  <div key={receita.id} className="receita-item">
+                    <div className="receita-info">
+                      <h3>{receita.nome}</h3>
+                      <p className="receita-data">{formatarData(receita.data)}</p>
+                    </div>
+                    <div className="receita-actions">
+                      <p className="receita-valor">
+                        <Money value={receita.valor} moeda={receita.moeda} />
+                      </p>
+                      <button
+                        className="btn-editar-receita"
+                        onClick={() => abrirModalEdicao(receita)}
+                        title={t("receitas.editTitle")}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        className="btn-remover-receita"
+                        onClick={() => handleRemoverReceita(receita.id)}
+                        title={t("receitas.deleteTitle")}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="lista-vazia">
+                  <p>{t("receitas.noDataList")}</p>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
-      </main>
-    </div>
+
+        {modalAberto && (
+          <div className="modal-overlay" onClick={fecharModal}>
+            <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-fechar" onClick={fecharModal}>
+                <X size={24} />
+              </button>
+              <h2>{t("receitas.modalCreate")}</h2>
+              <form className="forma-receita" onSubmit={handleAdicionarReceita}>
+                <div className="form-group">
+                  <label htmlFor="nome">{t("receitas.formName")}</label>
+                  <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    placeholder={t("receitas.formNamePlaceholder")}
+                    autoComplete="off"
+                    value={novaReceita.nome}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="valor">
+                    {t("receitas.formValue")} ({getCurrencySymbol()})
+                  </label>
+                  <input
+                    type="number"
+                    id="valor"
+                    name="valor"
+                    placeholder="0.00"
+                    step="0.01"
+                    min="0"
+                    autoComplete="off"
+                    value={novaReceita.valor}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="data">{t("receitas.formDate")}</label>
+                  <input
+                    type="date"
+                    id="data"
+                    name="data"
+                    autoComplete="off"
+                    value={novaReceita.data}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <button type="submit" className="btn-salvar">
+                  {t("receitas.saveButton")}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {modalEdicaoAberto && receitaEditando && (
+          <div className="modal-overlay" onClick={fecharModalEdicao}>
+            <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-fechar" onClick={fecharModalEdicao}>
+                <X size={24} />
+              </button>
+              <h2>{t("receitas.modalEdit")}</h2>
+              <form className="forma-receita" onSubmit={handleEditarReceita}>
+                <div className="form-group">
+                  <label htmlFor="edit-nome">{t("receitas.formName")}</label>
+                  <input
+                    type="text"
+                    id="edit-nome"
+                    name="nome"
+                    autoComplete="off"
+                    value={receitaEditando.nome}
+                    onChange={handleEdicaoChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-valor">{t("receitas.formValue")}</label>
+                  <input
+                    type="number"
+                    id="edit-valor"
+                    name="valor"
+                    step="0.01"
+                    min="0"
+                    autoComplete="off"
+                    value={receitaEditando.valor}
+                    onChange={handleEdicaoChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-data">{t("receitas.formDate")}</label>
+                  <input
+                    type="date"
+                    id="edit-data"
+                    name="data"
+                    autoComplete="off"
+                    value={receitaEditando.data}
+                    onChange={handleEdicaoChange}
+                  />
+                </div>
+                <button type="submit" className="btn-salvar">
+                  {t("receitas.saveEditButton")}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
 

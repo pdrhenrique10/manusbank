@@ -376,23 +376,9 @@ function ContasReceber() {
     }
   };
 
-  if (carregando) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>{t("geral.loading")}</main>
-      </div>
-    );
-  }
-
   const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
 
   return (
-    <div
-      style={{ display: "flex", minHeight: "100vh" }}
-      className={modalAbertoOuEditando ? "modo-modal" : ""}
-    >
-      <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="cr-container">
           <div className="cr-card">
@@ -589,7 +575,6 @@ function ContasReceber() {
           )}
         </div>
       </main>
-    </div>
   );
 }
 

@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Relatorios.css";
+import HistoricoRelatoriosModal from "./HistoricoRelatoriosModal";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
+  FileDown,
   PieChart as PieIcon,
   PiggyBank,
   TrendingDown,
@@ -49,7 +51,7 @@ const CustomTooltip = ({ active, payload, label, formatMoney }) => {
         <p
           key={entry.dataKey || entry.name}
           className="tooltip-value"
-          style={{ color: entry.fill || entry.color }}
+          style={{ color: "#808080" }}
         >
           {entry.name}: {formatMoney(entry.value)}
         </p>
@@ -59,20 +61,14 @@ const CustomTooltip = ({ active, payload, label, formatMoney }) => {
 };
 
 function Relatorios() {
-  // 🛑 CORREÇÃO: formatFromBRL não existe no CurrencyProvider (nunca
-  // existiu — ver CurrencyProvider.jsx). Isso quebrava a tela inteira.
-  // Os números que vêm de /api/relatorios (saldo, receitas, despesas,
-  // resultado, categorias) são AGREGADOS já calculados pelo backend na
-  // moeda atual do usuário, então o formato certo aqui é formatMoney
-  // (formata na moeda atual, sem tentar converter de novo).
   const navigate = useNavigate();
+  const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
   const { formatMoney } = useCurrency();
-  const { t, idioma } = useIdioma(); // 👈 idioma para traduzir o mês
+  const { t, idioma } = useIdioma();
   const [dados, setDados] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
 
-  // Nome do mês traduzido dinamicamente (ex: "julho de 2026", "July 2026")
   const dataInicio = janelaMesAtual().dataInicio;
   const [ano, mes] = dataInicio.split("-");
   const date = new Date(Number(ano), Number(mes) - 1, 1);
@@ -208,8 +204,6 @@ function Relatorios() {
   }, [maiorCategoria, receitas, taxaEconomia, resultado, t, formatMoney]);
 
   return (
-    <div className="rel-wrapper">
-      <Sidebar />
       <main className="rel-main-content">
         <div className="rel-container">
           <header className="rel-header">
@@ -219,6 +213,14 @@ function Relatorios() {
                 {t("relatorios.subtitle")} {nomeMesTraduzido}
               </p>
             </div>
+
+            <button
+              className="rel-btn-exportar"
+              onClick={() => setModalHistoricoAberto(true)}
+            >
+              <FileDown size={15} />
+              Baixar relatórios em PDF
+            </button>
           </header>
 
           {erro && <p className="erro-msg">{erro}</p>}
@@ -272,9 +274,7 @@ function Relatorios() {
 
               {!temDados ? (
                 <section className="rel-empty">
-                  <h2>
-                    {dados?.mensagem || t("relatorios.noData")}
-                  </h2>
+                  <h2>{dados?.mensagem || t("relatorios.noData")}</h2>
                 </section>
               ) : (
                 <div className="rel-dashboard-grid">
@@ -449,8 +449,12 @@ function Relatorios() {
             </>
           )}
         </div>
+
+        <HistoricoRelatoriosModal
+          aberto={modalHistoricoAberto}
+          onFechar={() => setModalHistoricoAberto(false)}
+        />
       </main>
-    </div>
   );
 }
 

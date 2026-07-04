@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "./MetasFinanceiras.css";
-import { Plus, X, CalendarClock, TrendingUp, Trash2, Pencil } from "lucide-react";
+import { Plus, X, CalendarClock, TrendingUp, Trash2, Pencil, Crown } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -31,6 +31,7 @@ function MetasFinanceiras() {
 
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
+  const [modalLimiteAberto, setModalLimiteAberto] = useState(false);
   const [metas, setMetas] = useState([]);
   const [novaMeta, setNovaMeta] = useState({
     titulo: "",
@@ -154,6 +155,16 @@ function MetasFinanceiras() {
     setModalEdicaoAberto(false);
     setMetaEditando(null);
     setErro("");
+  };
+
+  const fecharModalLimite = () => {
+    setModalLimiteAberto(false);
+  };
+
+  const irParaTrocarPlano = () => {
+    setModalLimiteAberto(false);
+    setModalAberto(false);
+    navigate("/trocar-plano");
   };
 
   const abrirModalEdicao = (meta) => {
@@ -285,7 +296,23 @@ function MetasFinanceiras() {
         body: JSON.stringify(body),
       });
 
-      // Fallback offline
+      // 👇 bloqueio de plano (limite de metas do grátis) — isso é uma
+      // recusa INTENCIONAL do backend (403), não uma falha de rede.
+      // NÃO pode cair no fallback offline abaixo, senão o limite de
+      // metas do plano grátis seria contornado silenciosamente. Em vez
+      // de só mostrar texto de erro, abre o modal de upgrade.
+      if (resp.status === 403) {
+        const resultado = await resp.json().catch(() => ({}));
+        if (resultado.limiteAtingido) {
+          setModalLimiteAberto(true);
+        } else {
+          setErro(resultado.erro || t("metasFinanceiras.errorUpdating"));
+        }
+        return;
+      }
+
+      // Fallback offline (aqui sim: falha de rede/servidor de verdade,
+      // não um bloqueio intencional de plano)
       if (!resp.ok) {
         setMetas((prev) => [...prev, novaMetaObj]);
         localStorage.setItem("metasFinanceiras", JSON.stringify([...metas, novaMetaObj]));
@@ -480,23 +507,9 @@ function MetasFinanceiras() {
     }
   };
 
-  if (carregando) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        <Sidebar />
-        <main style={{ flex: 1, padding: "20px" }}>{t("geral.loading")}</main>
-      </div>
-    );
-  }
-
-  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto;
+  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto || modalLimiteAberto;
 
   return (
-    <div
-      style={{ display: "flex", minHeight: "100vh" }}
-      className={modalAbertoOuEditando ? "modo-modal" : ""}
-    >
-      <Sidebar />
       <main style={{ flex: 1, padding: "20px" }}>
         <div className="mf-container">
           <div className="mf-card">
@@ -712,9 +725,34 @@ function MetasFinanceiras() {
               </div>
             </div>
           )}
+
+          {/* Modal de limite de metas atingido (upgrade pra Premium) */}
+          {modalLimiteAberto && (
+            <div className="modal-overlay" onClick={fecharModalLimite}>
+              <div className="modal-conteudo modal-limite" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-fechar" onClick={fecharModalLimite}><X size={24} /></button>
+                <div className="modal-limite-icone">
+                  <Crown size={32} />
+                </div>
+                <h2>Limite de metas atingido</h2>
+                <p className="modal-limite-texto">
+                  O plano grátis permite até 3 metas financeiras. Faça upgrade
+                  para o Premium e crie metas ilimitadas.
+                </p>
+                <div className="modal-limite-acoes">
+                  <button className="modal-limite-btn-cancelar" onClick={fecharModalLimite}>
+                    Agora não
+                  </button>
+                  <button className="modal-limite-btn-premium" onClick={irParaTrocarPlano}>
+                    <Crown size={16} />
+                    Ver plano Premium
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
-    </div>
   );
 }
 
