@@ -1,0 +1,422 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Container Principal (Com as mesmas auras e contenção de blur) */
+.login-page-container {
+  position: relative; /* Essencial para as luzes laterais */
+  overflow: hidden;    /* Evita barras de rolagem indesejadas pelo blur */
+  width: 100%;
+  min-height: 100vh;
+  background: #060d28;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "DM Sans", system-ui, sans-serif;
+  padding: 24px 20px;
+}
+
+/* ==========================================================================
+   ESTILIZAÇÃO DAS AURAS LATERAIS (PREENCHIMENTO DE ESPAÇO)
+   ========================================================================== */
+.login-page-container::before,
+.login-page-container::after {
+  content: "";
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Aura Azul na Esquerda */
+.login-page-container::before {
+  top: 15%;
+  left: -180px;
+  background: #3b82f6;
+}
+
+/* Aura Roxa na Direita */
+.login-page-container::after {
+  bottom: 15%;
+  right: -180px;
+  background: #6366f1;
+}
+
+/* Cartão dividido ao meio (Z-index adicionado para ficar acima do brilho) */
+.login-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  min-height: 550px;
+  background: var(--bg-card, #0a0f25);
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ----- LADO ESQUERDO (Formulário) ----- */
+.login-form-panel {
+  padding: clamp(32px, 5vw, 48px) clamp(24px, 6vw, 56px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-title {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 4vw, 32px);
+  color: var(--text-primary, #ffffff);
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.login-dot {
+  color: #3b82f6;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-secondary, #94a3b8);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* INPUTS */
+.input-field {
+  width: 100%;
+  height: 46px; /* Sutilmente maior para melhor ergonomia */
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
+  background: var(--bg-input, rgba(255, 255, 255, 0.04));
+  color: var(--text-primary, #f1f5f9);
+  font-size: 14.5px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: "DM Sans", sans-serif;
+}
+
+.input-field::placeholder {
+  color: #475569;
+}
+
+.input-field:focus {
+  border-color: #3b82f6;
+  background: var(--bg-input-focus, rgba(255, 255, 255, 0.07));
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+}
+
+/* Campo de senha com ícone */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-password {
+  padding-right: 44px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: var(--text-primary, #f1f5f9);
+}
+
+/* SELECT DE MOEDA */
+select.input-field {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+select.input-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-style: dashed;
+}
+
+select.input-field option {
+  background: #0a0f25;
+  color: #f1f5f9;
+}
+
+.moeda-aviso {
+  font-size: 11.5px;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.moeda-aviso-premium {
+  color: #93c5fd;
+}
+
+/* Botão (Degradê Padrão Otimizado) */
+.login-button {
+  margin-top: 8px;
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-button:hover:not(:disabled) {
+  box-shadow: 0 5px 20px rgba(37, 99, 235, 0.45);
+  opacity: 0.95;
+}
+
+.register-link {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.register-link span {
+  color: #3b82f6;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.register-link span:hover {
+  text-decoration: underline;
+  color: #60a5fa;
+}
+
+/* ----- LADO DIREITO (Logo da Marca) ----- */
+.login-image-panel {
+  background: linear-gradient(145deg, rgba(10, 15, 37, 0.4) 0%, rgba(6, 13, 40, 0.8) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border-left: 1px solid var(--border-soft, rgba(255, 255, 255, 0.05));
+}
+
+.login-image-panel::after {
+  content: "";
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.brand-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  z-index: 1;
+}
+
+.login-logo {
+  width: 110px;
+  height: 110px;
+  border-radius: 24px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.login-brand-name {
+  font-family: "Sora", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+  letter-spacing: -0.3px;
+}
+
+/* BOTÃO VOLTAR PARA HOME */
+.back-home-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px 0;
+  background: transparent;
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.06));
+  border-radius: 12px;
+  color: var(--text-secondary, #94a3b8);
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-home-button:hover {
+  color: var(--text-primary, #f1f5f9);
+  border-color: var(--border-soft, rgba(255, 255, 255, 0.15));
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ==========================================
+   MENSAGENS DE ERRO E SUCESSO
+   ========================================== */
+.message-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.error-box {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.success-box {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.input-error {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.03) !important;
+}
+
+/* LOADING SPINNER DO BOTÃO */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   ANIMAÇÕES DE ENTRADA — RÁPIDAS, SUAVES E PREMIUM
+   ========================================================================== */
+@keyframes naturalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-card,
+.login-title,
+.form-group,
+.login-button,
+.register-link,
+.back-home-button,
+.login-logo,
+.login-brand-name {
+  opacity: 0;
+  animation-name: naturalFadeIn;
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); /* Curva Premium acelerada */
+  animation-fill-mode: forwards;
+}
+
+/* Timings sutilmente em cascata */
+.login-card { animation-delay: 0s; }
+.login-title { animation-delay: 0.08s; }
+.form-group { animation-delay: 0.14s; }
+.login-button { animation-delay: 0.20s; }
+.register-link { animation-delay: 0.26s; }
+.back-home-button { animation-delay: 0.32s; }
+
+/* Lado direito sincronizado */
+.login-logo { animation-delay: 0.20s; }
+.login-brand-name { animation-delay: 0.26s; }
+
+/* ----- RESPONSIVIDADE (MOBILE) ----- */
+@media (max-width: 860px) {
+  .login-page-container::before,
+  .login-page-container::after {
+    width: 280px;
+    height: 280px;
+    filter: blur(90px);
+    opacity: 0.08;
+  }
+  .login-page-container::before { top: 5%; left: -120px; }
+  .login-page-container::after { bottom: 5%; right: -120px; }
+
+  .login-card {
+    grid-template-columns: 1fr;
+    max-width: 460px;
+  }
+  
+  .login-image-panel {
+    display: none;
+  }
+}

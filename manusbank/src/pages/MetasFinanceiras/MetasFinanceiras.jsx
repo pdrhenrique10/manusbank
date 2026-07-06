@@ -1,0 +1,759 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../../components/Sidebar/Sidebar";
+import "./MetasFinanceiras.css";
+import { Plus, X, CalendarClock, TrendingUp, Trash2, Pencil, Crown } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { API_URL } from "../../config/api";
+import { useIdioma } from "../../context/IdiomaContext";
+import { useCurrency } from "../../context/CurrencyProvider";
+
+// Cada meta guarda sua própria moeda (vinda do backend) — exibida sem
+// conversão. Ver CurrencyProvider: formatValorNaMoeda é o padrão pra
+// itens individuais.
+function Money({ value, moeda }) {
+  const { formatValorNaMoeda } = useCurrency();
+  return <span>{formatValorNaMoeda(value, moeda)}</span>;
+}
+
+function MetasFinanceiras() {
+  const navigate = useNavigate();
+  const { t } = useIdioma();
+  const { formatMoney, converterEntreMoedas, currency } = useCurrency();
+
+  const [modalAberto, setModalAberto] = useState(false);
+  const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
+  const [modalLimiteAberto, setModalLimiteAberto] = useState(false);
+  const [metas, setMetas] = useState([]);
+  const [novaMeta, setNovaMeta] = useState({
+    titulo: "",
+    valorAlvo: "",
+    dataMeta: "",
+    descricao: "",
+  });
+  const [metaEditando, setMetaEditando] = useState(null);
+  const [valorAporte, setValorAporte] = useState("");
+  const [erro, setErro] = useState("");
+  const [sucesso, setSucesso] = useState("");
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    carregarMetas(token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate]);
+
+  // 🛑 CORREÇÃO: removemos o antigo comportamento de reconverter e
+  // sobrescrever permanentemente valorAlvo/valorAtual toda vez que a
+  // moeda selecionada mudava. Isso causava dois problemas:
+  //  1) Perda de precisão acumulada (BRL->USD->BRL repetidas vezes
+  //     nunca volta ao valor exato, por causa de arredondamento).
+  //  2) Inconsistência entre sessões: como a conversão nunca era salva
+  //     no backend, ao recarregar a página os valores originais
+  //     voltavam e o processo de reconversão recomeçava do zero.
+  // Agora cada meta simplesmente guarda a moeda em que foi criada, e a
+  // exibição usa formatValorNaMoeda (sem tocar no valor armazenado).
+  // Trocar a moeda no seletor não deve mexer nos valores das metas —
+  // só na moeda de itens NOVOS criados dali em diante.
+
+  async function carregarMetas(token) {
+    try {
+      setCarregando(true);
+      setErro("");
+      setSucesso("");
+
+      const resp = await fetch(`${API_URL}/api/metas`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (resp.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      }
+
+      if (!resp.ok) {
+        const metasLocal = JSON.parse(localStorage.getItem("metasFinanceiras") || "[]");
+        setMetas(metasLocal);
+        setCarregando(false);
+        return;
+      }
+
+      const dados = await resp.json();
+
+      // 👇 preserva a moeda de cada meta tal como veio do backend,
+      // sem reconverter nada.
+      const metasNormalizadas = (dados || []).map((meta) => ({
+        ...meta,
+        valorAlvo: Number(meta.valorAlvo) || 0,
+        valorAtual: Number(meta.valorAtual) || 0,
+        moeda: meta.moeda || "BRL",
+      }));
+
+      setMetas(metasNormalizadas);
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metasNormalizadas));
+    } catch (e) {
+      console.error("Erro ao carregar metas:", e);
+      const metasLocal = JSON.parse(localStorage.getItem("metasFinanceiras") || "[]");
+      setMetas(metasLocal);
+      setErro(t("metasFinanceiras.errorLoading"));
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  useEffect(() => {
+    if (sucesso) {
+      const timer = setTimeout(() => setSucesso(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [sucesso]);
+
+  // Progresso (%) é adimensional — não precisa de conversão de moeda,
+  // só compara valorAtual/valorAlvo dentro da MESMA moeda do item.
+  const dadosGrafico = metas.map((m) => {
+    const objetivo = Number(m.valorAlvo) || 0;
+    const atual = Number(m.valorAtual) || 0;
+    const progresso = objetivo > 0 ? Math.min(100, (atual / objetivo) * 100) : 0;
+    const falta = 100 - progresso;
+    return {
+      nome: m.titulo.length > 15 ? m.titulo.substring(0, 15) + "..." : m.titulo,
+      progresso,
+      falta,
+    };
+  });
+
+  const metasConcluidas = metas.filter((m) => {
+    const objetivo = Number(m.valorAlvo) || 0;
+    const atual = Number(m.valorAtual) || 0;
+    return objetivo > 0 && atual >= objetivo;
+  }).length;
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNovaMeta((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEdicaoChange = (e) => {
+    const { name, value } = e.target;
+    setMetaEditando((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const fecharModalEdicao = () => {
+    setModalEdicaoAberto(false);
+    setMetaEditando(null);
+    setErro("");
+  };
+
+  const fecharModalLimite = () => {
+    setModalLimiteAberto(false);
+  };
+
+  const irParaTrocarPlano = () => {
+    setModalLimiteAberto(false);
+    setModalAberto(false);
+    navigate("/trocar-plano");
+  };
+
+  const abrirModalEdicao = (meta) => {
+    setMetaEditando({
+      id: meta.id,
+      titulo: meta.titulo,
+      valorAlvo: meta.valorAlvo,
+      dataMeta: String(meta.dataMeta || "").substring(0, 10),
+      descricao: meta.descricao || "",
+    });
+    setModalEdicaoAberto(true);
+  };
+
+  const handleEditarMeta = async (e) => {
+    e.preventDefault();
+    if (!metaEditando) return;
+
+    setErro("");
+    setSucesso("");
+
+    if (!metaEditando.titulo || !metaEditando.valorAlvo || !metaEditando.dataMeta) {
+      setErro(t("metasFinanceiras.errorAllFields"));
+      return;
+    }
+
+    const valorNumero = parseFloat(String(metaEditando.valorAlvo).replace(",", "."));
+    if (isNaN(valorNumero) || valorNumero <= 0) {
+      setErro(t("metasFinanceiras.errorInvalidValue"));
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    // 👇 não mandamos "moeda" aqui de propósito: o PUT /api/metas/:id
+    // aceita um campo moeda no body e, se ausente, mantém a moeda
+    // original da meta (meta.moeda || "BRL"). Não mandar o campo é
+    // como garantimos que a moeda não muda numa edição de valor/data.
+    try {
+      const resp = await fetch(`${API_URL}/api/metas/${metaEditando.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          titulo: metaEditando.titulo,
+          valorAlvo: valorNumero,
+          dataMeta: metaEditando.dataMeta,
+          descricao: metaEditando.descricao,
+        }),
+      });
+
+      const resultado = await resp.json();
+
+      if (!resp.ok || !resultado.sucesso) {
+        setErro(resultado.erro || t("metasFinanceiras.errorUpdating"));
+        return;
+      }
+
+      const metaAtualizada = { ...resultado.meta, moeda: resultado.meta.moeda || "BRL" };
+      const metasAtualizadas = metas.map((m) =>
+        m.id === metaAtualizada.id ? metaAtualizada : m
+      );
+      setMetas(metasAtualizadas);
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metasAtualizadas));
+      setSucesso(t("metasFinanceiras.updatedSuccess"));
+      fecharModalEdicao();
+    } catch (err) {
+      console.error("Erro ao editar meta:", err);
+      setErro(t("metasFinanceiras.errorUpdating"));
+    }
+  };
+
+  const handleAdicionarMeta = async (e) => {
+    e.preventDefault();
+    setErro("");
+    setSucesso("");
+
+    if (!novaMeta.titulo || !novaMeta.valorAlvo || !novaMeta.dataMeta) {
+      setErro(t("metasFinanceiras.errorAllFields"));
+      return;
+    }
+
+    const valorNumero = parseFloat(String(novaMeta.valorAlvo).replace(",", "."));
+    if (isNaN(valorNumero) || valorNumero <= 0) {
+      setErro(t("metasFinanceiras.errorInvalidValue"));
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    // 👇 a meta é criada na moeda ATUALMENTE selecionada — igual ao
+    // padrão de transações/contas. Mandamos "moeda: currency" porque
+    // (diferente das outras entidades) o endpoint POST /api/metas
+    // aceita moeda vinda do body em vez de decidir sozinho — então
+    // seguimos o contrato que o próprio backend espera aqui.
+    const novaMetaObj = {
+      id: Date.now(),
+      titulo: novaMeta.titulo,
+      valorAlvo: valorNumero,
+      valorAtual: 0,
+      dataMeta: novaMeta.dataMeta,
+      descricao: novaMeta.descricao,
+      moeda: currency,
+    };
+
+    try {
+      const body = {
+        titulo: novaMeta.titulo,
+        valorAlvo: valorNumero,
+        dataMeta: novaMeta.dataMeta,
+        descricao: novaMeta.descricao,
+      };
+
+      const resp = await fetch(`${API_URL}/api/metas`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      // 👇 bloqueio de plano (limite de metas do grátis) — isso é uma
+      // recusa INTENCIONAL do backend (403), não uma falha de rede.
+      // NÃO pode cair no fallback offline abaixo, senão o limite de
+      // metas do plano grátis seria contornado silenciosamente. Em vez
+      // de só mostrar texto de erro, abre o modal de upgrade.
+      if (resp.status === 403) {
+        const resultado = await resp.json().catch(() => ({}));
+        if (resultado.limiteAtingido) {
+          setModalLimiteAberto(true);
+        } else {
+          setErro(resultado.erro || t("metasFinanceiras.errorUpdating"));
+        }
+        return;
+      }
+
+      // Fallback offline (aqui sim: falha de rede/servidor de verdade,
+      // não um bloqueio intencional de plano)
+      if (!resp.ok) {
+        setMetas((prev) => [...prev, novaMetaObj]);
+        localStorage.setItem("metasFinanceiras", JSON.stringify([...metas, novaMetaObj]));
+        setSucesso(t("metasFinanceiras.savedLocally"));
+        setModalAberto(false);
+        setNovaMeta({ titulo: "", valorAlvo: "", dataMeta: "", descricao: "" });
+        return;
+      }
+
+      const criada = await resp.json();
+      const metaComMoeda = { ...criada, moeda: criada.moeda || currency };
+      setMetas((prev) => [...prev, metaComMoeda]);
+      localStorage.setItem("metasFinanceiras", JSON.stringify([...metas, metaComMoeda]));
+      setNovaMeta({ titulo: "", valorAlvo: "", dataMeta: "", descricao: "" });
+      setModalAberto(false);
+      setSucesso(t("metasFinanceiras.savedSuccess"));
+    } catch (e) {
+      console.error("Erro ao salvar meta:", e);
+      setMetas((prev) => [...prev, novaMetaObj]);
+      localStorage.setItem("metasFinanceiras", JSON.stringify([...metas, novaMetaObj]));
+      setSucesso(t("metasFinanceiras.savedOffline"));
+      setModalAberto(false);
+      setNovaMeta({ titulo: "", valorAlvo: "", dataMeta: "", descricao: "" });
+    }
+  };
+
+  const handleAportar = async (metaId) => {
+    if (!valorAporte) {
+      setErro(t("metasFinanceiras.errorAporteEmpty"));
+      return;
+    }
+
+    const valorNumero = parseFloat(String(valorAporte).replace(",", "."));
+    if (isNaN(valorNumero) || valorNumero <= 0) {
+      setErro(t("metasFinanceiras.errorInvalidValue"));
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    // 🛑 CORREÇÃO: o backend (/api/metas/:id/aportar) NÃO faz nenhuma
+    // conversão — ele só soma o valor recebido direto em valorAtual,
+    // ignorando qualquer campo "moeda" do body. Isso significa que se
+    // a meta foi criada em USD e o usuário está com EUR selecionado no
+    // momento do aporte, mandar o valor digitado (em EUR) faria o
+    // backend somar EUR puro dentro de um valorAtual que é em USD —
+    // corrompendo silenciosamente o progresso da meta.
+    // Por isso convertemos o valor digitado para a moeda ORIGINAL da
+    // meta ANTES de mandar pro backend.
+    const meta = metas.find((m) => m.id === metaId);
+    const moedaDaMeta = meta?.moeda || "BRL";
+    const valorNaMoedaDaMeta = converterEntreMoedas(valorNumero, currency, moedaDaMeta);
+
+    try {
+      const resp = await fetch(`${API_URL}/api/metas/${metaId}/aportar`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ valor: valorNaMoedaDaMeta }),
+      });
+
+      if (!resp.ok) {
+        setMetas((prev) =>
+          prev.map((m) =>
+            m.id === metaId ? { ...m, valorAtual: (m.valorAtual || 0) + valorNaMoedaDaMeta } : m
+          )
+        );
+        localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
+          m.id === metaId ? { ...m, valorAtual: (m.valorAtual || 0) + valorNaMoedaDaMeta } : m
+        )));
+        setSucesso(t("metasFinanceiras.aporteSuccessLocal", { valor: formatMoney(valorNumero) }));
+        setValorAporte("");
+        return;
+      }
+
+      const { meta: metaAtualizada } = await resp.json();
+      const metaComMoeda = { ...metaAtualizada, moeda: metaAtualizada.moeda || moedaDaMeta };
+      setMetas((prev) => prev.map((m) => (m.id === metaComMoeda.id ? metaComMoeda : m)));
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
+        m.id === metaComMoeda.id ? metaComMoeda : m
+      )));
+      setSucesso(t("metasFinanceiras.aporteSuccess", { valor: formatMoney(valorNumero) }));
+      setValorAporte("");
+    } catch (e) {
+      console.error("Erro ao aportar na meta:", e);
+      setErro(t("metasFinanceiras.errorAporte"));
+    }
+  };
+
+  const handleTirarAporte = async (metaId) => {
+    if (!valorAporte) {
+      setErro(t("metasFinanceiras.errorDesaporteEmpty"));
+      return;
+    }
+
+    const valorNumero = parseFloat(String(valorAporte).replace(",", "."));
+    if (isNaN(valorNumero) || valorNumero <= 0) {
+      setErro(t("metasFinanceiras.errorInvalidValue"));
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    // mesmo raciocínio do handleAportar: converter para a moeda ORIGINAL
+    // da meta antes de mandar, já que o backend não converte nada.
+    const meta = metas.find((m) => m.id === metaId);
+    const moedaDaMeta = meta?.moeda || "BRL";
+    const valorNaMoedaDaMeta = converterEntreMoedas(valorNumero, currency, moedaDaMeta);
+
+    try {
+      const resp = await fetch(`${API_URL}/api/metas/${metaId}/desaportar`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ valor: valorNaMoedaDaMeta }),
+      });
+
+      if (!resp.ok) {
+        setMetas((prev) =>
+          prev.map((m) =>
+            m.id === metaId
+              ? { ...m, valorAtual: Math.max(0, (m.valorAtual || 0) - valorNaMoedaDaMeta) }
+              : m
+          )
+        );
+        localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
+          m.id === metaId ? { ...m, valorAtual: Math.max(0, (m.valorAtual || 0) - valorNaMoedaDaMeta) } : m
+        )));
+        setSucesso(t("metasFinanceiras.desaporteSuccessLocal", { valor: formatMoney(valorNumero) }));
+        setValorAporte("");
+        return;
+      }
+
+      const { meta: metaAtualizada } = await resp.json();
+      const metaComMoeda = { ...metaAtualizada, moeda: metaAtualizada.moeda || moedaDaMeta };
+      setMetas((prev) => prev.map((m) => (m.id === metaComMoeda.id ? metaComMoeda : m)));
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metas.map((m) =>
+        m.id === metaComMoeda.id ? metaComMoeda : m
+      )));
+      setSucesso(t("metasFinanceiras.desaporteSuccess", { valor: formatMoney(valorNumero) }));
+      setValorAporte("");
+    } catch (e) {
+      console.error("Erro ao tirar aporte da meta:", e);
+      setErro(t("metasFinanceiras.errorDesaporte"));
+    }
+  };
+
+  const handleRemoverMeta = async (id) => {
+    const confirmar = window.confirm(t("metasFinanceiras.confirmDelete"));
+    if (!confirmar) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_URL}/api/metas/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const dados = await resp.json();
+
+      if (!resp.ok || !dados.sucesso) {
+        setMetas((prev) => prev.filter((m) => m.id !== id));
+        localStorage.setItem("metasFinanceiras", JSON.stringify(metas.filter((m) => m.id !== id)));
+        setSucesso(t("metasFinanceiras.deletedLocally"));
+        return;
+      }
+
+      setMetas((prev) => prev.filter((m) => m.id !== id));
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metas.filter((m) => m.id !== id)));
+      setSucesso(t("metasFinanceiras.deletedSuccess"));
+    } catch (e) {
+      console.error("Erro ao remover meta:", e);
+      setMetas((prev) => prev.filter((m) => m.id !== id));
+      localStorage.setItem("metasFinanceiras", JSON.stringify(metas.filter((m) => m.id !== id)));
+      setSucesso(t("metasFinanceiras.deletedLocally"));
+    }
+  };
+
+  const modalAbertoOuEditando = modalAberto || modalEdicaoAberto || modalLimiteAberto;
+
+  return (
+      <main style={{ flex: 1, padding: "20px" }}>
+        <div className="mf-container">
+          <div className="mf-card">
+            <header className="mf-header">
+              <h1>{t("metasFinanceiras.title")}</h1>
+              <p className="subtitle">{t("metasFinanceiras.subtitle")}</p>
+            </header>
+
+            {erro && <p className="erro-msg">{erro}</p>}
+            {sucesso && <p className="sucesso-msg">{sucesso}</p>}
+
+            <div className="mf-resumo-card">
+              <div className="mf-resumo-item">
+                <TrendingUp size={24} />
+                <div>
+                  <p className="mf-resumo-label">{t("metasFinanceiras.totalLabel")}</p>
+                  <p className="mf-resumo-valor">{metas.length}</p>
+                </div>
+              </div>
+              <div className="mf-resumo-item-secundario">
+                <CalendarClock size={20} />
+                <p className="mf-resumo-secundario-label">
+                  {t("metasFinanceiras.completedLabel", { count: metasConcluidas })}
+                </p>
+              </div>
+            </div>
+
+            <button className="mf-btn-nova" onClick={() => setModalAberto(true)}>
+              <Plus size={20} /> {t("metasFinanceiras.newButton")}
+            </button>
+
+            <section className="mf-grafico-section">
+              <h2>{t("metasFinanceiras.chartTitle")}</h2>
+              <div className="mf-grafico-container" style={{ width: '100%', height: '250px' }}>
+                {carregando ? (
+                  <div className="mf-grafico-vazio"><p>{t("metasFinanceiras.loadingChart")}</p></div>
+                ) : metas.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosGrafico}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="nome" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" domain={[0, 100]} />
+                      <Tooltip
+                        contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                        labelStyle={{ color: "#f8fafc" }}
+                        formatter={(value, name) => {
+                          if (name === "progresso") return [`${Number(value).toFixed(1)}%`, t("metasFinanceiras.chartProgress")];
+                          if (name === "falta") return [`${Number(value).toFixed(1)}%`, t("metasFinanceiras.chartRemaining")];
+                          return [value, name];
+                        }}
+                        cursor={false}
+                      />
+                      <Bar dataKey="progresso" name={t("metasFinanceiras.chartProgress")} fill="#22c55e" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="falta" name={t("metasFinanceiras.chartRemaining")} fill="#ef4444" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="mf-grafico-vazio"><p>{t("metasFinanceiras.noDataChart")}</p></div>
+                )}
+              </div>
+            </section>
+
+            <section className="mf-lista">
+              <h2>{t("metasFinanceiras.listTitle")}</h2>
+              <div className="mf-lista-container">
+                {carregando ? (
+                  <div className="mf-lista-vazia"><p>{t("metasFinanceiras.loadingList")}</p></div>
+                ) : metas.length > 0 ? (
+                  metas.map((meta) => {
+                    const objetivo = Number(meta.valorAlvo) || 0;
+                    const atual = Number(meta.valorAtual) || 0;
+                    const progresso = objetivo > 0 ? Math.min(100, (atual / objetivo) * 100) : 0;
+
+                    let corBarra;
+                    if (progresso >= 100) corBarra = "linear-gradient(90deg, #16a34a, #22c55e)";
+                    else if (progresso >= 66) corBarra = "linear-gradient(90deg, #16a34a, #22c55e)";
+                    else if (progresso >= 33) corBarra = "linear-gradient(90deg, #f59e0b, #f97316)";
+                    else corBarra = "linear-gradient(90deg, #ef4444, #f97373)";
+
+                    const hoje = new Date();
+                    const dataMetaDate = meta.dataMeta ? new Date(meta.dataMeta + "T00:00:00") : null;
+                    const hojeSoData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+                    const metaAlcancada = progresso >= 100;
+                    const metaAtrasada = !metaAlcancada && dataMetaDate && dataMetaDate < hojeSoData;
+
+                    let statusLabel = "";
+                    let statusClass = "meta-status";
+                    if (metaAlcancada) {
+                      statusLabel = t("metasFinanceiras.statusCompleted");
+                      statusClass += " concluida";
+                    } else if (metaAtrasada) {
+                      statusLabel = t("metasFinanceiras.statusLate");
+                      statusClass += " atrasada";
+                    } else {
+                      statusLabel = t("metasFinanceiras.statusInProgress");
+                      statusClass += " em-progresso";
+                    }
+
+                    return (
+                      <div key={meta.id} className="mf-item">
+                        <div className="mf-info">
+                          <h3>{meta.titulo}</h3>
+                          <p className="mf-data">
+                            {t("metasFinanceiras.targetDate")}:{" "}
+                            {meta.dataMeta
+                              ? new Date(meta.dataMeta + "T00:00:00").toLocaleDateString("pt-BR")
+                              : "-"}
+                          </p>
+                          {meta.descricao && <p className="mf-descricao">{meta.descricao}</p>}
+                          <p className="mf-valores">
+                            <Money value={atual} moeda={meta.moeda} /> {t("metasFinanceiras.of")}{" "}
+                            <Money value={objetivo} moeda={meta.moeda} />
+                          </p>
+                          <div className="meta-progress">
+                            <div
+                              className="meta-progress-bar"
+                              style={{ width: `${progresso}%`, background: corBarra }}
+                            />
+                          </div>
+                          <p className={statusClass}>{statusLabel}</p>
+                        </div>
+                        <div className="mf-acoes">
+                          <div className="mf-aporte-remover">
+                            <input
+                              type="number"
+                              placeholder={t("metasFinanceiras.aportePlaceholder")}
+                              className="mf-input-aporte"
+                              value={valorAporte}
+                              onChange={(e) => setValorAporte(e.target.value)}
+                              min="0"
+                              step="0.01"
+                            />
+                            <div className="mf-botoes-aporte">
+                              <button className="mf-btn-aporte" onClick={() => handleAportar(meta.id)}>
+                                {t("metasFinanceiras.aporteButton")}
+                              </button>
+                              <button className="mf-btn-tirar" onClick={() => handleTirarAporte(meta.id)}>
+                                {t("metasFinanceiras.desaporteButton")}
+                              </button>
+                              <button className="mf-btn-editar" onClick={() => abrirModalEdicao(meta)} title={t("metasFinanceiras.editTitle")}>
+                                <Pencil size={16} />
+                              </button>
+                              <button className="mf-btn-remover" onClick={() => handleRemoverMeta(meta.id)} title={t("metasFinanceiras.deleteTitle")}>
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="mf-lista-vazia"><p>{t("metasFinanceiras.noDataList")}</p></div>
+                )}
+              </div>
+            </section>
+          </div>
+
+          {/* Modal de criação */}
+          {modalAberto && (
+            <div className="modal-overlay" onClick={() => setModalAberto(false)}>
+              <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-fechar" onClick={() => setModalAberto(false)}><X size={24} /></button>
+                <h2>{t("metasFinanceiras.modalCreate")}</h2>
+                <form className="mf-form" onSubmit={handleAdicionarMeta}>
+                  <div className="form-group">
+                    <label htmlFor="titulo">{t("metasFinanceiras.formTitle")}</label>
+                    <input type="text" id="titulo" name="titulo" placeholder={t("metasFinanceiras.formTitlePlaceholder")} autoComplete="off" value={novaMeta.titulo} onChange={handleInputChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="valorAlvo">{t("metasFinanceiras.formTargetValue")}</label>
+                    <input type="number" id="valorAlvo" name="valorAlvo" placeholder="0.00" step="0.01" min="0" autoComplete="off" value={novaMeta.valorAlvo} onChange={handleInputChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="dataMeta">{t("metasFinanceiras.formTargetDate")}</label>
+                    <input type="date" id="dataMeta" name="dataMeta" autoComplete="off" value={novaMeta.dataMeta} onChange={handleInputChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="descricao">{t("metasFinanceiras.formDescription")}</label>
+                    <input type="text" id="descricao" name="descricao" placeholder={t("metasFinanceiras.formDescriptionPlaceholder")} autoComplete="off" value={novaMeta.descricao} onChange={handleInputChange} />
+                  </div>
+                  <button type="submit" className="btn-salvar">{t("metasFinanceiras.saveButton")}</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de edição */}
+          {modalEdicaoAberto && metaEditando && (
+            <div className="modal-overlay" onClick={fecharModalEdicao}>
+              <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-fechar" onClick={fecharModalEdicao}><X size={24} /></button>
+                <h2>{t("metasFinanceiras.modalEdit")}</h2>
+                <form className="mf-form" onSubmit={handleEditarMeta}>
+                  <div className="form-group">
+                    <label htmlFor="edit-titulo">{t("metasFinanceiras.formTitle")}</label>
+                    <input type="text" id="edit-titulo" name="titulo" autoComplete="off" value={metaEditando.titulo} onChange={handleEdicaoChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-valorAlvo">{t("metasFinanceiras.formTargetValue")}</label>
+                    <input type="number" id="edit-valorAlvo" name="valorAlvo" step="0.01" min="0" autoComplete="off" value={metaEditando.valorAlvo} onChange={handleEdicaoChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-dataMeta">{t("metasFinanceiras.formTargetDate")}</label>
+                    <input type="date" id="edit-dataMeta" name="dataMeta" autoComplete="off" value={metaEditando.dataMeta} onChange={handleEdicaoChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-descricao">{t("metasFinanceiras.formDescription")}</label>
+                    <input type="text" id="edit-descricao" name="descricao" autoComplete="off" value={metaEditando.descricao} onChange={handleEdicaoChange} />
+                  </div>
+                  <button type="submit" className="btn-salvar">{t("metasFinanceiras.saveEditButton")}</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de limite de metas atingido (upgrade pra Premium) */}
+          {modalLimiteAberto && (
+            <div className="modal-overlay" onClick={fecharModalLimite}>
+              <div className="modal-conteudo modal-limite" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-fechar" onClick={fecharModalLimite}><X size={24} /></button>
+                <div className="modal-limite-icone">
+                  <Crown size={32} />
+                </div>
+                <h2>Limite de metas atingido</h2>
+                <p className="modal-limite-texto">
+                  O plano grátis permite até 3 metas financeiras. Faça upgrade
+                  para o Premium e crie metas ilimitadas.
+                </p>
+                <div className="modal-limite-acoes">
+                  <button className="modal-limite-btn-cancelar" onClick={fecharModalLimite}>
+                    Agora não
+                  </button>
+                  <button className="modal-limite-btn-premium" onClick={irParaTrocarPlano}>
+                    <Crown size={16} />
+                    Ver plano Premium
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+  );
+}
+
+export default MetasFinanceiras;

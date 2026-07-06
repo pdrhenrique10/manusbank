@@ -1,0 +1,335 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght=400;600;700&family=DM+Sans:wght=400;500;600&display=swap');
+
+/* ==========================================================================
+   RESET ESCOPADO — Consistência isolada sem vazar para o app
+   ========================================================================== */
+.planos-page,
+.planos-page * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   VARIÁVEIS LOCAIS E CONTÊINER PRINCIPAL
+   ========================================================================== */
+.planos-page {
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --border-soft: rgba(255, 255, 255, 0.1);
+  --bg-card: #0a0f25;
+  --bg-input: rgba(255, 255, 255, 0.05);
+  --bg-input-focus: rgba(255, 255, 255, 0.08);
+
+  position: relative; /* Necessário para posicionar os brilhos de fundo */
+  overflow: hidden;    /* Evita que o blur crie barras de rolagem estranhas */
+  width: 100%;
+  min-height: 100vh;
+  background: #060d28;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  padding: 48px 20px;
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+/* ==========================================================================
+   ESTILIZAÇÃO DAS AURAS LATERAIS (PREENCHIMENTO DE ESPAÇO)
+   ========================================================================== */
+.bg-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  filter: blur(120px); /* Cria o efeito de fumaça/luz suave */
+  opacity: 0.15;        /* Intensidade sutil para não distrair a leitura */
+  pointer-events: none; /* Garante que o usuário consiga clicar na tela normalmente */
+  z-index: 0;           /* Fica atrás de todo o conteúdo de texto e cartões */
+}
+
+/* Brilho Azul/Ciano na Esquerda */
+.bg-glow-left {
+  top: 20%;
+  left: -150px;
+  background: #3b82f6;
+}
+
+/* Brilho Roxo/Indigo na Direita */
+.bg-glow-right {
+  bottom: 20%;
+  right: -150px;
+  background: #6366f1;
+}
+
+/* Garante que os elementos de conteúdo fiquem por cima do brilho */
+.trocar-plano-header,
+.erro-msg,
+.trocar-plano-grid,
+.trocar-plano-back-button {
+  position: relative;
+  z-index: 1;
+}
+/* ----- CABEÇALHO ----- */
+.planos-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  max-width: 700px;
+}
+
+.planos-header h1 {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 5vw, 34px); /* Tamanho fluido */
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.planos-dot {
+  color: #3b82f6;
+}
+
+.planos-header p {
+  font-size: clamp(14px, 2.5vw, 15px);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ----- GRID DE PLANOS ----- */
+.planos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  max-width: 780px;
+}
+
+/* ----- CARD DE PLANO ----- */
+.plano-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+  padding: clamp(28px, 5vw, 40px) clamp(20px, 4vw, 32px);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+@media (hover: hover) {
+  .plano-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.plano-card h2 {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+
+.plano-preco {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 32px);
+  color: var(--text-primary);
+  margin-bottom: 28px;
+}
+
+.plano-preco span {
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-left: 4px;
+}
+
+/* CARD PREMIUM (DESTAQUE) */
+.plano-card-destaque {
+  border-color: #3b82f6;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, var(--bg-card) 100%);
+}
+
+@media (hover: hover) {
+  .plano-card-destaque:hover {
+    box-shadow: 0 25px 60px rgba(37, 99, 235, 0.20);
+    border-color: #60a5fa;
+  }
+}
+
+/* ----- LISTA DE FEATURES ----- */
+.plano-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 32px;
+  flex-grow: 1;
+}
+
+.plano-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.icon-check {
+  color: #22c55e;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.icon-x {
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* ----- BOTÕES DOS CARDS ----- */
+.plano-btn {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 12px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.plano-btn-primario {
+  background: linear-gradient(90deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+}
+
+@media (hover: hover) {
+  .plano-btn-primario:hover {
+    box-shadow: 0 5px 20px rgba(37, 99, 235, 0.45);
+    opacity: 0.95;
+  }
+}
+
+.plano-btn-secundario {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
+@media (hover: hover) {
+  .plano-btn-secundario:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+/* ----- BOTÃO VOLTAR PARA HOME ----- */
+.back-home-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  margin: 12px auto 0 auto;
+  padding: 10px 22px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 30px;
+  color: #64748b;
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+@media (hover: hover) {
+  .back-home-button:hover {
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+/* ==========================================================================
+   ANIMAÇÕES DE ENTRADA OTIMIZADAS, RÁPIDAS E SUAVES (CASCATA ACELERADA)
+   ========================================================================== */
+
+@keyframes planosFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.planos-header,
+.planos-moeda-select,
+.planos-grid,
+.plano-card,
+.back-home-button {
+  opacity: 0;
+  animation-name: planosFadeInUp;
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); /* Curva Premium */
+  animation-fill-mode: forwards;
+}
+
+.planos-header { animation-delay: 0s; }
+.planos-moeda-select { animation-delay: 0.08s; }
+.planos-grid { animation-delay: 0.16s; }
+
+/* Cascata interna dos cartões dentro do grid */
+.plano-card:nth-child(1) { animation-delay: 0.24s; }
+.plano-card:nth-child(2) { animation-delay: 0.32s; }
+
+.back-home-button { animation-delay: 0.40s; }
+
+/* Acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  .planos-header, .planos-moeda-select, .planos-grid, .plano-card, .back-home-button {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ----- RESPONSIVIDADE (MOBILE E ADAPTAÇÃO DAS LATERAIS) ----- */
+@media (max-width: 860px) {
+  .planos-page {
+    padding: 40px 16px;
+    gap: 24px;
+  }
+
+  .bg-glow {
+    width: 280px;
+    height: 280px;
+    filter: blur(90px);
+    opacity: 0.08;
+  }
+  .bg-glow-left { top: 5%; left: -120px; }
+  .bg-glow-right { bottom: 5%; right: -120px; }
+
+  .planos-grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+}

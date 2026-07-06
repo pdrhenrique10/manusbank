@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1783183745117,
+    "nome": "Pedro",
+    "email": "pedro@gmail.com",
+    "senha": "2702cb34ee041711b9df0c67a8d5c9de02110c80e3fc966ba8341456dbc9ef2b",
+    "plano": "premium",
+    "moedaAtual": "BRL",
+    "saldo": 0,
+    "transacoes": [],
+    "contasReceber": [],
+    "nextContaReceberId": 1,
+    "contasPagar": [],
+    "nextContaPagarId": 1,
+    "metas": [],
+    "nextMetaId": 1,
+    "criadoEm": "2026-07-04T16:49:05.117Z"
+  },
+  {
+    "id": 1783183814167,
+    "nome": "pedro2",
+    "email": "pedro2@gmail.com",
+    "senha": "7452017ead9572a3e8395f4dd2af86478440cfaccdefeefc0d9742cd08a22d14",
+    "plano": "gratis",
+    "moedaAtual": "BRL",
+    "saldo": 0,
+    "transacoes": [],
+    "contasReceber": [],
+    "nextContaReceberId": 1,
+    "contasPagar": [],
+    "nextContaPagarId": 1,
+    "metas": [
+      {
+        "id": 1,
+        "titulo": "1",
+        "valorAlvo": 1,
+        "valorAtual": 0,
+        "dataMeta": "2026-08-07",
+        "descricao": "",
+        "moeda": "BRL",
+        "dataCriacao": "2026-07-04"
+      },
+      {
+        "id": 2,
+        "titulo": "2",
+        "valorAlvo": 2,
+        "valorAtual": 0,
+        "dataMeta": "2026-08-08",
+        "descricao": "",
+        "moeda": "BRL",
+        "dataCriacao": "2026-07-04"
+      },
+      {
+        "id": 3,
+        "titulo": "3",
+        "valorAlvo": 3,
+        "valorAtual": 0,
+        "dataMeta": "2026-09-09",
+        "descricao": "",
+        "moeda": "BRL",
+        "dataCriacao": "2026-07-04"
+      }
+    ],
+    "nextMetaId": 4,
+    "criadoEm": "2026-07-04T16:50:14.167Z"
+  }
+]

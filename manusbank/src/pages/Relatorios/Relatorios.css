@@ -1,0 +1,432 @@
+/* ==========================================================================
+   VARIÁVEIS DE DESIGN - MODO ESCURO (PADRÃO)
+   ========================================================================== */
+:root {
+  --bg-main: #070a12;
+  --bg-card: #0d1423;
+  --bg-card-hover: #121c31;
+  --border-glow: #1e293b;
+  --border-glow-hover: #334155;
+  --border-soft: rgba(255, 255, 255, 0.04);
+  
+  /* Cores de Texto */
+  --text-primary: #f8fafc;
+  --text-secondary: #64748b;
+  --text-insight: #cbd5e1;
+  
+  /* Semântica Sutil */
+  --accent-blue: #38bdf8;
+  --accent-green: #4ade80;
+  --accent-red: #f87171;
+  --accent-purple: #c084fc;
+  
+  /* Sombras e Elementos */
+  --glass-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  --bg-toggle: rgba(0, 0, 0, 0.3);
+  --bg-toggle-active: rgba(255, 255, 255, 0.05);
+  --bg-insight-item: rgba(0, 0, 0, 0.2);
+  --tooltip-bg: #060913;
+}
+
+/* ==========================================================================
+   INVERSÃO DE TEMA - MODO CLARO (LIGHT MODE)
+   ========================================================================== */
+.light, :root[data-theme="light"] {
+  --bg-main: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --border-glow: #e2e8f0;
+  --border-glow-hover: #cbd5e1;
+  --border-soft: rgba(148, 163, 184, 0.15);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-insight: #334155;
+  
+  --accent-blue: #0284c7;
+  --accent-green: #16a34a;
+  --accent-red: #dc2626;
+  --accent-purple: #7c3aed;
+  
+  --glass-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+  --bg-toggle: #e2e8f0;
+  --bg-toggle-active: #ffffff;
+  --bg-insight-item: #f8fafc;
+  --tooltip-bg: #ffffff;
+}
+
+/* ==========================================================================
+   ESTRUTURA DA PÁGINA E ANIMAÇÕES
+   ========================================================================== */
+.rel-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg-main);
+  transition: background-color 0.2s ease;
+}
+
+.rel-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.rel-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 48px);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 4vw, 40px);
+  transition: color 0.2s ease;
+}
+
+.rel-header {
+  animation: relSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.rel-resumo,
+.rel-dashboard-grid {
+  animation: relSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.rel-dashboard-grid {
+  animation-delay: 0.05s;
+}
+
+@keyframes relSlideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes relSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+.rel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.rel-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.rel-header .subtitle {
+  font-size: clamp(13px, 1.5vw, 14px);
+  color: var(--text-secondary);
+  margin: 0;
+
+}
+
+/* ==========================================================================
+   BOTÃO EXPORTAR PDF
+   ========================================================================== */
+.rel-btn-exportar {
+  font-family: "DM Sans", sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 11px 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border-glow);
+  border-radius: 14px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.rel-btn-exportar::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  flex-shrink: 0;
+}
+
+.rel-btn-exportar:hover {
+  transform: translateY(-2px);
+  background: var(--bg-card-hover);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.rel-btn-exportar:active {
+  transform: translateY(0);
+}
+
+
+/* ==========================================================================
+   CARDS DE RESUMO
+   ========================================================================== */
+.rel-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(16px, 2.5vw, 28px);
+  margin: 16px 0;
+}
+
+.rel-resumo-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: 24px;
+  padding: clamp(20px, 2.5vw, 28px);
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+  position: relative;
+}
+
+.rel-resumo-card:hover {
+  transform: translateY(-3px);
+  background: var(--bg-card-hover);
+  border-color: var(--border-glow-hover);
+}
+
+.rel-resumo-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+
+.rel-resumo-valor {
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+/* Bordas Laterais Semânticas */
+.rel-resumo-card.saldo    { border-left: 4px solid var(--accent-blue); }
+.rel-resumo-card.saldo .rel-resumo-valor    { color: var(--text-primary); }
+
+.rel-resumo-card.receita  { border-left: 4px solid var(--accent-green); }
+.rel-resumo-card.receita .rel-resumo-valor  { color: var(--accent-green); }
+
+.rel-resumo-card.despesa  { border-left: 4px solid var(--accent-red); }
+.rel-resumo-card.despesa .rel-resumo-valor  { color: var(--accent-red); }
+
+.rel-resumo-card.positivo { border-left: 4px solid var(--accent-blue); }
+.rel-resumo-card.positivo .rel-resumo-valor { color: var(--accent-blue); }
+
+.rel-resumo-card.negativo { border-left: 4px solid var(--accent-purple); }
+.rel-resumo-card.negativo .rel-resumo-valor { color: var(--accent-purple); }
+
+/* ==========================================================================
+   GRID DO DASHBOARD E SEÇÕES
+   ========================================================================== */
+.rel-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--text-secondary);
+}
+
+.rel-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(20px, 3.5vw, 44px);
+}
+
+.rel-grafico-section,
+.rel-insights {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: 28px;
+  padding: clamp(20px, 3vw, 36px);
+  box-shadow: var(--glass-shadow);
+  transition: background 0.2s, border-color 0.2s;
+  margin: 16px 0;
+}
+
+.rel-grafico-section:hover,
+.rel-insights:hover {
+  border-color: var(--border-glow-hover);
+}
+
+.rel-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.rel-section-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(18px, 2vw, 20px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  color: var(--text-primary);
+}
+
+.rel-section-header p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.rel-grafico-container {
+  width: 100%;
+  height: 300px;
+  padding-left: 10px;
+}
+
+.rel-categorias-legenda {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rel-categoria-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rel-categoria-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rel-categoria-cor {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.rel-categoria-valores {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.rel-categoria-valores span {
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   INSIGHTS AUTOMATIZADOS
+   ========================================================================== */
+.rel-insights-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.rel-insight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-insight-item);
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid var(--accent-blue);
+  transition: background 0.2s, border 0.2s;
+}
+
+.rel-insight-item:nth-child(2) { border-left-color: var(--accent-purple); }
+.rel-insight-item:nth-child(3) { border-left-color: var(--accent-green); }
+
+.rel-insight-item p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-insight);
+}
+
+/* ==========================================================================
+   TOOLTIP DO RECHARTS
+   ========================================================================== */
+.rel-custom-tooltip {
+  background: var(--tooltip-bg) !important;
+  border: 1px solid var(--border-glow-hover) !important;
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-label {
+  margin: 0 0 8px;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tooltip-value {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE
+   ========================================================================== */
+@media (max-width: 1280px) {
+  .rel-dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rel-container {
+    padding: 32px 20px;
+    gap: 32px;
+  }
+  
+  .rel-resumo {
+    grid-template-columns: 1fr;
+  }
+
+  .rel-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rel-btn-exportar {
+    justify-content: center;
+    width: 100%;
+  }
+}
