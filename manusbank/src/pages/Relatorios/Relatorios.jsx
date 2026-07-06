@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/Sidebar/Sidebar";
 import "./Relatorios.css";
 import HistoricoRelatoriosModal from "./HistoricoRelatoriosModal";
 import {
@@ -77,10 +76,10 @@ function Relatorios() {
     year: "numeric",
   });
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function carregar() {
+  // 👇 extraído pra fora do useEffect pra poder ser chamado de novo
+  // (ex: quando a aba ganha foco de novo), sem duplicar a lógica.
+  const carregarRelatorios = useCallback(
+    async (signal) => {
       try {
         setCarregando(true);
         setErro("");
@@ -96,7 +95,7 @@ function Relatorios() {
         const resp = await fetch(
           `${API_URL}/api/relatorios?dataInicio=${dataInicio}&dataFim=${dataFim}`,
           {
-            signal: controller.signal,
+            signal,
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -129,13 +128,28 @@ function Relatorios() {
           mensagem: t("relatorios.errorFallback"),
         });
       } finally {
-        if (!controller.signal.aborted) setCarregando(false);
+        if (!signal?.aborted) setCarregando(false);
       }
-    }
+    },
+    [navigate, t]
+  );
 
-    carregar();
+  useEffect(() => {
+    const controller = new AbortController();
+    carregarRelatorios(controller.signal);
     return () => controller.abort();
-  }, [navigate, t]);
+  }, [carregarRelatorios]);
+
+  // 👇 rebusca sempre que a aba/janela ganha foco de novo — cobre o
+  // caso de editar uma transação/conta em outra aba e voltar pra cá
+  // sem dar F5. Mesmo padrão já usado no Dashboard.
+  useEffect(() => {
+    const handleFocus = () => {
+      carregarRelatorios();
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [carregarRelatorios]);
 
   const receitas = Number(dados?.totalEntradas || dados?.totalReceitas || 0);
   const despesas = Number(dados?.totalGastos || dados?.totalDespesas || 0);
@@ -204,257 +218,257 @@ function Relatorios() {
   }, [maiorCategoria, receitas, taxaEconomia, resultado, t, formatMoney]);
 
   return (
-      <main className="rel-main-content">
-        <div className="rel-container">
-          <header className="rel-header">
-            <div>
-              <h1>{t("relatorios.title")}</h1>
-              <p className="subtitle">
-                {t("relatorios.subtitle")} {nomeMesTraduzido}
-              </p>
-            </div>
+    <main className="rel-main-content">
+      <div className="rel-container">
+        <header className="rel-header">
+          <div>
+            <h1>{t("relatorios.title")}</h1>
+            <p className="subtitle">
+              {t("relatorios.subtitle")} {nomeMesTraduzido}
+            </p>
+          </div>
 
-            <button
-              className="rel-btn-exportar"
-              onClick={() => setModalHistoricoAberto(true)}
+          <button
+            className="rel-btn-exportar"
+            onClick={() => setModalHistoricoAberto(true)}
+          >
+            <FileDown size={15} />
+            Baixar relatórios em PDF
+          </button>
+        </header>
+
+        {erro && <p className="erro-msg">{erro}</p>}
+
+        {carregando ? (
+          <section className="rel-loading" aria-live="polite">
+            {t("geral.loading")}
+          </section>
+        ) : (
+          <>
+            <section
+              className="rel-resumo"
+              aria-label={t("relatorios.monthlySummary")}
             >
-              <FileDown size={15} />
-              Baixar relatórios em PDF
-            </button>
-          </header>
+              <div className="rel-resumo-card saldo">
+                <div className="rel-resumo-label">
+                  <Wallet size={14} />
+                  {t("relatorios.balance")}
+                </div>
+                <p className="rel-resumo-valor">{formatMoney(saldo)}</p>
+              </div>
 
-          {erro && <p className="erro-msg">{erro}</p>}
+              <div className="rel-resumo-card receita">
+                <div className="rel-resumo-label">
+                  <ArrowUpCircle size={14} />
+                  {t("relatorios.income")}
+                </div>
+                <p className="rel-resumo-valor">{formatMoney(receitas)}</p>
+              </div>
 
-          {carregando ? (
-            <section className="rel-loading" aria-live="polite">
-              {t("geral.loading")}
-            </section>
-          ) : (
-            <>
-              <section
-                className="rel-resumo"
-                aria-label={t("relatorios.monthlySummary")}
+              <div className="rel-resumo-card despesa">
+                <div className="rel-resumo-label">
+                  <ArrowDownCircle size={14} />
+                  {t("relatorios.expenses")}
+                </div>
+                <p className="rel-resumo-valor">{formatMoney(despesas)}</p>
+              </div>
+
+              <div
+                className={`rel-resumo-card ${
+                  resultado >= 0 ? "positivo" : "negativo"
+                }`}
               >
-                <div className="rel-resumo-card saldo">
-                  <div className="rel-resumo-label">
-                    <Wallet size={14} />
-                    {t("relatorios.balance")}
-                  </div>
-                  <p className="rel-resumo-valor">{formatMoney(saldo)}</p>
+                <div className="rel-resumo-label">
+                  <PiggyBank size={14} />
+                  {t("relatorios.result")}
                 </div>
+                <p className="rel-resumo-valor">{formatMoney(resultado)}</p>
+              </div>
+            </section>
 
-                <div className="rel-resumo-card receita">
-                  <div className="rel-resumo-label">
-                    <ArrowUpCircle size={14} />
-                    {t("relatorios.income")}
-                  </div>
-                  <p className="rel-resumo-valor">{formatMoney(receitas)}</p>
-                </div>
-
-                <div className="rel-resumo-card despesa">
-                  <div className="rel-resumo-label">
-                    <ArrowDownCircle size={14} />
-                    {t("relatorios.expenses")}
-                  </div>
-                  <p className="rel-resumo-valor">{formatMoney(despesas)}</p>
-                </div>
-
-                <div
-                  className={`rel-resumo-card ${
-                    resultado >= 0 ? "positivo" : "negativo"
-                  }`}
-                >
-                  <div className="rel-resumo-label">
-                    <PiggyBank size={14} />
-                    {t("relatorios.result")}
-                  </div>
-                  <p className="rel-resumo-valor">{formatMoney(resultado)}</p>
-                </div>
+            {!temDados ? (
+              <section className="rel-empty">
+                <h2>{dados?.mensagem || t("relatorios.noData")}</h2>
               </section>
+            ) : (
+              <div className="rel-dashboard-grid">
+                <section className="rel-grafico-section">
+                  <div className="rel-section-header">
+                    <div>
+                      <h2>
+                        <TrendingUp size={18} />
+                        {t("relatorios.flowTitle")}
+                      </h2>
+                      <p>{t("relatorios.flowSubtitle")}</p>
+                    </div>
+                    {resultado >= 0 ? (
+                      <TrendingUp size={18} className="rel-positive-icon" />
+                    ) : (
+                      <TrendingDown
+                        size={18}
+                        className="rel-negative-icon"
+                      />
+                    )}
+                  </div>
 
-              {!temDados ? (
-                <section className="rel-empty">
-                  <h2>{dados?.mensagem || t("relatorios.noData")}</h2>
+                  <div className="rel-grafico-container">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={comparativo}
+                        margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                          className="rel-chart-grid"
+                        />
+                        <XAxis
+                          dataKey="name"
+                          className="rel-chart-axis"
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tickFormatter={(value) => formatMoney(value)}
+                          className="rel-chart-axis"
+                          axisLine={false}
+                          tickLine={false}
+                          width={88}
+                        />
+                        <Tooltip
+                          content={
+                            <CustomTooltip formatMoney={formatMoney} />
+                          }
+                          cursor={false}
+                        />
+                        <Bar
+                          dataKey="valor"
+                          radius={[8, 8, 0, 0]}
+                          barSize={52}
+                        >
+                          {comparativo.map((entry) => (
+                            <Cell key={entry.name} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </section>
-              ) : (
-                <div className="rel-dashboard-grid">
-                  <section className="rel-grafico-section">
+
+                <section className="rel-insights">
+                  <div className="rel-section-header">
+                    <div>
+                      <h2>{t("relatorios.insightsTitle")}</h2>
+                      <p>{t("relatorios.insightsSubtitle")}</p>
+                    </div>
+                  </div>
+                  <div className="rel-insights-lista">
+                    {insights.map((insight) => (
+                      <div className="rel-insight-item" key={insight}>
+                        <span className="dot-indicador" />
+                        <p>{insight}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {categoriasComPercentual.length > 0 && (
+                  <section className="rel-grafico-section rel-categoria-secao">
                     <div className="rel-section-header">
                       <div>
                         <h2>
-                          <TrendingUp size={18} />
-                          {t("relatorios.flowTitle")}
+                          <PieIcon size={18} />
+                          {t("relatorios.categoriesTitle")}
                         </h2>
-                        <p>{t("relatorios.flowSubtitle")}</p>
+                        <p>{t("relatorios.categoriesSubtitle")}</p>
                       </div>
-                      {resultado >= 0 ? (
-                        <TrendingUp size={18} className="rel-positive-icon" />
-                      ) : (
-                        <TrendingDown
-                          size={18}
-                          className="rel-negative-icon"
-                        />
-                      )}
                     </div>
 
-                    <div className="rel-grafico-container">
+                    <div className="rel-grafico-container rel-categorias-chart">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
-                          data={comparativo}
-                          margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                          data={categoriasComPercentual}
+                          layout="vertical"
+                          margin={{
+                            top: 10,
+                            right: 50,
+                            left: 20,
+                            bottom: 10,
+                          }}
                         >
                           <CartesianGrid
                             strokeDasharray="3 3"
-                            vertical={false}
+                            horizontal={false}
                             className="rel-chart-grid"
                           />
-                          <XAxis
-                            dataKey="name"
-                            className="rel-chart-axis"
-                            axisLine={false}
-                            tickLine={false}
-                          />
+                          <XAxis type="number" hide />
                           <YAxis
-                            tickFormatter={(value) => formatMoney(value)}
-                            className="rel-chart-axis"
+                            dataKey="nome"
+                            type="category"
+                            width={120}
                             axisLine={false}
                             tickLine={false}
-                            width={88}
+                            className="rel-chart-axis"
                           />
                           <Tooltip
-                            content={
-                              <CustomTooltip formatMoney={formatMoney} />
-                            }
+                            formatter={(value) => formatMoney(value)}
                             cursor={false}
                           />
                           <Bar
                             dataKey="valor"
-                            radius={[8, 8, 0, 0]}
-                            barSize={52}
+                            radius={[0, 10, 10, 0]}
+                            barSize={26}
                           >
-                            {comparativo.map((entry) => (
-                              <Cell key={entry.name} fill={entry.fill} />
+                            {categoriasComPercentual.map((item, index) => (
+                              <Cell
+                                key={item.nome}
+                                fill={
+                                  CORES_DESPESAS[
+                                    index % CORES_DESPESAS.length
+                                  ]
+                                }
+                              />
                             ))}
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                  </section>
 
-                  <section className="rel-insights">
-                    <div className="rel-section-header">
-                      <div>
-                        <h2>{t("relatorios.insightsTitle")}</h2>
-                        <p>{t("relatorios.insightsSubtitle")}</p>
-                      </div>
-                    </div>
-                    <div className="rel-insights-lista">
-                      {insights.map((insight) => (
-                        <div className="rel-insight-item" key={insight}>
-                          <span className="dot-indicador" />
-                          <p>{insight}</p>
+                    <div className="rel-categorias-legenda">
+                      {categoriasComPercentual.map((item, index) => (
+                        <div key={item.nome} className="rel-categoria-item">
+                          <div className="rel-categoria-info">
+                            <span
+                              className="rel-categoria-cor"
+                              style={{
+                                background:
+                                  CORES_DESPESAS[
+                                    index % CORES_DESPESAS.length
+                                  ],
+                              }}
+                            />
+                            <span>{item.nome}</span>
+                          </div>
+                          <div className="rel-categoria-valores">
+                            <strong>{formatMoney(item.valor)}</strong>
+                            <span>{item.percentual}%</span>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </section>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
-                  {categoriasComPercentual.length > 0 && (
-                    <section className="rel-grafico-section rel-categoria-secao">
-                      <div className="rel-section-header">
-                        <div>
-                          <h2>
-                            <PieIcon size={18} />
-                            {t("relatorios.categoriesTitle")}
-                          </h2>
-                          <p>{t("relatorios.categoriesSubtitle")}</p>
-                        </div>
-                      </div>
-
-                      <div className="rel-grafico-container rel-categorias-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart
-                            data={categoriasComPercentual}
-                            layout="vertical"
-                            margin={{
-                              top: 10,
-                              right: 50,
-                              left: 20,
-                              bottom: 10,
-                            }}
-                          >
-                            <CartesianGrid
-                              strokeDasharray="3 3"
-                              horizontal={false}
-                              className="rel-chart-grid"
-                            />
-                            <XAxis type="number" hide />
-                            <YAxis
-                              dataKey="nome"
-                              type="category"
-                              width={120}
-                              axisLine={false}
-                              tickLine={false}
-                              className="rel-chart-axis"
-                            />
-                            <Tooltip
-                              formatter={(value) => formatMoney(value)}
-                              cursor={false}
-                            />
-                            <Bar
-                              dataKey="valor"
-                              radius={[0, 10, 10, 0]}
-                              barSize={26}
-                            >
-                              {categoriasComPercentual.map((item, index) => (
-                                <Cell
-                                  key={item.nome}
-                                  fill={
-                                    CORES_DESPESAS[
-                                      index % CORES_DESPESAS.length
-                                    ]
-                                  }
-                                />
-                              ))}
-                            </Bar>
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-
-                      <div className="rel-categorias-legenda">
-                        {categoriasComPercentual.map((item, index) => (
-                          <div key={item.nome} className="rel-categoria-item">
-                            <div className="rel-categoria-info">
-                              <span
-                                className="rel-categoria-cor"
-                                style={{
-                                  background:
-                                    CORES_DESPESAS[
-                                      index % CORES_DESPESAS.length
-                                    ],
-                                }}
-                              />
-                              <span>{item.nome}</span>
-                            </div>
-                            <div className="rel-categoria-valores">
-                              <strong>{formatMoney(item.valor)}</strong>
-                              <span>{item.percentual}%</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        <HistoricoRelatoriosModal
-          aberto={modalHistoricoAberto}
-          onFechar={() => setModalHistoricoAberto(false)}
-        />
-      </main>
+      <HistoricoRelatoriosModal
+        aberto={modalHistoricoAberto}
+        onFechar={() => setModalHistoricoAberto(false)}
+      />
+    </main>
   );
 }
 

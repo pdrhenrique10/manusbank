@@ -18,15 +18,17 @@ import { CurrencyProvider } from "./context/CurrencyProvider";
 
 export default function App() {
   return (
-    <CurrencyProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      {/* 👇 CurrencyProvider precisa ficar DENTRO do BrowserRouter —
+          ele usa useLocation() pra resincronizar a moeda a cada troca
+          de rota (ex: login/logout), não só uma vez no carregamento. */}
+      <CurrencyProvider>
         <ThemeProvider>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/planos" element={<Planos />} />
-            <Route path="/trocar-plano" element={<TrocarPlano />} />
 
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<Dashboard />} />
@@ -37,11 +39,11 @@ export default function App() {
               <Route path="/metasfinanceiras" element={<MetasFinanceiras />} />
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
-
+              <Route path="/trocar-plano" element={<TrocarPlano />} />
             </Route>
           </Routes>
         </ThemeProvider>
-      </BrowserRouter>
-    </CurrencyProvider>
+      </CurrencyProvider>
+    </BrowserRouter>
   );
 }
