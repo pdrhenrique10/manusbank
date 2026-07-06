@@ -1,0 +1,39 @@
+:root {
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --border-soft: #e2e8f0;
+  --chart-grid: #cbd5e1;
+  --tooltip-bg: #ffffff;
+  input[type=date]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+/* Tema escuro - ativado quando body tiver a classe .dark */
+body.dark {
+  --bg-main: #020617;
+  --bg-card: #020617;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --border-soft: rgba(148, 163, 184, 0.35);
+  input[type=date]::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+  }
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base */
+body {
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-family: Inter, sans-serif;
+}
+

@@ -1,0 +1,532 @@
+/* ==========================================================================
+   1. VARIÁVEIS DO SISTEMA
+   ========================================================================== */
+:root {
+  --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --border-soft: rgba(71, 85, 105, 0.5);
+  --border-glow: rgba(59, 130, 246, 0.3);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-blue: #38bdf8;
+  --accent-purple: #8b5cf6;
+  --divider-color: rgba(71, 85, 105, 0.3);
+  --row-hover-bg: rgba(56, 189, 248, 0.05);
+  --danger-bg: #dc2626;
+  --danger-hover: #b91c1c;
+  --toggle-border: rgba(71, 85, 105, 0.5);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+/* ==========================================================================
+   2. ESTRUTURA DE LAYOUT
+   ========================================================================== */
+.config-main {
+  flex: 1;
+  padding: clamp(16px, 4vw, 48px) clamp(12px, 3vw, 32px);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  overflow-y: auto;
+  position: relative;
+}
+
+.config-main::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.config-container {
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   3. CABEÇALHO E MENSAGENS
+   ========================================================================== */
+.config-header {
+  margin-bottom: clamp(24px, 4vw, 40px);
+  animation: fadeInDown 0.35s ease forwards;
+}
+
+.config-header h1 {
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: clamp(20px, 3vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.config-subtitle {
+  color: var(--text-secondary);
+  font-size: clamp(12px, 1.5vw, 15px);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.erro-msg, .sucesso-msg {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  animation: fadeInDown 0.2s ease forwards;
+}
+
+.erro-msg {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+}
+
+.sucesso-msg {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+/* ==========================================================================
+   4. SEÇÕES E CONTEÚDO CARD
+   ========================================================================== */
+.config-section {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border-radius: clamp(16px, 2vw, 24px);
+  padding: clamp(16px, 3vw, 28px) clamp(16px, 3vw, 32px);
+  margin-bottom: clamp(16px, 2vw, 24px);
+  border: 1px solid var(--border-soft);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  animation: fadeInUp 0.4s ease 0.05s both;
+}
+
+.config-section:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.config-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 clamp(16px, 2vw, 24px);
+  font-size: clamp(15px, 2vw, 18px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.config-section h2 svg {
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+
+/* Elementos de Linha Internos */
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--divider-color);
+  transition: background-color 0.2s ease;
+}
+
+.config-row:last-child {
+  border-bottom: none;
+}
+
+.config-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: clamp(13px, 1.5vw, 14px);
+  font-weight: 500;
+}
+
+.config-icon {
+  color: var(--accent-blue);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.config-row:hover .config-icon {
+  transform: scale(1.1);
+}
+
+.config-value {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: clamp(13px, 1.5vw, 14px);
+  text-align: right;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* Subseções de Ajustes */
+.config-subsection {
+  width: 100%;
+}
+
+/* ==========================================================================
+   5. PERFIL & AVATAR
+   ========================================================================== */
+.config-avatar-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: clamp(16px, 3vw, 28px);
+}
+
+.config-avatar-img,
+.config-avatar {
+  width: clamp(72px, 10vw, 112px);
+  height: clamp(72px, 10vw, 112px);
+  border-radius: 50%;
+  border: 3px solid var(--border-soft);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15), var(--shadow-lg);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.config-avatar-img {
+  object-fit: cover;
+}
+
+.config-avatar {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700;
+  color: white;
+  user-select: none;
+}
+
+.config-avatar-img:hover,
+.config-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), var(--shadow-lg);
+  border-color: var(--accent-blue);
+}
+
+/* ==========================================================================
+   6. CONTROLES DE ENTRADA & SELETORES
+   ========================================================================== */
+.theme-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-radius: 40px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--toggle-border);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-blue);
+  box-shadow: var(--shadow-glow);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.currency-select {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 40px;
+  padding: 10px 44px 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 200px;
+  text-align: left;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8.825a.7.7 0 0 1-.5-.2L1.175 4.3a.7.7 0 0 1 0-.987.7.7 0 0 1 .987 0L6 7.15l3.838-3.837a.7.7 0 0 1 .987 0 .7.7 0 0 1 0 .987L6.5 8.625a.7.7 0 0 1-.5.2z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 12px;
+}
+
+.currency-select:hover {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+.currency-select:focus-visible {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35);
+}
+
+.currency-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.currency-select option {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+/* Botões de Ação Geral da Página */
+.config-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 28px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: clamp(12px, 1.5vw, 14px);
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(135deg, var(--danger-bg), var(--danger-hover));
+  color: white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.config-btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
+}
+
+/* ==========================================================================
+   7. MODAL DE LOGOUT
+   ========================================================================== */
+.logout-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.logout-modal {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+  padding: 32px 28px;
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  box-shadow: var(--shadow-lg), 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: scaleInModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--text-secondary);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: var(--row-hover-bg);
+  color: var(--text-primary);
+  border-color: var(--accent-blue);
+  transform: rotate(90deg);
+}
+
+.modal-icon-wrapper {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.danger-glow {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.logout-modal:hover .danger-glow {
+  box-shadow: 0 0 20px rgba(220, 38, 38, 0.25);
+}
+
+.modal-alert-icon {
+  color: var(--danger-bg);
+}
+
+.modal-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.modal-description {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 28px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.modal-btn-cancel {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-btn-cancel:hover {
+  background: var(--row-hover-bg);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.modal-btn-confirm {
+  flex: 1.3;
+  padding: 12px 20px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, var(--danger-bg), var(--danger-hover));
+}
+
+.modal-btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35);
+}
+
+/* ==========================================================================
+   8. COMPONENTES ADICIONAIS (SCROLLBAR)
+   ========================================================================== */
+.config-main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.config-main::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: 10px;
+}
+
+.config-main::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 10px;
+}
+
+.config-main::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+}
+
+/* ==========================================================================
+   9. ANIMAÇÕES (KEYFRAMES)
+   ========================================================================== */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleInModal {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ==========================================================================
+   10. DESIGN RESPONSIVO (MEDIA QUERIES)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .config-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .config-value {
+    text-align: left;
+    width: 100%;
+  }
+  
+  .theme-toggle-wrapper {
+    justify-content: flex-start;
+    width: 100%;
+  }
+  
+  .currency-select {
+    width: 100%;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+}

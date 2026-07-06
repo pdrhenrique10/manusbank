@@ -1,0 +1,686 @@
+/* ==========================================================================
+   VARIÁVEIS E TEMAS (PADRONIZADO COM O SISTEMA)
+   ========================================================================== */
+
+:root {
+  --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --bg-card: rgba(30, 41, 59, 0.92); /* Ajustado de 0.7 para 0.92 para remover o blur pesado */
+  --bg-card-solid: #1e293b;
+  --border-soft: rgba(71, 85, 105, 0.5);
+  --border-glow: rgba(239, 68, 68, 0.3);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-blue: #38bdf8;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
+  --accent-orange: #f97316;
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  --shadow-glow-red: 0 8px 25px rgba(239, 68, 68, 0.15);
+}
+
+/* ==========================================================================
+   LAYOUT GERAL (Sincronizado com os paddings do sistema)
+   ========================================================================== */
+
+.despesas-container {
+  flex: 1;
+  padding: 48px 32px; /* Padronizado em 48px 32px para evitar saltos visuais */
+  background: var(--bg-main);
+  position: relative;
+  z-index: 1;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Removido o pseudo-elemento ::before com radial-gradient gigante que forçava 
+   redesenho de tela cheia (Full-screen Repaint) a cada scroll de página */
+
+.despesas-card {
+  width: 100%;
+}
+
+/* ==========================================================================
+   HEADER (Sincronizado em 0.2s e usando rule de fim de estado 'both')
+   ========================================================================== */
+
+.despesas-header {
+  margin-bottom: 32px;
+  animation: fadeInDown 0.2s ease-out both; /* Ajustado de 0.6s para 0.2s */
+  will-change: transform, opacity;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.despesas-header h1 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-red) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.despesas-header h1 svg {
+  color: var(--accent-red);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+/* ==========================================================================
+   RESUMO (Mesmo comportamento estrutural do painel principal)
+   ========================================================================== */
+
+.resumo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding: 28px 32px; /* Padronizado com o sistema */
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  animation: fadeInUp 0.2s ease-out both; /* Ajustado de 0.6s para 0.2s */
+  will-change: transform, opacity;
+  contain: layout style paint;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.resumo-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow-red);
+  transform: translateY(-2px);
+}
+
+.resumo-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.resumo-item svg {
+  color: var(--accent-red);
+}
+
+.resumo-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.despesas-valor {
+  color: var(--accent-red);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent-red), #b91c1c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.resumo-item-secundario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-orange);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.resumo-secundario-label {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   BOTÃO PRINCIPAL
+   ========================================================================== */
+
+.btn-nova-despesa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 180px;
+  min-height: 48px;
+  margin: 0 0 28px auto;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border: none;
+  border-radius: 40px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+/* Otimizado o efeito ripple com propriedades de transform baratas */
+.btn-nova-despesa::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s ease;
+}
+
+.btn-nova-despesa:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.btn-nova-despesa:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4);
+}
+
+.btn-nova-despesa:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   CONTEÚDO / PAINÉIS (Unificado com a duração exata de 0.2s)
+   ========================================================================== */
+
+.grafico-section,
+.lista-despesas {
+  min-width: 0;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  animation: fadeInUp 0.2s ease-out both; /* Sincronizado perfeitamente em 0.2s */
+  will-change: transform, opacity;
+  contain: layout style paint;
+  margin-bottom: 24px;
+}
+
+.grafico-section:hover,
+.lista-despesas:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-md);
+}
+
+.grafico-section h2,
+.lista-despesas h2 {
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-soft);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.grafico-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  width: 100%;
+}
+
+.grafico-vazio {
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   LISTA DE DESPESAS (Herda a proposta minimalista de row limpa)
+   ========================================================================== */
+
+.lista-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lista-vazia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+  padding: 20px;
+  background: rgba(148, 163, 184, 0.05);
+  border: 1px dashed var(--border-soft);
+  border-radius: 14px;
+  color: var(--text-secondary);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.lista-vazia:hover {
+  border-color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.despesa-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0; /* Convertido de bloco isolado para linha de extrato contínua */
+  border-bottom: 1px solid var(--border-soft);
+  background: transparent;
+  border-radius: 0;
+  transition: transform 0.12s ease;
+  animation: none; /* Removido micro-animação individual que quebrava o scroll */
+}
+
+.despesa-item:last-child {
+  border-bottom: none;
+}
+
+.despesa-item:hover {
+  transform: translateX(4px);
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--border-soft);
+}
+
+.despesa-info h3 {
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.despesa-data {
+  color: var(--text-secondary);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.despesa-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.despesa-valor {
+  color: var(--accent-red) !important; /* Corrigido de orange para red para combinar com Despesas */
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   BOTÕES DE AÇÃO DOS ITENS
+   ========================================================================== */
+
+.btn-editar-despesa,
+.btn-remover-despesa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  flex-shrink: 0;
+}
+
+.btn-editar-despesa { color: var(--accent-blue); }
+.btn-editar-despesa:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent-blue);
+  transform: scale(1.05);
+}
+
+.btn-remover-despesa { color: var(--accent-red); }
+.btn-remover-despesa:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--accent-red);
+  transform: scale(1.05);
+}
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(2, 6, 23, 0.85);
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-conteudo {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease-out;
+  contain: layout style paint;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-conteudo h2 {
+  margin: 0 0 24px;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-red));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.modal-fechar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.modal-fechar:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+  transform: rotate(90deg) scale(1.05);
+}
+
+/* ==========================================================================
+   FORMULÁRIO
+   ========================================================================== */
+
+.forma-despesa {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-group input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  background: #0f172a;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.form-group input::placeholder {
+  color: #64748b;
+}
+
+.form-group input:focus {
+  background: var(--bg-card-solid);
+  border-color: var(--accent-red);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.form-group input[type="date"] {
+  color-scheme: dark;
+}
+
+.btn-salvar {
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border: none;
+  border-radius: 40px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.btn-salvar::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s ease;
+}
+
+.btn-salvar:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.btn-salvar:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4);
+}
+
+.btn-salvar:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   FEEDBACKS E SCROLLBAR
+   ========================================================================== */
+
+.erro-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  color: #f87171;
+  font-size: 13px;
+  font-weight: 500;
+  animation: shake 0.2s ease-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.sucesso-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 12px;
+  color: #4ade80;
+  font-size: 13px;
+  font-weight: 500;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.despesas-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.despesas-container::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 10px; }
+.despesas-container::-webkit-scrollbar-thumb { background: var(--accent-red); border-radius: 10px; }
+.despesas-container::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
+
+/* ==========================================================================
+   RESPONSIVO
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .despesas-container { padding: 24px; }
+}
+
+@media (max-width: 768px) {
+  .despesas-container { padding: 20px 16px; }
+  .despesas-header { margin-bottom: 24px; }
+  .despesas-header h1 { font-size: 24px; }
+  .subtitle { font-size: 13px; }
+
+  .resumo-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .resumo-item {
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .resumo-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .resumo-item-secundario { justify-content: space-between; }
+  .resumo-valor { font-size: 24px; }
+
+  .btn-nova-despesa {
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 24px;
+  }
+
+  .grafico-section, .lista-despesas { padding: 16px; }
+  .grafico-container { min-height: 280px; }
+
+  .despesa-item {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 0;
+  }
+
+  .despesa-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .despesa-info { width: 100%; }
+  .despesa-valor { font-size: 14px; }
+  .modal-conteudo { padding: 24px; max-width: 95%; }
+  .modal-conteudo h2 { font-size: 20px; }
+  .form-group input { min-height: 44px; }
+}
+
+@media (max-width: 480px) {
+  .despesas-container { padding: 16px 12px; }
+  .despesas-header h1 { font-size: 20px; }
+  .resumo-card { padding: 16px; }
+  .resumo-valor { font-size: 20px; }
+  .resumo-label { font-size: 10px; }
+  .grafico-container { min-height: 240px; }
+  .grafico-section h2, .lista-despesas h2 { font-size: 18px; }
+}
+
+/* Esconde a sidebar no mobile quando um modal está aberto */
+@media (max-width: 768px) {
+  .modo-modal .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
