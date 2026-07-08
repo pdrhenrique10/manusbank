@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght=400;600;700&family=DM+Sans:wght=400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
 /* ==========================================================================
    RESET ESCOPADO — Consistência isolada sem vazar para o app
@@ -72,6 +72,7 @@
   position: relative;
   z-index: 1;
 }
+
 /* ----- CABEÇALHO ----- */
 .planos-header {
   display: flex;
@@ -312,7 +313,10 @@
   }
 }
 
-/* ----- RESPONSIVIDADE (MOBILE E ADAPTAÇÃO DAS LATERAIS) ----- */
+/* ==========================================================================
+   RESPONSIVIDADE (MOBILE E ADAPTAÇÃO DAS LATERAIS)
+   ========================================================================== */
+
 @media (max-width: 860px) {
   .planos-page {
     padding: 40px 16px;
@@ -330,6 +334,88 @@
 
   .planos-grid {
     grid-template-columns: 1fr;
-    max-width: 400px;
+    max-width: 460px;
+    width: 100%;
+    gap: 18px;
+  }
+
+  .plano-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .planos-page {
+    padding: 32px 14px;
+    gap: 20px;
+  }
+
+  .planos-header h1 {
+    font-size: 24px;
+    letter-spacing: -0.3px;
+  }
+
+  .planos-header p {
+    font-size: 13.5px;
+    padding: 0 4px;
+  }
+
+  .planos-grid {
+    max-width: 100%;
+    gap: 14px;
+  }
+
+  .plano-card {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .plano-card h2 {
+    font-size: 19px;
+  }
+
+  .plano-preco {
+    font-size: 26px;
+    margin-bottom: 22px;
+  }
+
+  .plano-features {
+    gap: 11px;
+    margin-bottom: 24px;
+  }
+
+  .plano-features li {
+    font-size: 13.5px;
+  }
+
+  .plano-btn {
+    height: 46px;
+    font-size: 15px;
+  }
+
+  .back-home-button {
+    width: 100%;
+    padding: 10px 16px;
+  }
+
+  .bg-glow {
+    width: 200px;
+    height: 200px;
+    filter: blur(70px);
+    opacity: 0.06;
+  }
+}
+
+@media (max-width: 360px) {
+  .planos-header h1 {
+    font-size: 21px;
+  }
+
+  .plano-card {
+    padding: 20px 16px;
+  }
+
+  .plano-preco {
+    font-size: 24px;
   }
 }

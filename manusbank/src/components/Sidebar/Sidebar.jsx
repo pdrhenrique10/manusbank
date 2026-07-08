@@ -1,3 +1,4 @@
+// src/components/Sidebar/Sidebar.jsx
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 import {
@@ -12,7 +13,7 @@ import {
 import { API_URL } from "../../config/api";
 import { useIdioma } from "../../context/IdiomaContext";
 
-export default function Sidebar() {
+export default function Sidebar({ aberta, onFechar }) {
   const navigate = useNavigate();
   const { t } = useIdioma();
 
@@ -38,44 +39,44 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${aberta ? "sidebar-aberta" : ""}`}>
       <nav className="sidebarMenu">
-        <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/dashboard" onClick={onFechar} className={({ isActive }) => (isActive ? "active" : "")}>
           <LayoutDashboard size={19} />
           <span>{t("sidebar.dashboard")}</span>
         </NavLink>
 
-        <NavLink to="/receitas" className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/receitas" onClick={onFechar} className={({ isActive }) => (isActive ? "active" : "")}>
           <TrendingUp size={19} />
           <span>{t("sidebar.fixedIncomes")}</span>
         </NavLink>
 
-        <NavLink to="/despesas" className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/despesas" onClick={onFechar} className={({ isActive }) => (isActive ? "active" : "")}>
           <TrendingDown size={19} />
           <span>{t("sidebar.fixedExpenses")}</span>
         </NavLink>
 
-        <NavLink to="/contas-a-receber" className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/contas-a-receber" onClick={onFechar} className={({ isActive }) => (isActive ? "active" : "")}>
           <WalletCards size={19} />
           <span>{t("sidebar.nonFixedIncomes")}</span>
         </NavLink>
 
-        <NavLink to="/contas-a-pagar" className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/contas-a-pagar" onClick={onFechar} className={({ isActive }) => (isActive ? "active" : "")}>
           <WalletCards size={19} />
           <span>{t("sidebar.nonFixedExpenses")}</span>
         </NavLink>
 
-        <NavLink to="/metasfinanceiras" className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/metasfinanceiras" onClick={onFechar} className={({ isActive }) => (isActive ? "active" : "")}>
           <Target size={19} />
           <span>{t("sidebar.goals")}</span>
         </NavLink>
 
-        <NavLink to="/relatorios" className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/relatorios" onClick={onFechar} className={({ isActive }) => (isActive ? "active" : "")}>
           <BarChart3 size={19} />
           <span>{t("sidebar.reports")}</span>
         </NavLink>
 
-        <NavLink to="/configuracoes" className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink to="/configuracoes" onClick={onFechar} className={({ isActive }) => (isActive ? "active" : "")}>
           <Settings size={19} />
           <span>{t("sidebar.settings")}</span>
         </NavLink>

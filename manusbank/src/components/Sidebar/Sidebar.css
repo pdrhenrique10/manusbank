@@ -187,3 +187,54 @@
   .sidebarMenu a { height: 40px; }
   .sidebarMenu a svg { min-width: 18px; }
 }
+
+/* ==========================================================================
+   MOBILE: OFF-CANVAS (sidebar escondida, abre com o botão hambúrguer)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px; /* volta pro tamanho cheio, já que agora ela desliza por cima */
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 300;
+  }
+
+  .sidebar.sidebar-aberta {
+    transform: translateX(0);
+  }
+
+  /* Reseta o modo "ícone-only" que era usado no breakpoint anterior,
+     já que no mobile agora a sidebar abre com texto e ícone completos */
+  .sidebar .sidebarMenu a span {
+    display: inline;
+  }
+
+  .sidebar .sidebarMenu a {
+    justify-content: flex-start;
+    padding: 0 16px;
+  }
+
+  .sidebar .sidebarTop {
+    justify-content: flex-start;
+    padding: 20px;
+  }
+}
+
+/* Overlay escuro atrás da sidebar quando aberta no mobile */
+.sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 250;
+  }
+}

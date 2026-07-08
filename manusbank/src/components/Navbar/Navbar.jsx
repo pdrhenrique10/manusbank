@@ -3,10 +3,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { API_URL } from "../../config/api";
-import { SunMedium, MoonStar, Crown, LineChart } from "lucide-react";
+import { SunMedium, MoonStar, Crown, Menu } from "lucide-react";
 import "./Navbar.css";
 
-function Navbar() {
+function Navbar({ onToggleSidebar }) {
   const navigate = useNavigate();
   const { toggleTheme, isDark } = useTheme();
 
@@ -56,11 +56,21 @@ function Navbar() {
 
   return (
     <header className="navbar-system">
-      <div className="navbar-logo" onClick={() => navigate("/dashboard")}>
-        <div className="navbar-logo-icon">
-         <img src="mflogo.jpeg" alt="Logo ManusFinance" style={{ width: "30px", height: "30px", borderRadius: "20%" }} />
+      <div className="navbar-left">
+        <button
+          className="navbar-hamburguer"
+          onClick={onToggleSidebar}
+          aria-label="Abrir menu"
+        >
+          <Menu size={22} />
+        </button>
+
+        <div className="navbar-logo" onClick={() => navigate("/dashboard")}>
+          <div className="navbar-logo-icon">
+            <img src="mflogo.jpeg" alt="Logo ManusFinance" style={{ width: "30px", height: "30px", borderRadius: "20%" }} />
+          </div>
+          <h2>ManusFinance</h2>
         </div>
-        <h2>ManusFinance</h2>
       </div>
 
       <div className="navbar-actions">

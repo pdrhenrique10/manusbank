@@ -1,4 +1,5 @@
 // pages/Home/Home.jsx
+import { useState } from "react"
 import "./Home.css"
 import { useNavigate } from "react-router-dom"
 import {
@@ -6,6 +7,8 @@ import {
   Wallet,
   Target,
   ArrowRight,
+  Menu,
+  X,
 } from "lucide-react"
 
 const features = [
@@ -28,6 +31,16 @@ const features = [
 
 export default function Home() {
   const navigate = useNavigate()
+  const [menuAberto, setMenuAberto] = useState(false)
+
+  function fecharMenu() {
+    setMenuAberto(false)
+  }
+
+  function irPara(rota) {
+    navigate(rota)
+    fecharMenu()
+  }
 
   return (
     <div className="home">
@@ -38,13 +51,35 @@ export default function Home() {
           <img src="/mflogo.jpeg" alt="Logo ManusFinance" className="logo-image" />
           <span className="logo">ManusFinance</span>
         </div>
+
         <nav className="navbar-links">
           <a href="#">Início</a>
           <a href="#funcionalidades">Funcionalidades</a>
           <a onClick={() => navigate("/planos")}>Planos</a>
           <a onClick={() => navigate("/login")}>Entrar</a>
         </nav>
+
+        <button
+          className="navbar-hamburguer"
+          onClick={() => setMenuAberto((prev) => !prev)}
+          aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
+        >
+          {menuAberto ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </header>
+
+      {/* menu mobile (dropdown abaixo da navbar) */}
+      <div className={`navbar-mobile-menu ${menuAberto ? "aberto" : ""}`}>
+        <a href="#" onClick={fecharMenu}>Início</a>
+        <a href="#funcionalidades" onClick={fecharMenu}>Funcionalidades</a>
+        <a onClick={() => irPara("/planos")}>Planos</a>
+        <a onClick={() => irPara("/login")}>Entrar</a>
+      </div>
+
+      {/* overlay escuro atrás do menu mobile */}
+      {menuAberto && (
+        <div className="navbar-mobile-overlay" onClick={fecharMenu} />
+      )}
 
       <section className="hero-bg">
         <div className="hero">

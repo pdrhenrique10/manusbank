@@ -56,13 +56,13 @@ body .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   /* Linha divisória inferior quase invisível */
   border-bottom: 1px solid rgba(12, 0, 0, 0.05) !important;
-  
+
   /* Cor de fundo escura com transparência (30% de opacidade para notar a diferença) */
   background: rgba(6, 13, 40, 0.3) !important;
-  
+
   /* O efeito de vidro fosco que desfoca o que passa por trás */
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
@@ -133,6 +133,71 @@ body .navbar {
 .navbar-links a:hover::after {
   transform: translateX(-50%) scaleX(1);
 }
+
+/* ─── NAVBAR MOBILE: HAMBÚRGUER ────────────────────── */
+
+.navbar-hamburguer {
+  display: none;
+  background: none;
+  border: none;
+  color: #f1f5f9;
+  cursor: pointer;
+  padding: 6px;
+  z-index: 210;
+}
+
+/* ─── MENU MOBILE (DROPDOWN) ───────────────────────── */
+
+.navbar-mobile-menu {
+  position: fixed;
+  top: 66px; /* mesma altura da navbar */
+  left: 0;
+  width: 100%;
+  background: rgba(6, 13, 40, 0.97);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 20px;
+  transform: translateY(-10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  z-index: 200;
+}
+
+.navbar-mobile-menu.aberto {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.navbar-mobile-menu a {
+  padding: 14px 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #94a3b8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.navbar-mobile-menu a:last-child {
+  border-bottom: none;
+}
+
+.navbar-mobile-menu a:hover {
+  color: #f1f5f9;
+}
+
+.navbar-mobile-overlay {
+  position: fixed;
+  inset: 0;
+  top: 66px;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 150;
+}
+
 /* ─── HERO ───────────────────────────────── */
 .hero {
   position: relative;
@@ -439,7 +504,17 @@ body .navbar {
   .navbar {
     padding: 0 16px;
   }
-  
+
+  .navbar-links {
+    display: none;
+  }
+
+  .navbar-hamburguer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .hero {
     padding: 100px 20px 40px;
   }
@@ -451,24 +526,44 @@ body .navbar {
 
   .grid-3 {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card {
+    width: 100%;
   }
 }
-/* ─── RESPONSIVIDADE ────────────────────── */
-@media (max-width: 860px) {
-  .navbar {
-    padding: 0 16px;
-  }
-  
-  .hero {
-    padding: 100px 20px 40px;
+
+@media (max-width: 600px) {
+  .title {
+    letter-spacing: -1px;
   }
 
-  .section {
-    min-height: auto;
-    padding: 64px 20px;
+  .hero-impact {
+    font-size: 15px;
+    padding: 10px 18px;
   }
 
-  .grid-3 {
-    grid-template-columns: 1fr;
+  .description {
+    font-size: 16px;
+  }
+
+  .primary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .section-title {
+    font-size: 26px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 }

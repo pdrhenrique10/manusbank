@@ -150,6 +150,27 @@
   white-space: nowrap;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-hamburguer {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cor-texto, currentColor);
+  padding: 4px;
+}
+
+@media (max-width: 768px) {
+  .navbar-hamburguer {
+    display: flex;
+  }
+}
+
 /* ----- RESPONSIVO ----- */
 @media (max-width: 560px) {
   .navbar-user-name {
